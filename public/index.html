@@ -978,11 +978,39 @@
         // =============================================
         // ===== الإعدادات =====
         // =============================================
-        const API = 'https://game22-hoas.onrender.com';
+        const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
         const REQUEST_TIMEOUT = 60000;
         let token = localStorage.getItem('token');
         let currentUser = null;
         let currentSettings = {};
+
+        // =============================================
+        // ===== تحديث اسم الموقع في الواجهة =====
+        // =============================================
+        function updateSiteName(name) {
+            const siteName = name || 'Game Wars';
+            
+            // تحديث عنوان الصفحة
+            document.title = siteName;
+            
+            // تحديث اسم الموقع في الشريط العلوي (الحروف المتحركة)
+            const lettersContainer = document.querySelector('.brand .letters');
+            if (lettersContainer) {
+                lettersContainer.innerHTML = '';
+                siteName.split('').forEach((char, i) => {
+                    const span = document.createElement('span');
+                    span.textContent = char;
+                    span.style.setProperty('--i', i);
+                    lettersContainer.appendChild(span);
+                });
+            }
+            
+            // تحديث اسم الموقع في صفحة تسجيل الدخول
+            const authTitle = document.querySelector('.auth-box h2');
+            if (authTitle && document.getElementById('authPage').style.display !== 'none') {
+                authTitle.textContent = `مرحباً بك في ${siteName}`;
+            }
+        }
 
         // =============================================
         // ===== دوال الاتصال مع مهلة =====
@@ -1060,9 +1088,8 @@
                 if (settings.accent_color) orbs[2].style.background = settings.accent_color;
             }
 
-            // تحديث اسم الموقع في عنوان الصفحة
             if (settings.site_name) {
-                document.title = settings.site_name;
+                updateSiteName(settings.site_name);
             }
 
             currentSettings = settings;
@@ -1309,7 +1336,7 @@
             }
         }
 
-        // ===== تحميل الإعدادات مع زر حفظ للحقول النصية =====
+        // ===== تحميل الإعدادات =====
         async function loadSettings() {
             try {
                 const settings = await apiFetch('/api/admin/settings');
@@ -1347,7 +1374,6 @@
                             </div>
                         `;
                     } else {
-                        // زر حفظ للحقول النصية (بما فيها اسم الموقع)
                         input = `
                             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                                 <input type="text" value="${v}" id="text_${k}" style="min-width:120px;" />
@@ -1378,10 +1404,10 @@
                     body: JSON.stringify({ key, value })
                 });
 
-                // تحديث اسم الموقع في عنوان الصفحة
                 if (key === 'site_name' && result.settings) {
-                    document.title = result.settings.site_name || 'Game Wars';
-                    showConnectionStatus(`✅ تم تحديث اسم الموقع إلى: ${result.settings.site_name}`, 'success');
+                    const newName = result.settings.site_name || 'Game Wars';
+                    updateSiteName(newName);
+                    showConnectionStatus(`✅ تم تحديث اسم الموقع إلى: ${newName}`, 'success');
                 }
 
                 btn.innerHTML = '<i class="fas fa-check"></i> تم';
