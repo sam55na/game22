@@ -59,21 +59,22 @@ async function initDatabase() {
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
-        // ===== 1. مسح الجداول القديمة =====
+        // ===== 1. مسح الجداول القديمة (بدون صلاحيات SUPERUSER) =====
         console.log('🗑️ جاري مسح الجداول القديمة...');
-        await client.query('SET session_replication_role = replica;');
+        
+        // حذف الجداول بترتيب عكسي (حسب العلاقات)
         await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
         await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
         await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
         await client.query('DROP TABLE IF EXISTS users CASCADE;');
-        await client.query('SET session_replication_role = DEFAULT;');
+        
         console.log('✅ تم مسح الجداول القديمة');
 
         // ===== 2. إنشاء الجداول الجديدة =====
         console.log('📦 جاري إنشاء الجداول الجديدة...');
 
         await client.query(`
-            CREATE TABLE users (
+            CREATE TABLE IF NOT EXISTS users (
                 id BIGSERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
@@ -84,13 +85,13 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            CREATE INDEX idx_username ON users(username);
-            CREATE INDEX idx_role ON users(role);
-            CREATE INDEX idx_created_at ON users(created_at DESC);
         `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_created_at ON users(created_at DESC);');
 
         await client.query(`
-            CREATE TABLE activity_logs (
+            CREATE TABLE IF NOT EXISTS activity_logs (
                 id BIGSERIAL PRIMARY KEY,
                 user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
                 username VARCHAR(50),
@@ -100,13 +101,13 @@ async function initDatabase() {
                 user_agent TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            CREATE INDEX idx_logs_user ON activity_logs(user_id);
-            CREATE INDEX idx_logs_created ON activity_logs(created_at DESC);
-            CREATE INDEX idx_logs_action ON activity_logs(action);
         `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_action ON activity_logs(action);');
 
         await client.query(`
-            CREATE TABLE site_settings (
+            CREATE TABLE IF NOT EXISTS site_settings (
                 key VARCHAR(50) PRIMARY KEY,
                 value TEXT,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -114,30 +115,37 @@ async function initDatabase() {
         `);
 
         await client.query(`
-            CREATE TABLE sessions (
+            CREATE TABLE IF NOT EXISTS sessions (
                 id BIGSERIAL PRIMARY KEY,
                 user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
                 token VARCHAR(500) NOT NULL,
                 expires_at TIMESTAMP NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-            CREATE INDEX idx_sessions_token ON sessions(token);
-            CREATE INDEX idx_sessions_expires ON sessions(expires_at);
-            CREATE INDEX idx_sessions_user ON sessions(user_id);
         `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);');
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
         // ===== 3. إنشاء حساب الأدمن =====
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
-        const hash = await bcrypt.hash(adminPassword, 10);
         
-        await client.query(
-            `INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)`,
-            [adminUsername, hash, 'admin']
-        );
-        console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
+        // التحقق من وجود الأدمن
+        const adminCheck = await client.query('SELECT id FROM users WHERE username = $1', [adminUsername]);
+        
+        if (adminCheck.rows.length === 0) {
+            const hash = await bcrypt.hash(adminPassword, 10);
+            await client.query(
+                `INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)`,
+                [adminUsername, hash, 'admin']
+            );
+            console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
+        } else {
+            console.log(`✅ حساب الأدمن موجود بالفعل`);
+        }
 
         // ===== 4. الإعدادات الافتراضية =====
         const defaultSettings = [
@@ -153,7 +161,8 @@ async function initDatabase() {
 
         for (const [key, value] of defaultSettings) {
             await client.query(
-                `INSERT INTO site_settings (key, value) VALUES ($1, $2)`,
+                `INSERT INTO site_settings (key, value) VALUES ($1, $2) 
+                 ON CONFLICT (key) DO NOTHING`,
                 [key, value]
             );
         }
@@ -163,6 +172,7 @@ async function initDatabase() {
 
     } catch (error) {
         console.error('❌ خطأ في تهيئة قاعدة البيانات:', error.message);
+        console.error('📝 التفاصيل:', error.stack);
         throw error;
     } finally {
         client.release();
