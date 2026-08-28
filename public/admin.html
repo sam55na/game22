@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Game Wars - لوحة التحكم</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== الأساسيات ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0b0b1e;
+            color: white;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ===== الشريط الجانبي ===== */
+        .sidebar {
+            width: 260px;
+            background: rgba(11, 11, 30, 0.95);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 24px 16px;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 900;
+            color: white;
+            padding: 8px 12px;
+            margin-bottom: 32px;
+        }
+
+        .sidebar .logo i {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #4f46e5, #0891b2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 4px;
+        }
+
+        .sidebar .nav-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            color: white;
+        }
+
+        .sidebar .nav-item.active {
+            background: rgba(79, 70, 229, 0.15);
+            color: #a5b4fc;
+        }
+
+        .sidebar .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar .nav-item .badge {
+            margin-right: auto;
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* ===== المحتوى الرئيسي ===== */
+        .main-admin {
+            flex: 1;
+            padding: 32px;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .admin-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .admin-header h1 span {
+            background: linear-gradient(135deg, #a5b4fc, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .admin-header .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 8px 16px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .admin-header .user-info .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4f46e5, #0891b2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* ===== بطاقات الإحصائيات ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .stat-card .stat-label {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-top: 4px;
+        }
+
+        .stat-card .stat-icon {
+            float: left;
+            font-size: 1.5rem;
+            opacity: 0.3;
+        }
+
+        /* ===== التبويبات الداخلية ===== */
+        .admin-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 12px;
+        }
+
+        .admin-tab {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.4);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .admin-tab:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .admin-tab.active {
+            color: #a5b4fc;
+            background: rgba(79, 70, 229, 0.12);
+        }
+
+        .admin-panel {
+            display: none;
+            animation: fadeSlide 0.4s ease;
+        }
+
+        .admin-panel.active { display: block; }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== جداول ===== */
+        .table-wrap {
+            overflow-x: auto;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        th {
+            text-align: right;
+            padding: 14px 16px;
+            color: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-badge.active {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+        }
+
+        .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+        }
+
+        .btn-sm {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .btn-sm.primary {
+            background: rgba(79, 70, 229, 0.15);
+            color: #a5b4fc;
+        }
+        .btn-sm.primary:hover { background: rgba(79, 70, 229, 0.25); }
+
+        .btn-sm.success {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+        }
+        .btn-sm.success:hover { background: rgba(52, 211, 153, 0.2); }
+
+        .btn-sm.danger {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+        }
+        .btn-sm.danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+        .btn-sm.warning {
+            background: rgba(251, 191, 36, 0.12);
+            color: #fbbf24;
+        }
+        .btn-sm.warning:hover { background: rgba(251, 191, 36, 0.2); }
+
+        /* ===== إعدادات الموقع ===== */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .setting-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .setting-item .setting-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .setting-item .setting-label small {
+            display: block;
+            font-weight: 400;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.2);
+            margin-top: 2px;
+        }
+
+        .setting-item input, .setting-item select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+            min-width: 150px;
+        }
+
+        .setting-item input:focus, .setting-item select:focus {
+            border-color: rgba(79, 70, 229, 0.3);
+        }
+
+        .setting-item input[type="color"] {
+            min-width: 50px;
+            padding: 4px;
+            height: 40px;
+            cursor: pointer;
+        }
+
+        /* ===== سجل النشاطات ===== */
+        .log-entry {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+
+        .log-entry .log-time {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .log-entry .log-action {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .log-entry .log-user {
+            color: #a5b4fc;
+            font-weight: 600;
+        }
+
+        /* ===== استجابة ===== */
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 16px;
+                border-left: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            }
+            .sidebar .logo { margin-bottom: 16px; }
+            .sidebar .nav-items {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            .sidebar .nav-item {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+            }
+            .sidebar .nav-item .badge { display: none; }
+            .main-admin { padding: 16px; }
+            .admin-header h1 { font-size: 1.3rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .settings-grid { grid-template-columns: 1fr; }
+            .setting-item { flex-direction: column; align-items: stretch; }
+            .setting-item input, .setting-item select { min-width: unset; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            .admin-tabs { gap: 4px; }
+            .admin-tab { padding: 6px 12px; font-size: 0.75rem; }
+            .log-entry { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== الشريط الجانبي ===== -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fas fa-gamepad"></i>
+            <span>Game Wars</span>
+        </div>
+        <div class="nav-items">
+            <div class="nav-item active" data-tab="dashboard">
+                <i class="fas fa-chart-pie"></i> لوحة التحكم
+            </div>
+            <div class="nav-item" data-tab="users">
+                <i class="fas fa-users"></i> المستخدمين
+                <span class="badge" id="userCount">0</span>
+            </div>
+            <div class="nav-item" data-tab="settings">
+                <i class="fas fa-sliders-h"></i> إعدادات الموقع
+            </div>
+            <div class="nav-item" data-tab="logs">
+                <i class="fas fa-history"></i> سجل النشاطات
+            </div>
+            <div class="nav-item" data-tab="notifications">
+                <i class="fas fa-bell"></i> الإشعارات
+                <span class="badge" id="notifCount">0</span>
+            </div>
+            <div class="nav-item" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.04); padding-top:16px;" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+            </div>
+        </div>
+    </aside>
+
+    <!-- ===== المحتوى الرئيسي ===== -->
+    <main class="main-admin">
+        <!-- الهيدر -->
+        <div class="admin-header">
+            <h1>👑 لوحة تحكم <span>Game Wars</span></h1>
+            <div class="user-info">
+                <div class="avatar" id="adminAvatar">N</div>
+                <span id="adminName">admin</span>
+            </div>
+        </div>
+
+        <!-- تبويبات المحتوى -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" data-panel="dashboard">📊 نظرة عامة</button>
+            <button class="admin-tab" data-panel="users">👥 المستخدمين</button>
+            <button class="admin-tab" data-panel="settings">⚙️ الإعدادات</button>
+            <button class="admin-tab" data-panel="logs">📋 السجلات</button>
+            <button class="admin-tab" data-panel="notifications">🔔 الإشعارات</button>
+        </div>
+
+        <!-- ===== لوحة التحكم ===== -->
+        <div class="admin-panel active" id="panel-dashboard">
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-label">إجمالي المستخدمين</div>
+                    <div class="stat-value" id="statUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-coins"></i></div>
+                    <div class="stat-label">إجمالي الرصيد</div>
+                    <div class="stat-value" id="statBalance">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-user-plus"></i></div>
+                    <div class="stat-label">تسجيلات اليوم</div>
+                    <div class="stat-value" id="statTodayRegs">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-sign-in-alt"></i></div>
+                    <div class="stat-label">تسجيلات دخول اليوم</div>
+                    <div class="stat-value" id="statTodayLogins">0</div>
+                </div>
+            </div>
+
+            <div style="background:rgba(255,255,255,0.02); border-radius:16px; border:1px solid rgba(255,255,255,0.04); padding:20px;">
+                <h3 style="margin-bottom:16px; color:rgba(255,255,255,0.7); font-size:0.9rem;">
+                    <i class="fas fa-clock"></i> آخر النشاطات
+                </h3>
+                <div id="recentLogs"></div>
+            </div>
+        </div>
+
+        <!-- ===== المستخدمين ===== -->
+        <div class="admin-panel" id="panel-users">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+                <h3 style="color:rgba(255,255,255,0.7); font-size:0.9rem;">
+                    <i class="fas fa-users"></i> قائمة المستخدمين
+                </h3>
+                <button class="btn-sm primary" onclick="refreshUsers()">
+                    <i class="fas fa-sync-alt"></i> تحديث
+                </button>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>المستخدم</th>
+                            <th>الرصيد</th>
+                            <th>الدور</th>
+                            <th>الحالة</th>
+                            <th>تاريخ التسجيل</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTable"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ===== إعدادات الموقع ===== -->
+        <div class="admin-panel" id="panel-settings">
+            <h3 style="color:rgba(255,255,255,0.7); font-size:0.9rem; margin-bottom:16px;">
+                <i class="fas fa-sliders-h"></i> تخصيص الموقع
+            </h3>
+            <div class="settings-grid" id="settingsGrid"></div>
+            <button class="submit-btn" style="margin-top:20px; max-width:200px;" onclick="saveSettings()">
+                <i class="fas fa-save"></i> حفظ الإعدادات
+            </button>
+        </div>
+
+        <!-- ===== سجل النشاطات ===== -->
+        <div class="admin-panel" id="panel-logs">
+            <h3 style="color:rgba(255,255,255,0.7); font-size:0.9rem; margin-bottom:16px;">
+                <i class="fas fa-history"></i> سجل النشاطات
+            </h3>
+            <div id="logsContainer"></div>
+        </div>
+
+        <!-- ===== الإشعارات ===== -->
+        <div class="admin-panel" id="panel-notifications">
+            <h3 style="color:rgba(255,255,255,0.7); font-size:0.9rem; margin-bottom:16px;">
+                <i class="fas fa-bell"></i> الإشعارات اللحظية
+            </h3>
+            <div id="notificationsContainer">
+                <div style="text-align:center; padding:40px; color:rgba(255,255,255,0.1);">
+                    <i class="fas fa-bell-slash" style="font-size:2rem; display:block; margin-bottom:8px;"></i>
+                    لا توجد إشعارات جديدة
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ===== رابط الخادم =====
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'
+            : 'https://game22-hoas.onrender.com';
+
+        let adminToken = localStorage.getItem('token');
+        let adminUser = null;
+
+        // ===== التحقق من صلاحية الأدمن =====
+        async function verifyAdmin() {
+            if (!adminToken) {
+                window.location.href = '/';
+                return false;
+            }
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/verify`, {
+                    headers: { 'Authorization': `Bearer ${adminToken}` }
+                });
+                const data = await res.json();
+                if (!res.ok || data.role !== 'admin') {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    window.location.href = '/';
+                    return false;
+                }
+                adminUser = data;
+                document.getElementById('adminName').textContent = data.username;
+                document.getElementById('adminAvatar').textContent = data.username.charAt(0).toUpperCase();
+                return true;
+            } catch (e) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/';
+                return false;
+            }
+        }
+
+        // ===== دوال API =====
+        async function apiFetch(endpoint, options = {}) {
+            const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${adminToken}`,
+                    ...options.headers
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'حدث خطأ');
+            return data;
+        }
+
+        // ===== جلب الإحصائيات =====
+        async function loadStats() {
+            try {
+                const stats = await apiFetch('/api/admin/stats');
+                document.getElementById('statUsers').textContent = stats.totalUsers;
+                document.getElementById('statBalance').textContent = stats.totalBalance.toFixed(2);
+                document.getElementById('statTodayRegs').textContent = stats.todayRegistrations;
+                document.getElementById('statTodayLogins').textContent = stats.todayLogins;
+                document.getElementById('userCount').textContent = stats.totalUsers;
+            } catch (e) {
+                console.error('خطأ في جلب الإحصائيات:', e);
+            }
+        }
+
+        // ===== جلب المستخدمين =====
+        async function loadUsers() {
+            try {
+                const users = await apiFetch('/api/admin/users');
+                const tbody = document.getElementById('usersTable');
+                tbody.innerHTML = users.map(u => `
+                    <tr>
+                        <td><strong>${u.username}</strong></td>
+                        <td>${u.balance}</td>
+                        <td><span class="status-badge ${u.role === 'admin' ? 'active' : ''}">${u.role}</span></td>
+                        <td><span class="status-badge ${u.is_active ? 'active' : 'inactive'}">${u.is_active ? 'نشط' : 'معطل'}</span></td>
+                        <td style="font-size:0.75rem; color:rgba(255,255,255,0.3);">${new Date(u.created_at).toLocaleDateString('ar')}</td>
+                        <td>
+                            ${u.username !== 'noor2613857noor' ? `
+                                <button class="btn-sm warning" onclick="editBalance('${u.username}')"><i class="fas fa-coins"></i></button>
+                                <button class="btn-sm ${u.is_active ? 'danger' : 'success'}" onclick="toggleUser('${u.username}', ${!u.is_active})">
+                                    <i class="fas ${u.is_active ? 'fa-ban' : 'fa-check'}"></i>
+                                </button>
+                                <button class="btn-sm danger" onclick="deleteUser('${u.username}')"><i class="fas fa-trash"></i></button>
+                            ` : '<span style="color:rgba(255,255,255,0.2);">👑</span>'}
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                console.error('خطأ في جلب المستخدمين:', e);
+            }
+        }
+
+        // ===== جلب الإعدادات =====
+        async function loadSettings() {
+            try {
+                const settings = await apiFetch('/api/admin/settings');
+                const grid = document.getElementById('settingsGrid');
+                const settingLabels = {
+                    site_name: 'اسم الموقع',
+                    primary_color: 'اللون الأساسي',
+                    secondary_color: 'اللون الثانوي',
+                    accent_color: 'لون التمييز',
+                    background_color: 'لون الخلفية',
+                    text_color: 'لون النص',
+                    header_style: 'نمط الهيدر',
+                    animation_speed: 'سرعة الأنيميشن',
+                    admin_notifications: 'إشعارات الأدمن'
+                };
+                const headerOptions = ['glass', 'solid', 'gradient', 'transparent'];
+                
+                grid.innerHTML = Object.entries(settings).map(([key, value]) => {
+                    let input = '';
+                    if (key.includes('color')) {
+                        input = `<input type="color" value="${value}" data-key="${key}" />`;
+                    } else if (key === 'header_style') {
+                        input = `<select data-key="${key}">${headerOptions.map(o => `<option value="${o}" ${o === value ? 'selected' : ''}>${o}</option>`).join('')}</select>`;
+                    } else if (key === 'animation_speed') {
+                        input = `<input type="range" min="0.5" max="2" step="0.1" value="${value}" data-key="${key}" style="min-width:120px;" />`;
+                    } else if (key === 'admin_notifications') {
+                        input = `<select data-key="${key}"><option value="true" ${value === 'true' ? 'selected' : ''}>مفعل</option><option value="false" ${value === 'false' ? 'selected' : ''}>معطل</option></select>`;
+                    } else {
+                        input = `<input type="text" value="${value}" data-key="${key}" />`;
+                    }
+                    return `
+                        <div class="setting-item">
+                            <div class="setting-label">
+                                ${settingLabels[key] || key}
+                                <small>${key}</small>
+                            </div>
+                            ${input}
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('خطأ في جلب الإعدادات:', e);
+            }
+        }
+
+        // ===== حفظ الإعدادات =====
+        async function saveSettings() {
+            const inputs = document.querySelectorAll('#settingsGrid input, #settingsGrid select');
+            const settings = {};
+            inputs.forEach(el => {
+                settings[el.dataset.key] = el.value;
+            });
+            
+            try {
+                for (const [key, value] of Object.entries(settings)) {
+                    await apiFetch('/api/admin/settings', {
+                        method: 'POST',
+                        body: JSON.stringify({ key, value })
+                    });
+                }
+                alert('✅ تم حفظ الإعدادات بنجاح!');
+                loadSettings();
+            } catch (e) {
+                alert('❌ خطأ في حفظ الإعدادات: ' + e.message);
+            }
+        }
+
+        // ===== جلب السجلات =====
+        async function loadLogs() {
+            try {
+                const logs = await apiFetch('/api/admin/logs?limit=100');
+                const container = document.getElementById('logsContainer');
+                container.innerHTML = logs.map(log => `
+                    <div class="log-entry">
+                        <span class="log-time">${new Date(log.created_at).toLocaleString('ar')}</span>
+                        <span class="log-user">${log.username}</span>
+                        <span class="log-action">${log.action} — ${log.details || ''}</span>
+                        ${log.ip ? `<span style="color:rgba(255,255,255,0.15); font-size:0.7rem;">${log.ip}</span>` : ''}
+                    </div>
+                `).join('') || '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.1);">لا توجد سجلات</div>';
+            } catch (e) {
+                console.error('خطأ في جلب السجلات:', e);
+            }
+        }
+
+        // ===== جلب آخر السجلات للوحة التحكم =====
+        async function loadRecentLogs() {
+            try {
+                const logs = await apiFetch('/api/admin/logs?limit=10');
+                const container = document.getElementById('recentLogs');
+                container.innerHTML = logs.map(log => `
+                    <div class="log-entry" style="padding:8px 12px;">
+                        <span class="log-time">${new Date(log.created_at).toLocaleString('ar')}</span>
+                        <span class="log-user">${log.username}</span>
+                        <span class="log-action">${log.action}</span>
+                    </div>
+                `).join('') || '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.1);">لا توجد سجلات حديثة</div>';
+            } catch (e) {
+                console.error('خطأ في جلب آخر السجلات:', e);
+            }
+        }
+
+        // ===== تعديل الرصيد =====
+        async function editBalance(username) {
+            const amount = prompt('أدخل المبلغ الجديد للرصيد (يمكنك استخدام + لإضافة أو - للخصم):');
+            if (amount === null) return;
+            
+            let action = 'set';
+            let value = amount;
+            if (amount.startsWith('+')) {
+                action = 'add';
+                value = amount.slice(1);
+            } else if (amount.startsWith('-')) {
+                action = 'subtract';
+                value = amount.slice(1);
+            }
+            
+            try {
+                await apiFetch('/api/admin/update-balance', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, amount: parseFloat(value), action })
+                });
+                alert('✅ تم تحديث الرصيد بنجاح');
+                loadUsers();
+                loadStats();
+            } catch (e) {
+                alert('❌ خطأ: ' + e.message);
+            }
+        }
+
+        // ===== تعطيل/تفعيل المستخدم =====
+        async function toggleUser(username, active) {
+            if (!confirm(`هل أنت متأكد من ${active ? 'تفعيل' : 'تعطيل'} المستخدم ${username}؟`)) return;
+            try {
+                await apiFetch('/api/admin/toggle-user', {
+                    method: 'POST',
+                    body: JSON.stringify({ username, active })
+                });
+                loadUsers();
+            } catch (e) {
+                alert('❌ خطأ: ' + e.message);
+            }
+        }
+
+        // ===== حذف مستخدم =====
+        async function deleteUser(username) {
+            if (!confirm(`هل أنت متأكد من حذف المستخدم ${username}؟ هذا الإجراء لا يمكن التراجع عنه.`)) return;
+            try {
+                await apiFetch('/api/admin/delete-user', {
+                    method: 'DELETE',
+                    body: JSON.stringify({ username })
+                });
+                loadUsers();
+                loadStats();
+            } catch (e) {
+                alert('❌ خطأ: ' + e.message);
+            }
+        }
+
+        // ===== تحديث المستخدمين =====
+        function refreshUsers() {
+            loadUsers();
+        }
+
+        // ===== تسجيل الخروج =====
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/';
+        }
+
+        // ===== التبويبات الجانبية =====
+        document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar .nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const tab = item.dataset.tab;
+                document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`panel-${tab}`).classList.add('active');
+            });
+        });
+
+        // ===== التبويبات الداخلية =====
+        document.querySelectorAll('.admin-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const panel = tab.dataset.panel;
+                document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById(`panel-${panel}`).classList.add('active');
+            });
+        });
+
+        // ===== تحديث تلقائي للإشعارات =====
+        let lastNotifCount = 0;
+        async function checkNotifications() {
+            try {
+                const logs = await apiFetch('/api/admin/logs?limit=5');
+                const container = document.getElementById('notificationsContainer');
+                const notifCount = document.getElementById('notifCount');
+                
+                if (logs.length > 0) {
+                    container.innerHTML = logs.map(log => `
+                        <div class="log-entry" style="border-right: 3px solid #4f46e5; background: rgba(79,70,229,0.03);">
+                            <span class="log-time">${new Date(log.created_at).toLocaleString('ar')}</span>
+                            <span class="log-user">${log.username}</span>
+                            <span class="log-action">${log.action} — ${log.details || ''}</span>
+                        </div>
+                    `).join('');
+                    
+                    if (logs.length > lastNotifCount) {
+                        notifCount.textContent = logs.length;
+                        notifCount.style.display = 'inline';
+                    }
+                    lastNotifCount = logs.length;
+                }
+            } catch (e) {
+                console.error('خطأ في جلب الإشعارات:', e);
+            }
+        }
+
+        // ===== التهيئة =====
+        async function init() {
+            const verified = await verifyAdmin();
+            if (!verified) return;
+            
+            await loadStats();
+            await loadUsers();
+            await loadSettings();
+            await loadLogs();
+            await loadRecentLogs();
+            await checkNotifications();
+            
+            // تحديث كل 30 ثانية
+            setInterval(async () => {
+                await loadStats();
+                await checkNotifications();
+            }, 30000);
+        }
+
+        init();
+    </script>
+</body>
+</html>
