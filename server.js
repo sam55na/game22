@@ -1,1718 +1,844 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Game Wars</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-    <style>
-        /* ===== متغيرات الألوان ===== */
-        :root {
-            --primary: #6366f1;
-            --secondary: #0891b2;
-            --accent: #8b5cf6;
-            --bg: #0a0a1a;
-            --text: #ffffff;
-            --card-bg: rgba(255,255,255,0.03);
-            --border: rgba(255,255,255,0.05);
-            --glow: rgba(99,102,241,0.15);
-            --radius: 16px;
-            --transition: 0.3s ease;
-            --font-size: 16px;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        html {
-            font-size: 16px;
-        }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            font-size: var(--font-size);
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            transition: background 0.3s ease, color 0.3s ease;
-        }
-
-        /* ===== منع التكبير ===== */
-        input,
-        select,
-        textarea,
-        button {
-            font-size: 16px !important;
-        }
-
-        /* ===== خلفية متحركة ===== */
-        .bg-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.12;
-            pointer-events: none;
-            z-index: 0;
-            animation: orbFloat 25s ease-in-out infinite;
-            transition: background 0.3s ease;
-        }
-        .bg-orb.orb1 {
-            width: 500px;
-            height: 500px;
-            background: var(--primary);
-            top: -100px;
-            right: -100px;
-        }
-        .bg-orb.orb2 {
-            width: 400px;
-            height: 400px;
-            background: var(--secondary);
-            bottom: -50px;
-            left: -50px;
-            animation-delay: -8s;
-        }
-        .bg-orb.orb3 {
-            width: 300px;
-            height: 300px;
-            background: var(--accent);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -15s;
-        }
-        @keyframes orbFloat {
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-            50% {
-                transform: translate(-60px, 50px) scale(1.1);
-            }
-        }
-
-        /* ===== الشريط العلوي ===== */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: rgba(10, 10, 26, 0.92);
-            backdrop-filter: blur(16px);
-            padding: 10px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 64px;
-            border-bottom: 1px solid var(--border);
-            transition: border-color 0.3s ease;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.4rem;
-            font-weight: 800;
-        }
-        .brand i {
-            font-size: 1.6rem;
-            color: var(--primary);
-            transition: color 0.3s ease;
-        }
-        .brand .letters {
-            display: flex;
-            gap: 0px;
-            direction: ltr;
-        }
-        .brand .letters span {
-            display: inline-block;
-            animation: letterFall 4.5s ease-in-out infinite;
-            animation-delay: calc(var(--i) * 0.12s);
-            font-weight: 800;
-            font-size: 1.4rem;
-        }
-        @keyframes letterFall {
-            0% {
-                transform: translateY(-50px) rotate(160deg);
-                opacity: 0;
-            }
-            12% {
-                transform: translateY(0) rotate(0);
-                opacity: 1;
-            }
-            82% {
-                transform: translateY(0) rotate(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(30px) rotate(-12deg);
-                opacity: 0;
-            }
-        }
-        .brand .letters span:nth-child(1) { --i: 0; }
-        .brand .letters span:nth-child(2) { --i: 1; }
-        .brand .letters span:nth-child(3) { --i: 2; }
-        .brand .letters span:nth-child(4) { --i: 3; }
-        .brand .letters span:nth-child(5) { --i: 4; }
-        .brand .letters span:nth-child(6) { --i: 5; }
-        .brand .letters span:nth-child(7) { --i: 6; }
-        .brand .letters span:nth-child(8) { --i: 7; }
-        .brand .letters span:nth-child(9) { --i: 8; }
-
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .btn {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-            min-height: 40px;
-        }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px var(--glow);
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .btn-outline:hover {
-            background: var(--card-bg);
-            color: #fff;
-        }
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.08);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.06);
-        }
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.15);
-        }
-        .avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.3s ease;
-        }
-        .balance-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid rgba(251, 191, 36, 0.06);
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #fbbf24;
-        }
-        .balance-badge i {
-            font-size: 0.9rem;
-        }
-
-        /* ===== المحتوى ===== */
-        .main {
-            margin-top: 76px;
-            padding: 24px 32px;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-            flex: 1;
-            width: 100%;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ===== صفحة تسجيل الدخول ===== */
-        .auth-box {
-            max-width: 420px;
-            margin: 30px auto;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 32px 28px;
-            border: 1px solid var(--border);
-            backdrop-filter: blur(8px);
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        .auth-box .logo-icon {
-            text-align: center;
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 16px;
-            transition: color 0.3s ease;
-        }
-        .auth-box h2 {
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-
-        .tabs {
-            display: flex;
-            gap: 6px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 12px;
-            padding: 6px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: transparent;
-            color: rgba(255, 255, 255, 0.3);
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .tab-btn.active {
-            background: rgba(99, 102, 241, 0.12);
-            color: #a5b4fc;
-        }
-        .tab-btn:hover:not(.active) {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .form {
-            display: none;
-        }
-        .form.active {
-            display: block;
-            animation: fadeUp 0.3s ease;
-        }
-        @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .input-group {
-            margin-bottom: 14px;
-        }
-        .input-group label {
-            display: block;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-        .input-wrap {
-            position: relative;
-        }
-        .input-wrap i {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.08);
-            font-size: 0.9rem;
-        }
-        .input-wrap input {
-            width: 100%;
-            padding: 12px 44px 12px 14px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-size: 1rem;
-            font-family: inherit;
-            outline: none;
-            transition: all var(--transition);
-            min-height: 48px;
-        }
-        .input-wrap input:focus {
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 4px var(--glow);
-        }
-        .input-wrap input::placeholder {
-            color: rgba(255, 255, 255, 0.06);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: inherit;
-            margin-top: 4px;
-            min-height: 48px;
-        }
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px var(--glow);
-        }
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .msg {
-            margin-top: 14px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            display: none;
-            text-align: center;
-        }
-        .msg.error {
-            display: block;
-            background: rgba(239, 68, 68, 0.06);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.04);
-        }
-        .msg.success {
-            display: block;
-            background: rgba(52, 211, 153, 0.06);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.04);
-        }
-        .msg.bonus {
-            display: block;
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.04);
-        }
-        .msg.loading {
-            display: block;
-            background: rgba(99, 102, 241, 0.06);
-            color: #a5b4fc;
-            border: 1px solid rgba(99, 102, 241, 0.04);
-        }
-        .msg.timeout {
-            display: block;
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.04);
-        }
-
-        /* ===== الواجهة الرئيسية ===== */
-        .dashboard {
-            display: none;
-        }
-        .dashboard.active {
-            display: block;
-            animation: fadeUp 0.4s ease;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 50px 30px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        .hero i {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 16px;
-            transition: color 0.3s ease;
-        }
-        .hero h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-        .hero p {
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 1rem;
-        }
-
-        /* ===== لوحة الإدارة ===== */
-        .admin-panel {
-            display: none;
-            margin-top: 24px;
-        }
-        .admin-panel.active {
-            display: block;
-            animation: fadeUp 0.3s ease;
-        }
-
-        .admin-sidebar {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 8px;
-            border: 1px solid var(--border);
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        .admin-tab {
-            padding: 10px 20px;
-            border: none;
-            background: transparent;
-            color: rgba(255, 255, 255, 0.3);
-            font-weight: 600;
-            font-size: 0.9rem;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: inherit;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-height: 44px;
-        }
-        .admin-tab.active {
-            background: rgba(99, 102, 241, 0.1);
-            color: #a5b4fc;
-        }
-        .admin-tab:hover:not(.active) {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .admin-content {
-            display: none;
-        }
-        .admin-content.active {
-            display: block;
-            animation: fadeUp 0.3s ease;
-        }
-
-        /* ===== بطاقات الإحصائيات ===== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 14px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 18px;
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        .stat-card .label {
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-top: 4px;
-        }
-
-        /* ===== جداول ===== */
-        .table-wrap {
-            overflow-x: auto;
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            padding: 4px;
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        th {
-            text-align: right;
-            padding: 12px 16px;
-            color: rgba(255, 255, 255, 0.15);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
-        }
-        td {
-            padding: 10px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .btn-sm {
-            padding: 4px 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            transition: all var(--transition);
-            min-height: 28px;
-        }
-        .btn-sm.primary {
-            background: rgba(99, 102, 241, 0.08);
-            color: #a5b4fc;
-        }
-        .btn-sm.primary:hover {
-            background: rgba(99, 102, 241, 0.15);
-        }
-        .btn-sm.danger {
-            background: rgba(239, 68, 68, 0.06);
-            color: #f87171;
-        }
-        .btn-sm.danger:hover {
-            background: rgba(239, 68, 68, 0.12);
-        }
-        .btn-sm.success {
-            background: rgba(52, 211, 153, 0.06);
-            color: #34d399;
-        }
-        .btn-sm.success:hover {
-            background: rgba(52, 211, 153, 0.12);
-        }
-
-        /* ===== إعدادات الموقع ===== */
-        .settings-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 12px;
-        }
-        .setting-item {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        .setting-item .label {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.3);
-        }
-        .setting-item input,
-        .setting-item select {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 6px 12px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.85rem;
-            outline: none;
-            min-width: 100px;
-            min-height: 36px;
-            transition: border-color 0.3s ease;
-        }
-        .setting-item input[type="color"] {
-            width: 40px;
-            height: 36px;
-            padding: 2px;
-            cursor: pointer;
-            min-width: unset;
-        }
-        .setting-item .save-color-btn {
-            padding: 4px 12px;
-            border: none;
-            border-radius: 6px;
-            background: rgba(99, 102, 241, 0.08);
-            color: #a5b4fc;
-            font-weight: 600;
-            font-size: 0.7rem;
-            cursor: pointer;
-            transition: all var(--transition);
-            font-family: inherit;
-            min-height: 28px;
-        }
-        .setting-item .save-color-btn:hover {
-            background: rgba(99, 102, 241, 0.15);
-        }
-        .setting-item .save-color-btn.saved {
-            background: rgba(52, 211, 153, 0.08);
-            color: #34d399;
-        }
-        .setting-item .toggle-switch {
-            position: relative;
-            width: 48px;
-            height: 26px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            flex-shrink: 0;
-        }
-        .setting-item .toggle-switch.active {
-            background: var(--primary);
-        }
-        .setting-item .toggle-switch .slider {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 20px;
-            height: 20px;
-            background: #fff;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-        .setting-item .toggle-switch.active .slider {
-            right: 25px;
-        }
-        .setting-item .bonus-date-input {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .setting-item .bonus-date-input input {
-            min-width: 120px;
-        }
-
-        /* ===== سجلات ===== */
-        .log-entry {
-            padding: 8px 14px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.01);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.2);
-        }
-        .log-entry .time {
-            color: rgba(255, 255, 255, 0.05);
-            font-size: 0.7rem;
-        }
-        .log-entry .user {
-            color: #a5b4fc;
-            font-weight: 500;
-        }
-
-        /* ===== مؤشر الاتصال ===== */
-        .connection-status {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            padding: 8px 20px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: none;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-        }
-        .connection-status.show {
-            display: block;
-        }
-        .connection-status.connecting {
-            background: rgba(99, 102, 241, 0.15);
-            color: #a5b4fc;
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
-        .connection-status.error {
-            background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.08);
-        }
-        .connection-status.success {
-            background: rgba(52, 211, 153, 0.12);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.08);
-        }
-
-        /* ===== استجابة ===== */
-        @media (max-width: 768px) {
-            .navbar { padding: 8px 16px; height: 56px; }
-            .brand { font-size: 1.2rem; gap: 8px; }
-            .brand .letters span { font-size: 1.2rem; }
-            .brand i { font-size: 1.3rem; }
-            .main { padding: 16px; margin-top: 64px; }
-            .auth-box { padding: 24px 18px; max-width: 100%; margin: 16px 0; }
-            .auth-box h2 { font-size: 1.3rem; }
-            .btn span { display: none; }
-            .btn { padding: 6px 14px; font-size: 0.8rem; min-height: 36px; }
-            .avatar { width: 34px; height: 34px; font-size: 0.85rem; }
-            .balance-badge { font-size: 0.75rem; padding: 4px 10px; }
-            .hero h1 { font-size: 1.5rem; }
-            .hero i { font-size: 3rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .admin-sidebar { padding: 6px; gap: 4px; }
-            .admin-tab { font-size: 0.75rem; padding: 6px 12px; min-height: 36px; }
-            .settings-grid { grid-template-columns: 1fr; }
-            .input-wrap input { padding: 10px 38px 10px 12px; min-height: 42px; font-size: 0.95rem; }
-            .submit-btn { padding: 10px; min-height: 42px; font-size: 0.95rem; }
-            .connection-status { bottom: 12px; padding: 6px 14px; font-size: 0.65rem; }
-        }
-
-        @media (max-width: 420px) {
-            .navbar { padding: 6px 12px; height: 48px; }
-            .brand { font-size: 1rem; gap: 6px; }
-            .brand .letters span { font-size: 1rem; }
-            .brand i { font-size: 1.1rem; }
-            .main { padding: 12px; margin-top: 56px; }
-            .auth-box { padding: 16px 14px; border-radius: 12px; }
-            .auth-box h2 { font-size: 1.1rem; }
-            .auth-box .logo-icon { font-size: 2.2rem; }
-            .hero { padding: 30px 16px; }
-            .hero h1 { font-size: 1.2rem; }
-            .hero i { font-size: 2.2rem; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .btn { padding: 4px 10px; font-size: 0.7rem; min-height: 30px; }
-            .avatar { width: 28px; height: 28px; font-size: 0.7rem; }
-            .balance-badge { font-size: 0.65rem; padding: 3px 8px; }
-            .admin-tab { font-size: 0.65rem; padding: 4px 10px; min-height: 30px; }
-            .input-wrap input { padding: 8px 32px 8px 10px; min-height: 36px; font-size: 0.85rem; }
-            .submit-btn { padding: 8px; min-height: 36px; font-size: 0.85rem; }
-            .tab-btn { font-size: 0.75rem; padding: 6px; }
-            .stat-card .value { font-size: 1.3rem; }
-            .setting-item { padding: 8px 12px; }
-            .setting-item input { min-width: 60px; font-size: 0.75rem; }
-            .log-entry { font-size: 0.7rem; padding: 6px 10px; }
-            .connection-status { bottom: 8px; padding: 4px 10px; font-size: 0.55rem; }
-        }
-
-        @media (max-width: 360px) {
-            .brand .letters span { font-size: 0.8rem; }
-            .brand i { font-size: 0.9rem; }
-            .btn { font-size: 0.6rem; padding: 3px 8px; min-height: 26px; }
-            .avatar { width: 24px; height: 24px; font-size: 0.6rem; }
-            .balance-badge { font-size: 0.55rem; padding: 2px 6px; }
-            .auth-box { padding: 12px 10px; }
-            .input-wrap input { padding: 6px 28px 6px 8px; min-height: 32px; font-size: 0.8rem; }
-            .submit-btn { padding: 6px; min-height: 32px; font-size: 0.8rem; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="bg-orb orb1"></div>
-    <div class="bg-orb orb2"></div>
-    <div class="bg-orb orb3"></div>
-
-    <!-- ===== مؤشر الاتصال ===== -->
-    <div class="connection-status" id="connectionStatus"></div>
-
-    <!-- ===== الشريط العلوي ===== -->
-    <nav class="navbar">
-        <div class="brand">
-            <i class="fas fa-gamepad"></i>
-            <div class="letters" dir="ltr">
-                <span>G</span><span>a</span><span>m</span><span>e</span>
-                <span style="margin-right:2px;"></span>
-                <span>W</span><span>a</span><span>r</span><span>s</span>
-            </div>
-        </div>
-        <div class="nav-actions" id="navActions"></div>
-    </nav>
-
-    <!-- ===== المحتوى ===== -->
-    <div class="main" id="app">
-
-        <!-- ===== صفحة تسجيل الدخول ===== -->
-        <div id="authPage">
-            <div class="auth-box">
-                <div class="logo-icon"><i class="fas fa-gamepad"></i></div>
-                <h2>مرحباً بك</h2>
-                <div class="tabs">
-                    <button class="tab-btn active" data-tab="login"><i class="fas fa-sign-in-alt"></i> دخول</button>
-                    <button class="tab-btn" data-tab="register"><i class="fas fa-user-plus"></i> حساب</button>
-                </div>
-
-                <div class="form active" id="loginForm">
-                    <div class="input-group">
-                        <label>اسم المستخدم</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="loginUsername" placeholder="اسم المستخدم" />
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>كلمة المرور</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="loginPassword" placeholder="كلمة المرور" />
-                        </div>
-                    </div>
-                    <button class="submit-btn" id="loginBtn">دخول</button>
-                    <div class="msg" id="loginMsg"></div>
-                </div>
-
-                <div class="form" id="registerForm">
-                    <div class="input-group">
-                        <label>اسم المستخدم</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-user"></i>
-                            <input type="text" id="registerUsername" placeholder="3 أحرف على الأقل" />
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label>كلمة المرور</label>
-                        <div class="input-wrap">
-                            <i class="fas fa-lock"></i>
-                            <input type="password" id="registerPassword" placeholder="8 أحرف على الأقل" />
-                        </div>
-                    </div>
-                    <button class="submit-btn" id="registerBtn">إنشاء حساب</button>
-                    <div class="msg" id="registerMsg"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== الواجهة الرئيسية ===== -->
-        <div class="dashboard" id="dashboardPage">
-            <div class="hero">
-                <i class="fas fa-gamepad"></i>
-                <h1 id="welcomeText">مرحباً بك</h1>
-                <p id="userRole">أنت مسجل الدخول</p>
-            </div>
-
-            <!-- ===== لوحة الإدارة ===== -->
-            <div class="admin-panel" id="adminPanel">
-                <div class="admin-sidebar" id="adminSidebar">
-                    <button class="admin-tab active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> لوحة</button>
-                    <button class="admin-tab" data-tab="users"><i class="fas fa-users"></i> المستخدمين</button>
-                    <button class="admin-tab" data-tab="bonus"><i class="fas fa-gift"></i> مكافأة</button>
-                    <button class="admin-tab" data-tab="settings"><i class="fas fa-sliders-h"></i> إعدادات</button>
-                    <button class="admin-tab" data-tab="logs"><i class="fas fa-history"></i> سجلات</button>
-                </div>
-
-                <!-- لوحة الإحصائيات -->
-                <div class="admin-content active" id="admin-dashboard">
-                    <div class="stats-grid" id="statsGrid">
-                        <div class="stat-card"><div class="label">المستخدمين</div><div class="value" id="statUsers">0</div></div>
-                        <div class="stat-card"><div class="label">إجمالي الرصيد</div><div class="value" id="statBalance">0</div></div>
-                        <div class="stat-card"><div class="label">تسجيلات اليوم</div><div class="value" id="statToday">0</div></div>
-                        <div class="stat-card"><div class="label">دخول اليوم</div><div class="value" id="statLogins">0</div></div>
-                    </div>
-                    <div id="recentLogs" style="background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);padding:14px;"></div>
-                </div>
-
-                <!-- المستخدمين -->
-                <div class="admin-content" id="admin-users">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-                        <span style="color:rgba(255,255,255,0.12);font-size:0.8rem;"><i class="fas fa-users"></i> قائمة المستخدمين</span>
-                        <button class="btn-sm primary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> تحديث</button>
-                    </div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>المستخدم</th><th>الرصيد</th><th>الدور</th><th>الحالة</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr></thead>
-                            <tbody id="usersTable"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- مكافأة -->
-                <div class="admin-content" id="admin-bonus">
-                    <div class="settings-grid" id="bonusSettings"></div>
-                </div>
-
-                <!-- إعدادات -->
-                <div class="admin-content" id="admin-settings">
-                    <div class="settings-grid" id="settingsGrid"></div>
-                </div>
-
-                <!-- سجلات -->
-                <div class="admin-content" id="admin-logs">
-                    <div id="logsContainer"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // =============================================
-        // ===== الإعدادات =====
-        // =============================================
-        const API = 'https://game22-hoas.onrender.com/';
-        const REQUEST_TIMEOUT = 60000;
-        let token = localStorage.getItem('token');
-        let currentUser = null;
-        let currentSettings = {};
-
-        // =============================================
-        // ===== تحديث اسم الموقع في الواجهة =====
-        // =============================================
-        function updateSiteName(name) {
-            const siteName = name || 'Game Wars';
-            
-            // تحديث عنوان الصفحة
-            document.title = siteName;
-            
-            // تحديث اسم الموقع في الشريط العلوي (الحروف المتحركة)
-            const lettersContainer = document.querySelector('.brand .letters');
-            if (lettersContainer) {
-                lettersContainer.innerHTML = '';
-                siteName.split('').forEach((char, i) => {
-                    const span = document.createElement('span');
-                    span.textContent = char;
-                    span.style.setProperty('--i', i);
-                    lettersContainer.appendChild(span);
-                });
-            }
-            
-            // تحديث اسم الموقع في صفحة تسجيل الدخول
-            const authTitle = document.querySelector('.auth-box h2');
-            if (authTitle && document.getElementById('authPage').style.display !== 'none') {
-                authTitle.textContent = `مرحباً بك في ${siteName}`;
-            }
-        }
-
-        // =============================================
-        // ===== دوال الاتصال مع مهلة =====
-        // =============================================
-        function showConnectionStatus(message, type = 'connecting') {
-            const el = document.getElementById('connectionStatus');
-            el.textContent = message;
-            el.className = `connection-status show ${type}`;
-            clearTimeout(el._timeout);
-            if (type !== 'connecting') {
-                el._timeout = setTimeout(() => {
-                    el.classList.remove('show');
-                }, 5000);
-            }
-        }
-
-        function hideConnectionStatus() {
-            const el = document.getElementById('connectionStatus');
-            el.classList.remove('show');
-        }
-
-        async function fetchWithTimeout(url, options = {}, timeout = REQUEST_TIMEOUT) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-            try {
-                showConnectionStatus('⏳ جاري الاتصال بالخادم...', 'connecting');
-                const response = await fetch(url, {
-                    ...options,
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-                hideConnectionStatus();
-                return response;
-            } catch (error) {
-                clearTimeout(timeoutId);
-                if (error.name === 'AbortError') {
-                    showConnectionStatus('⏰ انتهت مهلة الانتظار (60 ثانية)، يرجى المحاولة مرة أخرى', 'error');
-                    throw new Error('انتهت مهلة الانتظار، يرجى المحاولة مرة أخرى');
-                }
-                showConnectionStatus('❌ لا يمكن الاتصال بالخادم، يرجى التحقق من الاتصال', 'error');
-                throw error;
-            }
-        }
-
-        // =============================================
-        // ===== تطبيق الألوان العالمية =====
-        // =============================================
-        function applyGlobalColors(settings) {
-            const colorMap = {
-                'primary_color': '--primary',
-                'secondary_color': '--secondary',
-                'accent_color': '--accent',
-                'bg_color': '--bg',
-                'text_color': '--text',
-                'card_bg': '--card-bg',
-                'border_color': '--border',
-                'glow_color': '--glow'
-            };
-
-            for (const [key, cssVar] of Object.entries(colorMap)) {
-                if (settings[key]) {
-                    document.documentElement.style.setProperty(cssVar, settings[key]);
-                }
-            }
-
-            if (settings.bg_color) {
-                document.body.style.background = settings.bg_color;
-            }
-
-            const orbs = document.querySelectorAll('.bg-orb');
-            if (orbs.length >= 3) {
-                if (settings.primary_color) orbs[0].style.background = settings.primary_color;
-                if (settings.secondary_color) orbs[1].style.background = settings.secondary_color;
-                if (settings.accent_color) orbs[2].style.background = settings.accent_color;
-            }
-
-            if (settings.site_name) {
-                updateSiteName(settings.site_name);
-            }
-
-            currentSettings = settings;
-        }
-
-        // =============================================
-        // ===== جلب الإعدادات من الخادم =====
-        // =============================================
-        async function loadGlobalSettings() {
-            try {
-                const res = await fetchWithTimeout(`${API}/api/settings`);
-                const settings = await res.json();
-                if (res.ok) {
-                    applyGlobalColors(settings);
-                }
-            } catch (e) {
-                console.error('خطأ في جلب الإعدادات:', e);
-            }
-        }
-
-        // =============================================
-        // ===== دوال مساعدة =====
-        // =============================================
-        function showMsg(el, text, type = 'error') {
-            el.textContent = text;
-            el.className = `msg ${type}`;
-        }
-
-        function setLoading(btn, loading) {
-            btn.disabled = loading;
-            btn.textContent = loading ? '⏳ جاري...' : btn.dataset.original;
-        }
-
-        document.querySelectorAll('.submit-btn').forEach(b => b.dataset.original = b.textContent);
-
-        // =============================================
-        // ===== دوال API مع مهلة =====
-        // =============================================
-        async function apiFetch(endpoint, options = {}) {
-            const res = await fetchWithTimeout(`${API}${endpoint}`, {
-                ...options,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    ...options.headers
-                }
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'خطأ');
-            return data;
-        }
-
-        // =============================================
-        // ===== إدارة الشريط =====
-        // =============================================
-        function updateNavbar(user) {
-            const nav = document.getElementById('navActions');
-            if (user) {
-                const isAdmin = user.role === 'admin';
-                nav.innerHTML = `
-                    <div class="balance-badge"><i class="fas fa-coins"></i> ${user.balance || 0}</div>
-                    ${isAdmin ? `<button class="btn btn-outline" onclick="toggleAdminPanel()" id="adminToggle"><i class="fas fa-crown"></i> <span>لوحة</span></button>` : ''}
-                    <div class="avatar">${user.username.charAt(0)}</div>
-                    <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>خروج</span></button>
-                `;
-                document.getElementById('logoutBtn').onclick = logout;
-            } else {
-                nav.innerHTML = `<button class="btn btn-primary" id="showLogin"><i class="fas fa-sign-in-alt"></i> <span>دخول</span></button>`;
-                document.getElementById('showLogin').onclick = () => {
-                    document.getElementById('authPage').scrollIntoView({ behavior: 'smooth' });
-                };
-            }
-        }
-
-        // =============================================
-        // ===== المصادقة =====
-        // =============================================
-        function logout() {
-            localStorage.clear();
-            token = null;
-            currentUser = null;
-            document.getElementById('dashboardPage').classList.remove('active');
-            document.getElementById('authPage').style.display = 'block';
-            document.getElementById('adminPanel').classList.remove('active');
-            document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
-            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-            document.querySelector('[data-tab="dashboard"]')?.classList.add('active');
-            updateNavbar(null);
-            document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
-                m.textContent = ''; });
-            hideConnectionStatus();
-        }
-
-        // ===== تسجيل الدخول =====
-        document.getElementById('loginBtn').onclick = async () => {
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            const msg = document.getElementById('loginMsg');
-            const btn = document.getElementById('loginBtn');
-
-            if (!username || !password) return showMsg(msg, 'املأ جميع الحقول');
-
-            setLoading(btn, true);
-            showMsg(msg, '⏳ جاري الاتصال بالخادم...', 'loading');
-
-            try {
-                const res = await fetchWithTimeout(`${API}/api/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
-
-                if (!res.ok) throw new Error(data.error || 'بيانات غير صحيحة');
-
-                token = data.token;
-                currentUser = data.user;
-                localStorage.setItem('token', token);
-                localStorage.setItem('user', JSON.stringify(currentUser));
-
-                if (data.settings) {
-                    applyGlobalColors(data.settings);
-                }
-
-                showMsg(msg, '✅ تم الدخول بنجاح', 'success');
-                setTimeout(() => {
-                    document.getElementById('authPage').style.display = 'none';
-                    document.getElementById('dashboardPage').classList.add('active');
-                    updateNavbar(currentUser);
-                    document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
-                    document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' : 'مستخدم';
-
-                    if (currentUser.role === 'admin') {
-                        document.getElementById('adminPanel').classList.add('active');
-                        loadAdminData();
-                        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-                        document.querySelector('[data-tab="dashboard"]')?.classList.add('active');
-                        document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
-                        document.getElementById('admin-dashboard')?.classList.add('active');
-                    }
-                    hideConnectionStatus();
-                }, 400);
-            } catch (e) {
-                showMsg(msg, '❌ ' + e.message);
-                hideConnectionStatus();
-            } finally {
-                setLoading(btn, false);
-            }
+require('dotenv').config();
+const express = require('express');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+const path = require('path');
+const { Pool } = require('pg');
+
+// ===== إعدادات =====
+const app = express();
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123456';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const isProduction = process.env.NODE_ENV === 'production';
+
+// ===== قاعدة البيانات =====
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: isProduction ? { rejectUnauthorized: false } : false,
+    max: 50,
+    min: 5,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000
+});
+
+// =============================================
+// ===== MIDDLEWARE =====
+// =============================================
+
+// 1. الأمان والضغط
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+            fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+            imgSrc: ["'self'", "data:"]
+        }
+    }
+}));
+app.use(compression());
+
+// 2. CORS
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+
+// 3. JSON Parser
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// 4. Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: 'تم تجاوز حد الطلبات، حاول مرة أخرى لاحقاً' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    validate: { xForwardedForHeader: false },
+    keyGenerator: (req) => req.ip || req.connection.remoteAddress || 'unknown'
+});
+app.use('/api/', limiter);
+
+// =============================================
+// ===== تهيئة قاعدة البيانات =====
+// =============================================
+async function initDatabase() {
+    const client = await pool.connect();
+    try {
+        console.log('🔄 جاري تهيئة قاعدة البيانات...');
+
+        // مسح الجداول القديمة
+        console.log('🗑️ جاري مسح الجداول القديمة...');
+        await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
+        await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
+        await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
+        await client.query('DROP TABLE IF EXISTS users CASCADE;');
+        console.log('✅ تم مسح الجداول القديمة');
+
+        // إنشاء الجداول الجديدة
+        console.log('📦 جاري إنشاء الجداول الجديدة...');
+
+        // جدول المستخدمين
+        await client.query(`
+            CREATE TABLE users (
+                id BIGSERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                balance DECIMAL(15,2) DEFAULT 0,
+                role VARCHAR(20) DEFAULT 'user',
+                is_active BOOLEAN DEFAULT TRUE,
+                last_login TIMESTAMP,
+                last_ip VARCHAR(45),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
+
+        // جدول النشاطات
+        await client.query(`
+            CREATE TABLE activity_logs (
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+                username VARCHAR(50),
+                action VARCHAR(50) NOT NULL,
+                details TEXT,
+                ip VARCHAR(45),
+                user_agent TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
+
+        // جدول الإعدادات
+        await client.query(`
+            CREATE TABLE site_settings (
+                key VARCHAR(50) PRIMARY KEY,
+                value TEXT,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // جدول الجلسات
+        await client.query(`
+            CREATE TABLE sessions (
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+                token VARCHAR(500) NOT NULL,
+                expires_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
+
+        console.log('✅ تم إنشاء الجداول الجديدة');
+
+        // ===== إنشاء حساب الأدمن =====
+        const adminUsername = 'noor2613857noor';
+        const adminPassword = 'admin123';
+        const hash = await bcrypt.hash(adminPassword, 10);
+        await client.query(
+            `INSERT INTO users (username, password_hash, role, balance) VALUES ($1, $2, $3, $4)`,
+            [adminUsername, hash, 'admin', 99999]
+        );
+        console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
+
+        // ===== الإعدادات الافتراضية =====
+        const defaultSettings = [
+            ['site_name', 'Game Wars'],
+            ['primary_color', '#6366f1'],
+            ['secondary_color', '#0891b2'],
+            ['accent_color', '#8b5cf6'],
+            ['bg_color', '#0a0a1a'],
+            ['text_color', '#ffffff'],
+            ['card_bg', 'rgba(255,255,255,0.03)'],
+            ['border_color', 'rgba(255,255,255,0.05)'],
+            ['glow_color', 'rgba(99,102,241,0.15)'],
+            ['maintenance_mode', 'false'],
+            ['registration_enabled', 'true'],
+            ['bonus_enabled', 'false'],
+            ['bonus_amount', '100'],
+            ['bonus_start_date', null],
+            ['bonus_end_date', null]
+        ];
+
+        for (const [key, value] of defaultSettings) {
+            await client.query(
+                `INSERT INTO site_settings (key, value) VALUES ($1, $2)`,
+                [key, value]
+            );
+        }
+        console.log('✅ تم إضافة الإعدادات الافتراضية');
+        console.log('✅ تهيئة قاعدة البيانات مكتملة');
+
+    } catch (error) {
+        console.error('❌ خطأ في تهيئة قاعدة البيانات:', error.message);
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+// =============================================
+// ===== دوال قاعدة البيانات =====
+// =============================================
+const db = {
+    findUser: async (username) => {
+        const res = await pool.query(
+            'SELECT id, username, password_hash, balance, role, is_active FROM users WHERE username = $1',
+            [username.toLowerCase().trim()]
+        );
+        return res.rows[0] || null;
+    },
+    
+    createUser: async (username, hash, ip = null, userAgent = null, bonusAmount = 0) => {
+        const res = await pool.query(
+            `INSERT INTO users (username, password_hash, last_ip, balance) 
+             VALUES ($1, $2, $3, $4) 
+             RETURNING id, username, role, balance`,
+            [username.toLowerCase().trim(), hash, ip, bonusAmount]
+        );
+        
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details, ip, user_agent) 
+             VALUES ($1, $2, $3, $4, $5, $6)`,
+            [res.rows[0].id, username, 'register', 
+             `حساب جديد${bonusAmount > 0 ? ` - مكافأة: ${bonusAmount}` : ''}`, 
+             ip, userAgent]
+        );
+        
+        return res.rows[0];
+    },
+    
+    login: async (username, ip = null, userAgent = null) => {
+        const res = await pool.query(
+            `UPDATE users SET last_login = CURRENT_TIMESTAMP, last_ip = $1 
+             WHERE username = $2 
+             RETURNING id, username, role, balance`,
+            [ip, username.toLowerCase().trim()]
+        );
+        
+        if (res.rows.length > 0) {
+            await pool.query(
+                `INSERT INTO activity_logs (user_id, username, action, ip, user_agent) 
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [res.rows[0].id, username, 'login', ip, userAgent]
+            );
+        }
+        
+        return res.rows[0] || null;
+    },
+    
+    saveSession: async (userId, token, expiresAt) => {
+        await pool.query(
+            `INSERT INTO sessions (user_id, token, expires_at) VALUES ($1, $2, $3)`,
+            [userId, token, expiresAt]
+        );
+    },
+    
+    getSettings: async () => {
+        const res = await pool.query('SELECT key, value FROM site_settings');
+        const settings = {};
+        res.rows.forEach(row => { settings[row.key] = row.value; });
+        return settings;
+    },
+    
+    updateSetting: async (key, value) => {
+        await pool.query(
+            `UPDATE site_settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2`,
+            [value, key]
+        );
+    },
+    
+    getUsers: async () => {
+        const res = await pool.query(
+            'SELECT id, username, balance, role, is_active, created_at, last_login FROM users ORDER BY created_at DESC'
+        );
+        return res.rows;
+    },
+    
+    toggleUser: async (username, active) => {
+        await pool.query(
+            `UPDATE users SET is_active = $1, updated_at = CURRENT_TIMESTAMP WHERE username = $2`,
+            [active, username.toLowerCase().trim()]
+        );
+    },
+    
+    deleteUser: async (username) => {
+        await pool.query('DELETE FROM users WHERE username = $1', [username.toLowerCase().trim()]);
+    },
+    
+    getLogs: async (limit = 100) => {
+        const res = await pool.query(
+            `SELECT username, action, details, ip, created_at 
+             FROM activity_logs ORDER BY created_at DESC LIMIT $1`,
+            [limit]
+        );
+        return res.rows;
+    },
+    
+    getStats: async () => {
+        const totalUsers = await pool.query('SELECT COUNT(*) FROM users');
+        const totalBalance = await pool.query('SELECT SUM(balance) FROM users');
+        const todayRegs = await pool.query(
+            "SELECT COUNT(*) FROM users WHERE DATE(created_at) = CURRENT_DATE"
+        );
+        const todayLogins = await pool.query(
+            "SELECT COUNT(*) FROM activity_logs WHERE action = 'login' AND DATE(created_at) = CURRENT_DATE"
+        );
+        return {
+            totalUsers: parseInt(totalUsers.rows[0].count),
+            totalBalance: parseFloat(totalBalance.rows[0].sum || 0),
+            todayRegistrations: parseInt(todayRegs.rows[0].count),
+            todayLogins: parseInt(todayLogins.rows[0].count)
         };
+    },
+    
+    updateBalance: async (username, newBalance) => {
+        const res = await pool.query(
+            `UPDATE users SET balance = $1, updated_at = CURRENT_TIMESTAMP 
+             WHERE username = $2 RETURNING balance`,
+            [newBalance, username.toLowerCase().trim()]
+        );
+        return res.rows[0]?.balance || null;
+    },
+    
+    clearSessions: async (userId) => {
+        await pool.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
+    }
+};
 
-        // ===== إنشاء حساب =====
-        document.getElementById('registerBtn').onclick = async () => {
-            const username = document.getElementById('registerUsername').value.trim();
-            const password = document.getElementById('registerPassword').value.trim();
-            const msg = document.getElementById('registerMsg');
-            const btn = document.getElementById('registerBtn');
+// =============================================
+// ===== API ROUTES =====
+// =============================================
 
-            if (!username || !password) return showMsg(msg, 'املأ جميع الحقول');
-            if (username.length < 3) return showMsg(msg, 'اسم المستخدم 3 أحرف على الأقل');
-            if (password.length < 8) return showMsg(msg, 'كلمة المرور 8 أحرف على الأقل');
+// ===== التحقق من صحة الخادم =====
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-            setLoading(btn, true);
-            showMsg(msg, '⏳ جاري إنشاء الحساب...', 'loading');
+// ===== جلب إعدادات الموقع (عام) =====
+app.get('/api/settings', async (req, res) => {
+    try {
+        const settings = await db.getSettings();
+        res.json(settings);
+    } catch (error) {
+        console.error('❌ خطأ في جلب الإعدادات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+    }
+});
 
-            try {
-                const res = await fetchWithTimeout(`${API}/api/register`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-                const data = await res.json();
+// ===== تسجيل مستخدم جديد =====
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+        const userAgent = req.headers['user-agent'];
 
-                if (!res.ok) throw new Error(data.error || 'فشل إنشاء الحساب');
+        console.log('📝 محاولة تسجيل:', { username, ip });
 
-                let msgText = '✅ تم إنشاء الحساب بنجاح';
-                let msgType = 'success';
-                if (data.bonus) {
-                    msgText = `✅ تم إنشاء الحساب 🎉 ${data.bonus.message}`;
-                    msgType = 'bonus';
-                }
-
-                showMsg(msg, msgText, msgType);
-                document.getElementById('registerUsername').value = '';
-                document.getElementById('registerPassword').value = '';
-                setTimeout(() => document.querySelector('[data-tab="login"]').click(), 1000);
-            } catch (e) {
-                showMsg(msg, '❌ ' + e.message);
-            } finally {
-                setLoading(btn, false);
-                hideConnectionStatus();
-            }
-        };
-
-        // =============================================
-        // ===== دوال الإدارة =====
-        // =============================================
-        async function loadAdminData() {
-            try {
-                await loadStats();
-                await loadUsers();
-                await loadSettings();
-                await loadBonusSettings();
-                await loadLogs();
-                await loadRecent();
-            } catch (e) {
-                console.error('خطأ في تحميل بيانات الإدارة:', e);
-            }
+        // التحقق من صحة الإدخال
+        if (!username || !password) {
+            return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
+        }
+        if (username.length < 3) {
+            return res.status(400).json({ error: 'اسم المستخدم 3 أحرف على الأقل' });
+        }
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'كلمة المرور 8 أحرف على الأقل' });
         }
 
-        async function loadStats() {
-            try {
-                const stats = await apiFetch('/api/admin/stats');
-                document.getElementById('statUsers').textContent = stats.totalUsers;
-                document.getElementById('statBalance').textContent = stats.totalBalance.toFixed(0);
-                document.getElementById('statToday').textContent = stats.todayRegistrations;
-                document.getElementById('statLogins').textContent = stats.todayLogins;
-            } catch (e) {
-                console.error('خطأ في تحميل الإحصائيات:', e);
-            }
+        // التحقق من وجود المستخدم
+        const existing = await db.findUser(username);
+        if (existing) {
+            return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
 
-        async function loadUsers() {
-            try {
-                const users = await apiFetch('/api/admin/users');
-                document.getElementById('usersTable').innerHTML = users.map(u => `
-                    <tr>
-                        <td><strong style="color:rgba(255,255,255,0.5);font-size:0.75rem;">${u.username}</strong></td>
-                        <td style="font-size:0.75rem;color:#fbbf24;">${u.balance}</td>
-                        <td style="font-size:0.65rem;">${u.role}</td>
-                        <td><span style="color:${u.is_active ? '#34d399' : '#f87171'};font-size:0.65rem;">${u.is_active ? 'نشط' : 'معطل'}</span></td>
-                        <td style="font-size:0.55rem;color:rgba(255,255,255,0.08);">${new Date(u.created_at).toLocaleDateString('ar')}</td>
-                        <td>
-                            ${u.username !== 'noor2613857noor' ? `
-                                <button class="btn-sm ${u.is_active ? 'danger' : 'success'}" onclick="toggleUser('${u.username}', ${!u.is_active})">
-                                    <i class="fas ${u.is_active ? 'fa-ban' : 'fa-check'}"></i>
-                                </button>
-                                <button class="btn-sm danger" onclick="deleteUser('${u.username}')"><i class="fas fa-trash"></i></button>
-                            ` : '<span style="color:rgba(255,255,255,0.08);font-size:0.7rem;">👑</span>'}
-                        </td>
-                    </tr>
-                `).join('');
-            } catch (e) {
-                console.error('خطأ في تحميل المستخدمين:', e);
+        // التحقق من تفعيل التسجيل
+        const settings = await db.getSettings();
+        if (settings.registration_enabled === 'false') {
+            return res.status(403).json({ error: 'التسجيل مغلق حالياً' });
+        }
+
+        // حساب المكافأة
+        let bonusAmount = 0;
+        if (settings.bonus_enabled === 'true') {
+            const now = new Date();
+            const startDate = settings.bonus_start_date ? new Date(settings.bonus_start_date) : null;
+            const endDate = settings.bonus_end_date ? new Date(settings.bonus_end_date) : null;
+            
+            const isActive = (!startDate || now >= startDate) && (!endDate || now <= endDate);
+            if (isActive) {
+                bonusAmount = parseFloat(settings.bonus_amount) || 0;
             }
         }
 
-        // ===== تحميل الإعدادات =====
-        async function loadSettings() {
-            try {
-                const settings = await apiFetch('/api/admin/settings');
-                const grid = document.getElementById('settingsGrid');
-                const labels = {
-                    site_name: 'اسم الموقع',
-                    primary_color: 'اللون الأساسي',
-                    secondary_color: 'اللون الثانوي',
-                    accent_color: 'لون التمييز',
-                    bg_color: 'لون الخلفية',
-                    text_color: 'لون النص',
-                    card_bg: 'خلفية البطاقات',
-                    border_color: 'لون الحواف',
-                    glow_color: 'لون التوهج',
-                    registration_enabled: 'تفعيل التسجيل'
-                };
+        // تشفير كلمة المرور
+        const hash = await bcrypt.hash(password, 10);
+        const user = await db.createUser(username, hash, ip, userAgent, bonusAmount);
 
-                grid.innerHTML = Object.entries(settings).filter(([k]) =>
-                    !['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date', 'maintenance_mode'].includes(k)
-                ).map(([k, v]) => {
-                    let input = '';
-                    if (k.includes('color')) {
-                        input = `
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="color" value="${v}" id="color_${k}" />
-                                <button class="save-color-btn" onclick="saveColorSetting('${k}', document.getElementById('color_${k}').value)">
-                                    <i class="fas fa-check"></i> حفظ
-                                </button>
-                            </div>
-                        `;
-                    } else if (k === 'registration_enabled') {
-                        input = `
-                            <div class="toggle-switch ${v === 'true' ? 'active' : ''}" onclick="toggleSetting('${k}', this)">
-                                <div class="slider"></div>
-                            </div>
-                        `;
-                    } else {
-                        input = `
-                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                                <input type="text" value="${v}" id="text_${k}" style="min-width:120px;" />
-                                <button class="save-color-btn" onclick="saveTextSetting('${k}', document.getElementById('text_${k}').value)">
-                                    <i class="fas fa-check"></i> حفظ
-                                </button>
-                            </div>
-                        `;
-                    }
-                    return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
-                }).join('');
-            } catch (e) {
-                console.error('خطأ في تحميل الإعدادات:', e);
-            }
+        // تسجيل نشاط المكافأة
+        if (bonusAmount > 0) {
+            await pool.query(
+                `INSERT INTO activity_logs (user_id, username, action, details) 
+                 VALUES ($1, $2, $3, $4)`,
+                [user.id, username, 'bonus_received', `مكافأة تسجيل: ${bonusAmount}`]
+            );
         }
 
-        // ===== حفظ الإعدادات النصية (بما فيها اسم الموقع) =====
-        async function saveTextSetting(key, value) {
-            const btn = event.target.closest('.save-color-btn');
-            const originalText = btn.innerHTML;
+        console.log('✅ تم إنشاء الحساب:', username);
 
-            try {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                btn.disabled = true;
-
-                const result = await apiFetch('/api/admin/settings', {
-                    method: 'POST',
-                    body: JSON.stringify({ key, value })
-                });
-
-                if (key === 'site_name' && result.settings) {
-                    const newName = result.settings.site_name || 'Game Wars';
-                    updateSiteName(newName);
-                    showConnectionStatus(`✅ تم تحديث اسم الموقع إلى: ${newName}`, 'success');
-                }
-
-                btn.innerHTML = '<i class="fas fa-check"></i> تم';
-                btn.classList.add('saved');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('saved');
-                    btn.disabled = false;
-                }, 2000);
-
-            } catch (e) {
-                btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }, 2000);
-                alert('❌ خطأ في حفظ الإعداد: ' + e.message);
-            }
-        }
-
-        async function loadBonusSettings() {
-            try {
-                const settings = await apiFetch('/api/admin/settings');
-                const container = document.getElementById('bonusSettings');
-
-                const labels = {
-                    bonus_enabled: 'تفعيل المكافأة',
-                    bonus_amount: 'قيمة المكافأة',
-                    bonus_start_date: 'تاريخ البداية',
-                    bonus_end_date: 'تاريخ النهاية'
-                };
-
-                container.innerHTML = Object.entries(settings).filter(([k]) =>
-                    ['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date'].includes(k)
-                ).map(([k, v]) => {
-                    let input = '';
-                    if (k === 'bonus_enabled') {
-                        input = `
-                            <div class="toggle-switch ${v === 'true' ? 'active' : ''}" onclick="toggleSetting('${k}', this)">
-                                <div class="slider"></div>
-                            </div>
-                        `;
-                    } else if (k === 'bonus_amount') {
-                        input = `
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="number" value="${v}" id="bonus_${k}" style="min-width:80px;" />
-                                <button class="save-color-btn" onclick="saveBonusSetting('${k}', document.getElementById('bonus_${k}').value)">
-                                    <i class="fas fa-check"></i> حفظ
-                                </button>
-                            </div>
-                        `;
-                    } else {
-                        const dateVal = v ? v.split('T')[0] : '';
-                        input = `
-                            <div style="display:flex;align-items:center;gap:8px;">
-                                <input type="datetime-local" value="${dateVal}" id="bonus_${k}" style="min-width:140px;" />
-                                <button class="save-color-btn" onclick="saveBonusSetting('${k}', document.getElementById('bonus_${k}').value)">
-                                    <i class="fas fa-check"></i> حفظ
-                                </button>
-                            </div>
-                        `;
-                    }
-                    return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
-                }).join('');
-            } catch (e) {
-                console.error('خطأ في تحميل إعدادات المكافأة:', e);
-            }
-        }
-
-        // ===== حفظ إعداد اللون =====
-        async function saveColorSetting(key, value) {
-            const btn = event.target.closest('.save-color-btn');
-            const originalText = btn.innerHTML;
-
-            try {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                btn.disabled = true;
-
-                const result = await apiFetch('/api/admin/settings', {
-                    method: 'POST',
-                    body: JSON.stringify({ key, value })
-                });
-
-                if (result.settings) {
-                    applyGlobalColors(result.settings);
-                }
-
-                btn.innerHTML = '<i class="fas fa-check"></i> تم';
-                btn.classList.add('saved');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('saved');
-                    btn.disabled = false;
-                }, 2000);
-
-            } catch (e) {
-                btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }, 2000);
-                alert('❌ خطأ في حفظ اللون: ' + e.message);
-            }
-        }
-
-        // ===== حفظ إعداد المكافأة =====
-        async function saveBonusSetting(key, value) {
-            const btn = event.target.closest('.save-color-btn');
-            const originalText = btn.innerHTML;
-
-            try {
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-                btn.disabled = true;
-
-                const result = await apiFetch('/api/admin/settings', {
-                    method: 'POST',
-                    body: JSON.stringify({ key, value })
-                });
-
-                btn.innerHTML = '<i class="fas fa-check"></i> تم';
-                btn.classList.add('saved');
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.classList.remove('saved');
-                    btn.disabled = false;
-                }, 2000);
-
-            } catch (e) {
-                btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }, 2000);
-                alert('❌ خطأ في حفظ الإعداد: ' + e.message);
-            }
-        }
-
-        // ===== تبديل الإعدادات =====
-        async function toggleSetting(key, element) {
-            const isActive = element.classList.contains('active');
-            const newValue = isActive ? 'false' : 'true';
-
-            try {
-                const result = await apiFetch('/api/admin/settings', {
-                    method: 'POST',
-                    body: JSON.stringify({ key, value: newValue })
-                });
-
-                element.classList.toggle('active');
-
-                if (result.settings) {
-                    applyGlobalColors(result.settings);
-                }
-            } catch (e) {
-                alert('❌ خطأ في تغيير الإعداد: ' + e.message);
-            }
-        }
-
-        async function loadLogs() {
-            try {
-                const logs = await apiFetch('/api/admin/logs');
-                document.getElementById('logsContainer').innerHTML = logs.map(log => `
-                    <div class="log-entry">
-                        <span class="time">${new Date(log.created_at).toLocaleString('ar')}</span>
-                        <span class="user">${log.username}</span>
-                        <span>${log.action} ${log.details || ''}</span>
-                    </div>
-                `).join('') || '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.7rem;">لا توجد سجلات</div>';
-            } catch (e) {
-                console.error('خطأ في تحميل السجلات:', e);
-            }
-        }
-
-        async function loadRecent() {
-            try {
-                const logs = await apiFetch('/api/admin/logs?limit=5');
-                document.getElementById('recentLogs').innerHTML = logs.map(log => `
-                    <div class="log-entry" style="padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.01);">
-                        <span class="time">${new Date(log.created_at).toLocaleString('ar')}</span>
-                        <span class="user">${log.username}</span>
-                        <span style="color:rgba(255,255,255,0.08);">${log.action}</span>
-                    </div>
-                `).join('') || '<div style="text-align:center;padding:10px;color:rgba(255,255,255,0.04);font-size:0.7rem;">لا توجد سجلات حديثة</div>';
-            } catch (e) {
-                console.error('خطأ في تحميل السجلات الحديثة:', e);
-            }
-        }
-
-        async function toggleUser(username, active) {
-            if (!confirm(`تأكيد ${active ? 'تفعيل' : 'تعطيل'} المستخدم ${username}؟`)) return;
-            try {
-                await apiFetch('/api/admin/toggle-user', {
-                    method: 'POST',
-                    body: JSON.stringify({ username, active })
-                });
-                loadUsers();
-            } catch (e) { alert('❌ خطأ: ' + e.message); }
-        }
-
-        async function deleteUser(username) {
-            if (!confirm(`حذف المستخدم ${username}؟`)) return;
-            try {
-                await apiFetch('/api/admin/delete-user', {
-                    method: 'DELETE',
-                    body: JSON.stringify({ username })
-                });
-                loadUsers();
-                loadStats();
-            } catch (e) { alert('❌ خطأ: ' + e.message); }
-        }
-
-        // =============================================
-        // ===== التبويبات =====
-        // =============================================
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.onclick = () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                const tab = btn.dataset.tab;
-                document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
-                document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
-                document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
-                    m.textContent = ''; });
-            };
+        res.status(201).json({
+            message: 'تم إنشاء الحساب بنجاح',
+            user: { 
+                username: user.username,
+                balance: parseFloat(user.balance)
+            },
+            bonus: bonusAmount > 0 ? {
+                amount: bonusAmount,
+                message: `🎉 حصلت على مكافأة ${bonusAmount}`
+            } : null
         });
+    } catch (error) {
+        console.error('❌ خطأ في التسجيل:', error);
+        res.status(500).json({ error: 'حدث خطأ في الخادم' });
+    }
+});
 
-        document.querySelectorAll('.admin-tab').forEach(tab => {
-            tab.onclick = () => {
-                document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                const target = tab.dataset.tab;
-                document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
-                document.getElementById(`admin-${target}`).classList.add('active');
-            };
-        });
+// ===== تسجيل الدخول =====
+app.post('/api/login', async (req, res) => {
+    try {
+        const { username, password } = req.body;
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+        const userAgent = req.headers['user-agent'];
 
-        // =============================================
-        // ===== إظهار/إخفاء لوحة الإدارة =====
-        // =============================================
-        let adminVisible = false;
+        console.log('📝 محاولة دخول:', { username, ip });
 
-        function toggleAdminPanel() {
-            adminVisible = !adminVisible;
-            const panel = document.getElementById('adminPanel');
-            panel.classList.toggle('active', adminVisible);
-            const btn = document.getElementById('adminToggle');
-            if (adminVisible) {
-                btn.innerHTML = '<i class="fas fa-crown"></i> <span>إخفاء</span>';
-                loadAdminData();
-            } else {
-                btn.innerHTML = '<i class="fas fa-crown"></i> <span>لوحة</span>';
-            }
+        if (!username || !password) {
+            return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
 
-        // =============================================
-        // ===== Enter =====
-        // =============================================
-        document.querySelectorAll('input').forEach(inp => {
-            inp.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    const form = inp.closest('.form');
-                    if (form.id === 'loginForm') document.getElementById('loginBtn').click();
-                    else document.getElementById('registerBtn').click();
-                }
-            });
-        });
-
-        // =============================================
-        // ===== التهيئة =====
-        // =============================================
-        async function init() {
-            await loadGlobalSettings();
-
-            const userData = localStorage.getItem('user');
-            if (userData) {
-                try {
-                    currentUser = JSON.parse(userData);
-                    if (currentUser.username) {
-                        token = localStorage.getItem('token');
-                        document.getElementById('authPage').style.display = 'none';
-                        document.getElementById('dashboardPage').classList.add('active');
-                        updateNavbar(currentUser);
-                        document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
-                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' :
-                            'مستخدم';
-
-                        if (currentUser.role === 'admin') {
-                            document.getElementById('adminPanel').classList.add('active');
-                            adminVisible = true;
-                            loadAdminData();
-                            document.getElementById('adminToggle').innerHTML = '<i class="fas fa-crown"></i> <span>إخفاء</span>';
-                        }
-                    }
-                } catch (_) { localStorage.clear(); }
-            }
-
-            try {
-                await fetchWithTimeout(`${API}/api/health`);
-                showConnectionStatus('✅ الخادم متصل', 'success');
-            } catch (e) {
-                showConnectionStatus('⚠️ لا يمكن الاتصال بالخادم', 'error');
-            }
+        const user = await db.findUser(username);
+        if (!user) {
+            console.log('❌ مستخدم غير موجود:', username);
+            return res.status(401).json({ error: 'بيانات غير صحيحة' });
+        }
+        if (!user.is_active) {
+            console.log('❌ حساب معطل:', username);
+            return res.status(403).json({ error: 'الحساب معطل' });
         }
 
-        init();
-    </script>
-</body>
-</html>
+        const isValid = await bcrypt.compare(password, user.password_hash);
+        if (!isValid) {
+            console.log('❌ كلمة مرور خاطئة:', username);
+            return res.status(401).json({ error: 'بيانات غير صحيحة' });
+        }
+
+        const updatedUser = await db.login(username, ip, userAgent);
+        if (!updatedUser) {
+            return res.status(500).json({ error: 'حدث خطأ في تحديث الجلسة' });
+        }
+
+        const token = jwt.sign(
+            { 
+                id: user.id, 
+                username: user.username, 
+                role: user.role, 
+                balance: parseFloat(user.balance) 
+            },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await db.saveSession(user.id, token, expiresAt);
+
+        const settings = await db.getSettings();
+
+        console.log('✅ تم تسجيل الدخول:', username);
+
+        res.json({
+            token,
+            user: { 
+                id: user.id, 
+                username: user.username, 
+                role: user.role,
+                balance: parseFloat(user.balance)
+            },
+            settings: settings
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تسجيل الدخول:', error);
+        res.status(500).json({ error: 'حدث خطأ في الخادم' });
+    }
+});
+
+// ===== التحقق من التوكن =====
+app.post('/api/verify', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        const sessionCheck = await pool.query(
+            'SELECT * FROM sessions WHERE token = $1 AND expires_at > NOW()',
+            [token]
+        );
+        if (sessionCheck.rows.length === 0) {
+            return res.status(401).json({ error: 'جلسة غير صالحة' });
+        }
+
+        const settings = await db.getSettings();
+
+        res.json({
+            id: decoded.id,
+            username: decoded.username,
+            role: decoded.role,
+            balance: decoded.balance || 0,
+            settings: settings
+        });
+    } catch (error) {
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'انتهت صلاحية التوكن' });
+        }
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({ error: 'توكن غير صالح' });
+        }
+        console.error('❌ خطأ في التحقق:', error);
+        res.status(500).json({ error: 'حدث خطأ في الخادم' });
+    }
+});
+
+// ===== جلب رصيد المستخدم =====
+app.get('/api/balance', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await db.findUser(decoded.username);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+
+        res.json({ balance: parseFloat(user.balance) });
+    } catch (error) {
+        res.status(401).json({ error: 'توكن غير صالح' });
+    }
+});
+
+// ===== تسجيل الخروج =====
+app.post('/api/logout', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (token) {
+            await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+        }
+        res.json({ message: 'تم تسجيل الخروج' });
+    } catch (error) {
+        res.status(500).json({ error: 'حدث خطأ' });
+    }
+});
+
+// =============================================
+// ===== ADMIN API =====
+// =============================================
+
+const verifyAdmin = async (req, res, next) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.role !== 'admin') {
+            return res.status(403).json({ error: 'صلاحيات أدمن مطلوبة' });
+        }
+
+        req.user = decoded;
+        next();
+    } catch (error) {
+        res.status(401).json({ error: 'توكن غير صالح' });
+    }
+};
+
+// ===== جلب الإحصائيات =====
+app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
+    try {
+        const stats = await db.getStats();
+        res.json(stats);
+    } catch (error) {
+        console.error('❌ خطأ في جلب الإحصائيات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإحصائيات' });
+    }
+});
+
+// ===== جلب المستخدمين =====
+app.get('/api/admin/users', verifyAdmin, async (req, res) => {
+    try {
+        const users = await db.getUsers();
+        res.json(users);
+    } catch (error) {
+        console.error('❌ خطأ في جلب المستخدمين:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب المستخدمين' });
+    }
+});
+
+// ===== تحديث رصيد المستخدم =====
+app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
+    try {
+        const { username, amount, action } = req.body;
+        
+        if (!username || amount === undefined || !action) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+
+        const user = await db.findUser(username);
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+
+        let newBalance = parseFloat(user.balance);
+        const amountNum = parseFloat(amount);
+        
+        if (action === 'add') {
+            newBalance += amountNum;
+        } else if (action === 'subtract') {
+            newBalance -= amountNum;
+        } else if (action === 'set') {
+            newBalance = amountNum;
+        } else {
+            return res.status(400).json({ error: 'إجراء غير صحيح' });
+        }
+
+        await db.updateBalance(username, newBalance);
+
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details) 
+             VALUES ($1, $2, $3, $4)`,
+            [req.user.id, req.user.username, 'balance_update',
+             `${action} ${amount} إلى رصيد ${username} (الرصيد الجديد: ${newBalance})`]
+        );
+
+        res.json({ 
+            message: 'تم تحديث الرصيد', 
+            balance: newBalance,
+            user: { username, balance: newBalance }
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث الرصيد:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الرصيد' });
+    }
+});
+
+// ===== تعطيل/تفعيل المستخدم =====
+app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
+    try {
+        const { username, active } = req.body;
+        
+        if (!username || active === undefined) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+
+        if (username === 'noor2613857noor') {
+            return res.status(403).json({ error: 'لا يمكن تعطيل الأدمن الرئيسي' });
+        }
+
+        await db.toggleUser(username, active);
+        
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details) 
+             VALUES ($1, $2, $3, $4)`,
+            [req.user.id, req.user.username, 'user_toggle',
+             `${active ? 'تفعيل' : 'تعطيل'} المستخدم ${username}`]
+        );
+
+        res.json({ 
+            message: `تم ${active ? 'تفعيل' : 'تعطيل'} المستخدم`,
+            user: { username, is_active: active }
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث حالة المستخدم:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث حالة المستخدم' });
+    }
+});
+
+// ===== حذف مستخدم =====
+app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
+    try {
+        const { username } = req.body;
+        
+        if (!username) {
+            return res.status(400).json({ error: 'اسم المستخدم مطلوب' });
+        }
+
+        if (username === 'noor2613857noor') {
+            return res.status(403).json({ error: 'لا يمكن حذف الأدمن الرئيسي' });
+        }
+
+        const user = await db.findUser(username);
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+
+        await db.deleteUser(username);
+
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details) 
+             VALUES ($1, $2, $3, $4)`,
+            [req.user.id, req.user.username, 'delete_user', `حذف المستخدم ${username}`]
+        );
+
+        res.json({ message: `تم حذف المستخدم ${username}` });
+    } catch (error) {
+        console.error('❌ خطأ في حذف المستخدم:', error);
+        res.status(500).json({ error: 'حدث خطأ في حذف المستخدم' });
+    }
+});
+
+// ===== جلب سجل النشاطات =====
+app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 100;
+        const logs = await db.getLogs(limit);
+        res.json(logs);
+    } catch (error) {
+        console.error('❌ خطأ في جلب السجلات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب السجلات' });
+    }
+});
+
+// ===== جلب إعدادات الموقع (للأدمن) =====
+app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
+    try {
+        const settings = await db.getSettings();
+        res.json(settings);
+    } catch (error) {
+        console.error('❌ خطأ في جلب الإعدادات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+    }
+});
+
+// ===== تحديث إعدادات الموقع =====
+app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
+    try {
+        const { key, value } = req.body;
+        
+        if (!key) {
+            return res.status(400).json({ error: 'مفتاح الإعداد مطلوب' });
+        }
+
+        await db.updateSetting(key, value);
+        
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details) 
+             VALUES ($1, $2, $3, $4)`,
+            [req.user.id, req.user.username, 'settings_update', `تحديث: ${key} = ${value}`]
+        );
+
+        const settings = await db.getSettings();
+        
+        res.json({ 
+            message: 'تم تحديث الإعداد', 
+            settings: settings,
+            updated: { key, value }
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث الإعدادات:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
+    }
+});
+
+// =============================================
+// ===== STATIC FILES =====
+// =============================================
+
+// تقديم الملفات الثابتة
+app.use(express.static(path.join(__dirname, 'public')));
+
+// =============================================
+// ===== FALLBACK =====
+// =============================================
+
+app.get('*', (req, res) => {
+    // إذا كان الطلب يبدأ بـ /api، نرسل خطأ 404
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API غير موجود' });
+    }
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// =============================================
+// ===== معالجة الأخطاء =====
+// =============================================
+
+app.use((err, req, res, next) => {
+    console.error('❌ خطأ غير متوقع:', err);
+    res.status(500).json({ error: 'حدث خطأ داخلي في الخادم' });
+});
+
+// =============================================
+// ===== تشغيل الخادم =====
+// =============================================
+
+async function startServer() {
+    try {
+        await initDatabase();
+        app.listen(PORT, () => {
+            console.log(`\n🚀 Game Wars يعمل على http://localhost:${PORT}`);
+            console.log(`👑 الأدمن: noor2613857noor / admin123`);
+            console.log(`📊 لوحة التحكم: http://localhost:${PORT}/admin\n`);
+            console.log('📋 جميع نقاط النهاية:');
+            console.log('   POST /api/register - تسجيل مستخدم جديد');
+            console.log('   POST /api/login - تسجيل الدخول');
+            console.log('   POST /api/verify - التحقق من التوكن');
+            console.log('   GET  /api/balance - جلب الرصيد');
+            console.log('   POST /api/logout - تسجيل الخروج');
+            console.log('   GET  /api/settings - جلب الإعدادات');
+            console.log('   --- ADMIN ---');
+            console.log('   GET  /api/admin/stats - الإحصائيات');
+            console.log('   GET  /api/admin/users - قائمة المستخدمين');
+            console.log('   POST /api/admin/update-balance - تحديث الرصيد');
+            console.log('   POST /api/admin/toggle-user - تعطيل/تفعيل');
+            console.log('   DELETE /api/admin/delete-user - حذف مستخدم');
+            console.log('   GET  /api/admin/logs - سجل النشاطات');
+            console.log('   GET  /api/admin/settings - جلب الإعدادات');
+            console.log('   POST /api/admin/settings - تحديث الإعدادات\n');
+        });
+    } catch (error) {
+        console.error('❌ فشل تشغيل الخادم:', error.message);
+        process.exit(1);
+    }
+}
+
+process.on('SIGTERM', async () => { 
+    console.log('🛑 إيقاف الخادم...');
+    await pool.end(); 
+    process.exit(0); 
+});
+
+process.on('SIGINT', async () => { 
+    console.log('🛑 إيقاف الخادم...');
+    await pool.end(); 
+    process.exit(0); 
+});
+
+startServer();
