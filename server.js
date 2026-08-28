@@ -26,7 +26,11 @@ const pool = new Pool({
     connectionTimeoutMillis: 10000
 });
 
-// ===== Middleware =====
+// =============================================
+// ===== MIDDLEWARE (الترتيب مهم جداً) =====
+// =============================================
+
+// 1. الأمان والضغط
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -40,27 +44,25 @@ app.use(helmet({
 }));
 app.use(compression());
 
-// ===== إعداد CORS بشكل صحيح =====
+// 2. CORS
 app.use(cors({
     origin: process.env.CORS_ORIGIN || '*',
     credentials: true,
     optionsSuccessStatus: 200
 }));
 
+// 3. JSON و URL Encoded (قبل أي شيء)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ===== الحماية من هجمات القوة العمياء (مع إصلاح خطأ X-Forwarded-For) =====
-// تعطيل التحقق من X-Forwarded-For مؤقتاً لتجنب الأخطاء في Render
+// 4. Rate Limiting (بعد JSON)
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 دقيقة
-    max: 100, // الحد الأقصى للطلبات
+    windowMs: 15 * 60 * 1000,
+    max: 100,
     message: { error: 'تم تجاوز حد الطلبات، حاول مرة أخرى لاحقاً' },
     standardHeaders: true,
     legacyHeaders: false,
-    // إصلاح خطأ X-Forwarded-For
     validate: { xForwardedForHeader: false },
-    // استخدام IP من request مباشرة
     keyGenerator: (req) => {
         return req.ip || req.connection.remoteAddress || 'unknown';
     }
@@ -75,18 +77,12 @@ async function initDatabase() {
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
-        // مسح الجداول القديمة
-        console.log('🗑️ جاري مسح الجداول القديمة...');
         await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
         await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
         await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
         await client.query('DROP TABLE IF EXISTS users CASCADE;');
         console.log('✅ تم مسح الجداول القديمة');
 
-        // إنشاء الجداول الجديدة
-        console.log('📦 جاري إنشاء الجداول الجديدة...');
-
-        // جدول المستخدمين
         await client.query(`
             CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
@@ -102,9 +98,7 @@ async function initDatabase() {
             );
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
 
-        // جدول النشاطات
         await client.query(`
             CREATE TABLE activity_logs (
                 id BIGSERIAL PRIMARY KEY,
@@ -117,10 +111,8 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
 
-        // جدول الإعدادات
         await client.query(`
             CREATE TABLE site_settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -129,7 +121,6 @@ async function initDatabase() {
             );
         `);
 
-        // جدول الجلسات
         await client.query(`
             CREATE TABLE sessions (
                 id BIGSERIAL PRIMARY KEY,
@@ -144,7 +135,7 @@ async function initDatabase() {
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
-        // ===== إنشاء حساب الأدمن =====
+        // حساب الأدمن
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
         const hash = await bcrypt.hash(adminPassword, 10);
@@ -154,7 +145,7 @@ async function initDatabase() {
         );
         console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
-        // ===== الإعدادات الافتراضية =====
+        // الإعدادات الافتراضية
         const defaultSettings = [
             ['site_name', 'Game Wars'],
             ['primary_color', '#6366f1'],
@@ -314,14 +305,13 @@ const db = {
 };
 
 // =============================================
-// ===== API Routes =====
+// ===== API ROUTES (قبل أي شيء آخر) =====
 // =============================================
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ===== جلب إعدادات الموقع =====
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -331,14 +321,12 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// ===== تسجيل مستخدم جديد =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
         const userAgent = req.headers['user-agent'];
 
-        // التحقق
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
@@ -349,19 +337,16 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'كلمة المرور 8 أحرف على الأقل' });
         }
 
-        // التحقق من التكرار
         const existing = await db.findUser(username);
         if (existing) {
             return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
 
-        // التحقق من تفعيل التسجيل
         const settings = await db.getSettings();
         if (settings.registration_enabled === 'false') {
             return res.status(403).json({ error: 'التسجيل مغلق حالياً' });
         }
 
-        // التحقق من المكافأة
         let bonusAmount = 0;
         if (settings.bonus_enabled === 'true') {
             const now = new Date();
@@ -374,11 +359,9 @@ app.post('/api/register', async (req, res) => {
             }
         }
 
-        // تشفير كلمة المرور
         const hash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, hash, ip, userAgent, bonusAmount);
 
-        // تسجيل نشاط المكافأة
         if (bonusAmount > 0) {
             await pool.query(
                 `INSERT INTO activity_logs (user_id, username, action, details) 
@@ -404,7 +387,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ===== تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -460,7 +442,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ===== التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -495,25 +476,6 @@ app.post('/api/verify', async (req, res) => {
     }
 });
 
-// ===== جلب رصيد المستخدم =====
-app.get('/api/balance', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'غير مصرح' });
-
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await db.findUser(decoded.username);
-        
-        if (!user) {
-            return res.status(404).json({ error: 'المستخدم غير موجود' });
-        }
-
-        res.json({ balance: parseFloat(user.balance) });
-    } catch (error) {
-        res.status(401).json({ error: 'توكن غير صالح' });
-    }
-});
-
 // =============================================
 // ===== ADMIN API =====
 // =============================================
@@ -535,7 +497,6 @@ const verifyAdmin = async (req, res, next) => {
     }
 };
 
-// ===== جلب الإحصائيات =====
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
@@ -545,7 +506,6 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== جلب المستخدمين =====
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     try {
         const users = await db.getUsers();
@@ -555,7 +515,6 @@ app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== تحديث رصيد المستخدم =====
 app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     try {
         const { username, amount, action } = req.body;
@@ -589,7 +548,6 @@ app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== تعطيل/تفعيل المستخدم =====
 app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     try {
         const { username, active } = req.body;
@@ -606,7 +564,6 @@ app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== حذف مستخدم =====
 app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     try {
         const { username } = req.body;
@@ -625,7 +582,6 @@ app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== جلب سجل النشاطات =====
 app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
@@ -636,7 +592,6 @@ app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== جلب إعدادات الموقع =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -646,7 +601,6 @@ app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== تحديث إعدادات الموقع =====
 app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const { key, value } = req.body;
@@ -664,13 +618,28 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 });
 
 // =============================================
-// ===== الصفحات =====
+// ===== STATIC FILES (بعد API Routes) =====
 // =============================================
 
+// تقديم الملفات الثابتة
 app.use(express.static('public'));
 
+// =============================================
+// ===== FALLBACK FOR SPA (في النهاية) =====
+// =============================================
+
+// أي طلب غير معالج يذهب إلى index.html
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// =============================================
+// ===== معالجة الأخطاء =====
+// =============================================
+
+app.use((err, req, res, next) => {
+    console.error('❌ خطأ غير متوقع:', err);
+    res.status(500).json({ error: 'حدث خطأ داخلي في الخادم' });
 });
 
 // =============================================
