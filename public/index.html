@@ -48,7 +48,6 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        /* ===== منع التكبير ===== */
         input,
         select,
         textarea,
@@ -797,15 +796,6 @@
         .setting-item .toggle-switch.active .slider {
             right: 25px;
         }
-        .setting-item .bonus-date-input {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .setting-item .bonus-date-input input {
-            min-width: 120px;
-        }
 
         /* ===== سجلات ===== */
         .log-entry {
@@ -958,6 +948,10 @@
             border-color: var(--primary);
             background: rgba(99, 102, 241, 0.05);
         }
+        .payment-method-item.selected {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.08);
+        }
         .payment-method-item .method-name {
             font-weight: 600;
             font-size: 1rem;
@@ -973,6 +967,81 @@
             padding: 2px 10px;
             border-radius: 20px;
             font-size: 0.7rem;
+        }
+
+        /* ===== إعدادات الدفع في لوحة الإدارة ===== */
+        .payment-setting-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: border-color 0.3s ease;
+        }
+        .payment-setting-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .payment-setting-card .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .payment-setting-card .header .title {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .payment-setting-card .header .status {
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+        .payment-setting-card .header .status.active {
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+        }
+        .payment-setting-card .header .status.inactive {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+        }
+        .payment-setting-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 8px;
+        }
+        .payment-setting-grid .field {
+            display: flex;
+            flex-direction: column;
+        }
+        .payment-setting-grid .field label {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.2);
+            display: block;
+            margin-bottom: 2px;
+        }
+        .payment-setting-grid .field input {
+            width: 100%;
+            padding: 6px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.85rem;
+            min-height: 32px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+        .payment-setting-grid .field input:focus {
+            border-color: var(--primary);
+        }
+        .payment-setting-grid .field input[type="text"] {
+            direction: ltr;
+        }
+        .payment-setting-grid .full-width {
+            grid-column: 1 / -1;
         }
 
         /* ===== مؤشر الاتصال ===== */
@@ -1015,16 +1084,8 @@
             .brand { font-size: 1.2rem; gap: 8px; }
             .brand .letters span { font-size: 1.2rem; }
             .brand i { font-size: 1.3rem; }
-            .action-bar { 
-                top: 56px; 
-                padding: 6px 12px; 
-                gap: 10px; 
-            }
-            .action-bar .action-btn { 
-                padding: 6px 16px; 
-                font-size: 0.8rem; 
-                min-height: 36px; 
-            }
+            .action-bar { top: 56px; padding: 6px 12px; gap: 10px; }
+            .action-bar .action-btn { padding: 6px 16px; font-size: 0.8rem; min-height: 36px; }
             .action-bar .action-btn i { font-size: 0.9rem; }
             .main { padding: 16px; margin-top: 64px; }
             .main.with-action-bar { margin-top: 110px; }
@@ -1040,6 +1101,7 @@
             .admin-sidebar { padding: 6px; gap: 4px; }
             .admin-tab { font-size: 0.75rem; padding: 6px 12px; min-height: 36px; }
             .settings-grid { grid-template-columns: 1fr; }
+            .payment-setting-grid { grid-template-columns: 1fr; }
             .input-wrap input { padding: 10px 38px 10px 12px; min-height: 42px; font-size: 0.95rem; }
             .submit-btn { padding: 10px; min-height: 42px; font-size: 0.95rem; }
             .connection-status { bottom: 12px; padding: 6px 14px; font-size: 0.65rem; }
@@ -1051,17 +1113,8 @@
             .brand { font-size: 1rem; gap: 6px; }
             .brand .letters span { font-size: 1rem; }
             .brand i { font-size: 1.1rem; }
-            .action-bar { 
-                top: 48px; 
-                padding: 4px 8px; 
-                gap: 6px; 
-            }
-            .action-bar .action-btn { 
-                padding: 4px 12px; 
-                font-size: 0.7rem; 
-                min-height: 30px; 
-                gap: 4px;
-            }
+            .action-bar { top: 48px; padding: 4px 8px; gap: 6px; }
+            .action-bar .action-btn { padding: 4px 12px; font-size: 0.7rem; min-height: 30px; gap: 4px; }
             .action-bar .action-btn i { font-size: 0.7rem; }
             .main { padding: 12px; margin-top: 56px; }
             .main.with-action-bar { margin-top: 96px; }
@@ -1086,6 +1139,7 @@
             .connection-status { bottom: 8px; padding: 4px 10px; font-size: 0.55rem; }
             .modal-box { padding: 16px 14px; }
             .modal-box h3 { font-size: 1.1rem; }
+            .payment-setting-grid { grid-template-columns: 1fr; }
         }
 
         @media (max-width: 360px) {
@@ -1320,7 +1374,7 @@
         // =============================================
         // ===== الإعدادات =====
         // =============================================
-        const API = 'https://game22-hoas.onrender.com';
+        const API = window.location.origin;
         const REQUEST_TIMEOUT = 60000;
         let token = localStorage.getItem('token');
         let currentUser = null;
@@ -1486,7 +1540,8 @@
 
         function closeModal(id) {
             document.getElementById(id).classList.remove('active');
-            document.getElementById(id + 'Result').style.display = 'none';
+            const resultEl = document.getElementById(id + 'Result');
+            if (resultEl) resultEl.style.display = 'none';
         }
 
         function openModal(id) {
@@ -1645,7 +1700,6 @@
         // ===== نظام الإيداع =====
         // =============================================
 
-        // ===== فتح نافذة الإيداع =====
         async function openDepositModal() {
             if (!currentUser) {
                 showConnectionStatus('❌ يرجى تسجيل الدخول أولاً', 'error');
@@ -1660,7 +1714,6 @@
             selectedDepositMethod = null;
         }
 
-        // ===== جلب طرق الدفع =====
         async function loadPaymentMethods() {
             try {
                 const res = await fetchWithTimeout(`${API}/api/payment/settings`);
@@ -1707,8 +1760,6 @@
                 }
 
                 container.innerHTML = html;
-
-                // تخزين الإعدادات للاستخدام
                 window._paymentSettings = settings;
 
             } catch (e) {
@@ -1722,27 +1773,16 @@
             }
         }
 
-        // ===== اختيار طريقة الدفع =====
         function selectDepositMethod(method) {
             selectedDepositMethod = method;
-
-            // إزالة التحديد من جميع الطرق
             document.querySelectorAll('.payment-method-item').forEach(el => {
-                el.style.borderColor = 'var(--border)';
-                el.style.background = 'var(--card-bg)';
+                el.classList.remove('selected');
             });
-
-            // تمييز الطريقة المختارة
             const el = document.getElementById(`method_${method}`);
-            if (el) {
-                el.style.borderColor = 'var(--primary)';
-                el.style.background = 'rgba(99,102,241,0.05)';
-            }
-
+            if (el) el.classList.add('selected');
             showConnectionStatus(`✅ تم اختيار ${method}`, 'success');
         }
 
-        // ===== تقديم طلب إيداع =====
         async function submitDeposit() {
             if (!selectedDepositMethod) {
                 showConnectionStatus('❌ يرجى اختيار طريقة الدفع أولاً', 'error');
@@ -1790,14 +1830,12 @@
                         </div>
                     `;
 
-                    // تحديث الرصيد
                     if (currentUser) {
                         currentUser.balance = result.new_balance;
                         localStorage.setItem('user', JSON.stringify(currentUser));
                         updateNavbar(currentUser);
                     }
 
-                    // إغلاق النافذة بعد 3 ثوانٍ
                     setTimeout(() => {
                         closeModal('depositModal');
                     }, 3000);
@@ -1871,7 +1909,6 @@
                 // محاكاة طلب السحب (سيتم ربطها بالـ API لاحقاً)
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
-                // تحديث الرصيد محلياً
                 const newBalance = currentUser.balance - amount;
                 currentUser.balance = newBalance;
                 localStorage.setItem('user', JSON.stringify(currentUser));
@@ -2223,7 +2260,10 @@
             }
         }
 
+        // =============================================
         // ===== إعدادات الدفع للإدارة =====
+        // =============================================
+
         async function loadPaymentAdminSettings() {
             try {
                 const res = await fetchWithTimeout(`${API}/api/payment/settings`);
@@ -2231,41 +2271,190 @@
 
                 const container = document.getElementById('paymentSettingsContainer');
                 const methodNames = {
-                    shamcash_usd: 'شام كاش (دولار)',
-                    shamcash_syp: 'شام كاش (ليرة)',
-                    syriatel: 'سيرياتيل كاش'
+                    shamcash_usd: { name: 'شام كاش (دولار)', icon: '💳' },
+                    shamcash_syp: { name: 'شام كاش (ليرة)', icon: '💳' },
+                    syriatel: { name: 'سيرياتيل كاش', icon: '📱' }
                 };
 
                 let html = '';
                 for (const [key, value] of Object.entries(settings)) {
+                    const info = methodNames[key] || { name: key, icon: '💳' };
+                    const isEnabled = value.enabled || false;
+
                     html += `
-                        <div class="setting-item" style="margin-bottom:8px;">
-                            <div>
-                                <span class="label">${methodNames[key] || key}</span>
-                                <div style="font-size:0.7rem;color:${value.enabled ? '#34d399' : '#f87171'};margin-top:4px;">
-                                    ${value.enabled ? '✅ مفعل' : '❌ معطل'}
+                        <div class="payment-setting-card">
+                            <div class="header">
+                                <div>
+                                    <span class="title">${info.icon} ${info.name}</span>
+                                    <span class="status ${isEnabled ? 'active' : 'inactive'}">
+                                        ${isEnabled ? '✅ مفعل' : '❌ معطل'}
+                                    </span>
+                                </div>
+                                <div class="toggle-switch ${isEnabled ? 'active' : ''}" 
+                                     onclick="togglePaymentMethod('${key}', this)">
+                                    <div class="slider"></div>
                                 </div>
                             </div>
-                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
-                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.15);padding:2px 6px;border:1px solid var(--border);border-radius:4px;">
-                                    ${value.currency}
-                                </span>
-                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.15);padding:2px 6px;border:1px solid var(--border);border-radius:4px;">
-                                    ${value.bonus_percent > 0 ? `🎁 ${value.bonus_percent}%` : 'لا بونص'}
-                                </span>
+                            
+                            <div class="payment-setting-grid">
+                                <div class="field">
+                                    <label>الحد الأدنى</label>
+                                    <input type="number" value="${value.min_amount || 0}" 
+                                           id="pm_${key}_min_amount" />
+                                </div>
+                                <div class="field">
+                                    <label>الحد الأقصى</label>
+                                    <input type="number" value="${value.max_amount || 0}" 
+                                           id="pm_${key}_max_amount" />
+                                </div>
+                                <div class="field">
+                                    <label>سعر الصرف</label>
+                                    <input type="number" step="0.0001" value="${value.exchange_rate || 1}" 
+                                           id="pm_${key}_exchange_rate" />
+                                </div>
+                                <div class="field">
+                                    <label>نسبة البونص (%)</label>
+                                    <input type="number" step="0.1" value="${value.bonus_percent || 0}" 
+                                           id="pm_${key}_bonus_percent" />
+                                </div>
+                                ${key === 'shamcash_usd' || key === 'shamcash_syp' ? `
+                                <div class="field">
+                                    <label>مفتاح API</label>
+                                    <input type="text" value="${value.api_key || ''}" 
+                                           id="pm_${key}_api_key" placeholder="أدخل مفتاح API" />
+                                </div>
+                                <div class="field">
+                                    <label>عنوان المحفظة</label>
+                                    <input type="text" value="${value.account_address || ''}" 
+                                           id="pm_${key}_account_address" placeholder="أدخل عنوان المحفظة" />
+                                </div>
+                                ` : ''}
+                                ${key === 'syriatel' ? `
+                                <div class="field full-width">
+                                    <label>أرقام GSM (مفصولة بفاصلة)</label>
+                                    <input type="text" value="${Array.isArray(value.gsm_numbers) ? value.gsm_numbers.join(', ') : ''}" 
+                                           id="pm_${key}_gsm_numbers" placeholder="0999999999, 0988888888" />
+                                </div>
+                                <div class="field full-width">
+                                    <label>مفتاح API</label>
+                                    <input type="text" value="${value.api_key || ''}" 
+                                           id="pm_${key}_api_key" placeholder="أدخل مفتاح API" />
+                                </div>
+                                ` : ''}
                             </div>
+                            
+                            <button class="btn-sm primary" onclick="savePaymentSettings('${key}')" 
+                                    style="margin-top:10px;width:100%;justify-content:center;padding:8px;">
+                                <i class="fas fa-save"></i> حفظ إعدادات ${info.name}
+                            </button>
                         </div>
                     `;
                 }
 
-                container.innerHTML = html ||
-                    '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">لا توجد إعدادات دفع</div>';
+                container.innerHTML = html || `
+                    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">
+                        لا توجد إعدادات دفع
+                    </div>
+                `;
 
             } catch (e) {
                 console.error('خطأ في تحميل إعدادات الدفع:', e);
                 document.getElementById('paymentSettingsContainer').innerHTML = `
-                    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">فشل تحميل إعدادات الدفع</div>
+                    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">
+                        ❌ فشل تحميل إعدادات الدفع: ${e.message}
+                    </div>
                 `;
+            }
+        }
+
+        // ===== تبديل حالة طريقة الدفع =====
+        async function togglePaymentMethod(method, element) {
+            const isActive = element.classList.contains('active');
+            const newValue = isActive ? 'false' : 'true';
+
+            try {
+                await apiFetch('/api/payment/settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ method, key: 'enabled', value: newValue })
+                });
+
+                element.classList.toggle('active');
+                showConnectionStatus(`✅ تم ${newValue === 'true' ? 'تفعيل' : 'تعطيل'} ${method}`, 'success');
+
+                setTimeout(() => loadPaymentAdminSettings(), 500);
+            } catch (e) {
+                alert('❌ خطأ في تغيير حالة الطريقة: ' + e.message);
+            }
+        }
+
+        // ===== حفظ إعدادات طريقة الدفع =====
+        async function savePaymentSettings(method) {
+            const fields = [
+                'min_amount',
+                'max_amount',
+                'exchange_rate',
+                'bonus_percent',
+                'api_key',
+                'account_address',
+                'gsm_numbers'
+            ];
+
+            const data = {};
+
+            for (const field of fields) {
+                const el = document.getElementById(`pm_${method}_${field}`);
+                if (el) {
+                    let value = el.value.trim();
+
+                    if (['min_amount', 'max_amount', 'exchange_rate', 'bonus_percent'].includes(field)) {
+                        value = parseFloat(value) || 0;
+                    }
+
+                    if (field === 'gsm_numbers') {
+                        value = value.split(',').map(s => s.trim()).filter(s => s);
+                    }
+
+                    data[field] = value;
+                }
+            }
+
+            if (data.min_amount < 0) {
+                showConnectionStatus('❌ الحد الأدنى يجب أن يكون أكبر من صفر', 'error');
+                return;
+            }
+            if (data.max_amount < data.min_amount) {
+                showConnectionStatus('❌ الحد الأقصى يجب أن يكون أكبر من الحد الأدنى', 'error');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+                for (const [key, value] of Object.entries(data)) {
+                    await apiFetch('/api/payment/settings', {
+                        method: 'POST',
+                        body: JSON.stringify({ method, key, value })
+                    });
+                }
+
+                showConnectionStatus(`✅ تم حفظ إعدادات ${method} بنجاح`, 'success');
+
+                btn.innerHTML = '<i class="fas fa-check"></i> تم الحفظ';
+                btn.classList.add('saved');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('saved');
+                    btn.disabled = false;
+                }, 2000);
+
+            } catch (e) {
+                showConnectionStatus(`❌ خطأ في حفظ الإعدادات: ${e.message}`, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
@@ -2344,8 +2533,8 @@
             inp.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     const form = inp.closest('.form');
-                    if (form.id === 'loginForm') document.getElementById('loginBtn').click();
-                    else if (form.id === 'registerForm') document.getElementById('registerBtn').click();
+                    if (form?.id === 'loginForm') document.getElementById('loginBtn').click();
+                    else if (form?.id === 'registerForm') document.getElementById('registerBtn').click();
                     else if (inp.id === 'depositTxid' || inp.id === 'depositAmount') {
                         document.getElementById('depositSubmitBtn').click();
                     } else if (inp.id === 'withdrawAmount' || inp.id === 'withdrawAccount') {
