@@ -7,13 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        /* ===== الأساسيات ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ===== نفس الأنماط السابقة ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
@@ -28,8 +23,6 @@
             position: relative;
             overflow: hidden;
         }
-
-        /* ===== خلفية متحركة غامقة ===== */
         .bg-orb {
             position: fixed;
             border-radius: 50%;
@@ -38,507 +31,118 @@
             pointer-events: none;
             z-index: 0;
         }
-
-        .bg-orb.orb1 {
-            width: 600px;
-            height: 600px;
-            background: #4f46e5;
-            top: -200px;
-            right: -200px;
-            animation: orbFloat1 25s ease-in-out infinite;
-        }
-
-        .bg-orb.orb2 {
-            width: 500px;
-            height: 500px;
-            background: #0891b2;
-            bottom: -150px;
-            left: -150px;
-            animation: orbFloat2 30s ease-in-out infinite;
-        }
-
-        .bg-orb.orb3 {
-            width: 400px;
-            height: 400px;
-            background: #7c3aed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbFloat3 20s ease-in-out infinite;
-        }
-
-        @keyframes orbFloat1 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-100px, 80px) scale(1.1); }
-        }
-
-        @keyframes orbFloat2 {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(80px, -100px) scale(1.2); }
-        }
-
-        @keyframes orbFloat3 {
-            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
-            50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.5; }
-        }
-
-        /* ===== جزيئات ===== */
-        .particles {
-            position: fixed;
-            inset: 0;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .particles span {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 50%;
-            animation: particleFloat linear infinite;
-        }
-
-        @keyframes particleFloat {
-            0% { transform: translateY(100vh) scale(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
-        }
-
-        /* ===== الحاوية ===== */
+        .bg-orb.orb1 { width: 600px; height: 600px; background: #4f46e5; top: -200px; right: -200px; animation: orbFloat1 25s ease-in-out infinite; }
+        .bg-orb.orb2 { width: 500px; height: 500px; background: #0891b2; bottom: -150px; left: -150px; animation: orbFloat2 30s ease-in-out infinite; }
+        .bg-orb.orb3 { width: 400px; height: 400px; background: #7c3aed; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: orbFloat3 20s ease-in-out infinite; }
+        @keyframes orbFloat1 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-100px, 80px) scale(1.1); } }
+        @keyframes orbFloat2 { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(80px, -100px) scale(1.2); } }
+        @keyframes orbFloat3 { 0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; } 50% { transform: translate(-50%, -50%) scale(1.4); opacity: 0.5; } }
+        .particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .particles span { position: absolute; width: 3px; height: 3px; background: rgba(255, 255, 255, 0.06); border-radius: 50%; animation: particleFloat linear infinite; }
+        @keyframes particleFloat { 0% { transform: translateY(100vh) scale(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-10vh) scale(1); opacity: 0; } }
         .container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 420px;
-            background: rgba(11, 11, 30, 0.85);
-            backdrop-filter: blur(32px);
-            -webkit-backdrop-filter: blur(32px);
-            border-radius: 48px;
-            padding: 40px 32px;
+            position: relative; z-index: 1; width: 100%; max-width: 420px;
+            background: rgba(11, 11, 30, 0.85); backdrop-filter: blur(32px);
+            border-radius: 48px; padding: 40px 32px;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 
-                0 40px 80px rgba(0, 0, 0, 0.8),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             animation: containerIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
-        @keyframes containerIn {
-            from { opacity: 0; transform: translateY(40px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* ===== الهيدر ===== */
-        .header {
-            text-align: center;
-            margin-bottom: 32px;
-        }
-
+        @keyframes containerIn { from { opacity: 0; transform: translateY(40px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .header { text-align: center; margin-bottom: 32px; }
         .logo-ring {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 80px; height: 80px; border-radius: 50%;
             background: linear-gradient(135deg, #4f46e5, #0891b2);
-            margin-bottom: 16px;
-            position: relative;
+            margin-bottom: 16px; position: relative;
             box-shadow: 0 12px 48px rgba(79, 70, 229, 0.3);
         }
-
         .logo-ring::before {
-            content: '';
-            position: absolute;
-            inset: -4px;
-            border-radius: 50%;
+            content: ''; position: absolute; inset: -4px; border-radius: 50%;
             background: linear-gradient(135deg, #4f46e5, #0891b2, #7c3aed);
-            opacity: 0.4;
-            filter: blur(16px);
-            z-index: -1;
+            opacity: 0.4; filter: blur(16px); z-index: -1;
             animation: ringPulse 3s ease-in-out infinite;
         }
-
-        @keyframes ringPulse {
-            0%, 100% { transform: scale(1); opacity: 0.4; }
-            50% { transform: scale(1.2); opacity: 0.7; }
-        }
-
-        .logo-ring i {
-            font-size: 32px;
-            color: white;
-        }
-
-        .header h1 {
-            font-size: 2.2rem;
-            font-weight: 900;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-            text-shadow: 0 0 40px rgba(79, 70, 229, 0.15);
-        }
-
-        .header p {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8rem;
-            font-weight: 400;
-            margin-top: 4px;
-            letter-spacing: 0.5px;
-        }
-
-        /* ===== التبويبات ===== */
+        @keyframes ringPulse { 0%, 100% { transform: scale(1); opacity: 0.4; } 50% { transform: scale(1.2); opacity: 0.7; } }
+        .logo-ring i { font-size: 32px; color: white; }
+        .header h1 { font-size: 2.2rem; font-weight: 900; color: #ffffff; letter-spacing: -0.5px; text-shadow: 0 0 40px rgba(79, 70, 229, 0.15); }
+        .header p { color: rgba(255, 255, 255, 0.3); font-size: 0.8rem; font-weight: 400; margin-top: 4px; letter-spacing: 0.5px; }
         .tabs {
-            display: flex;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 16px;
-            padding: 4px;
-            margin-bottom: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex; background: rgba(255, 255, 255, 0.04); border-radius: 16px;
+            padding: 4px; margin-bottom: 28px; border: 1px solid rgba(255, 255, 255, 0.06);
         }
-
         .tab-btn {
-            flex: 1;
-            padding: 12px 8px;
-            border: none;
-            background: transparent;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.85rem;
-            font-weight: 700;
-            border-radius: 13px;
-            cursor: pointer;
-            transition: all 0.4s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            flex: 1; padding: 12px 8px; border: none; background: transparent;
+            color: rgba(255, 255, 255, 0.3); font-size: 0.85rem; font-weight: 700;
+            border-radius: 13px; cursor: pointer; transition: all 0.4s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
             font-family: inherit;
         }
-
-        .tab-btn i {
-            font-size: 0.85rem;
-        }
-
-        .tab-btn.active {
-            background: rgba(79, 70, 229, 0.25);
-            color: #a5b4fc;
-            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.1);
-        }
-
-        .tab-btn:hover:not(.active) {
-            color: rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.03);
-        }
-
-        /* ===== النماذج ===== */
-        .form {
-            display: none;
-            animation: fadeSlide 0.4s ease;
-        }
-
-        .form.active {
-            display: block;
-        }
-
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 6px;
-        }
-
-        .input-wrap {
-            position: relative;
-        }
-
-        .input-wrap i {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-
-        .input-wrap:focus-within i {
-            color: #818cf8;
-        }
-
+        .tab-btn i { font-size: 0.85rem; }
+        .tab-btn.active { background: rgba(79, 70, 229, 0.25); color: #a5b4fc; box-shadow: 0 4px 20px rgba(79, 70, 229, 0.1); }
+        .tab-btn:hover:not(.active) { color: rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.03); }
+        .form { display: none; animation: fadeSlide 0.4s ease; }
+        .form.active { display: block; }
+        @keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; color: rgba(255, 255, 255, 0.5); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+        .input-wrap { position: relative; }
+        .input-wrap i { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.15); font-size: 0.9rem; transition: color 0.3s ease; }
+        .input-wrap:focus-within i { color: #818cf8; }
         .input-wrap input {
-            width: 100%;
-            padding: 14px 44px 14px 18px;
+            width: 100%; padding: 14px 44px 14px 18px;
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid rgba(255, 255, 255, 0.06);
-            border-radius: 14px;
-            color: #ffffff;
-            font-size: 0.95rem;
-            font-family: inherit;
-            transition: all 0.3s ease;
-            outline: none;
+            border-radius: 14px; color: #ffffff; font-size: 0.95rem;
+            font-family: inherit; transition: all 0.3s ease; outline: none;
         }
-
-        .input-wrap input::placeholder {
-            color: rgba(255, 255, 255, 0.12);
-            font-weight: 300;
-        }
-
-        .input-wrap input:focus {
-            border-color: rgba(79, 70, 229, 0.5);
-            background: rgba(255, 255, 255, 0.07);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
-        }
-
-        /* ===== الزر ===== */
+        .input-wrap input::placeholder { color: rgba(255, 255, 255, 0.12); font-weight: 300; }
+        .input-wrap input:focus { border-color: rgba(79, 70, 229, 0.5); background: rgba(255, 255, 255, 0.07); box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08); }
         .submit-btn {
-            width: 100%;
-            padding: 16px;
+            width: 100%; padding: 16px;
             background: linear-gradient(135deg, #4f46e5, #0891b2);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
+            color: white; border: none; border-radius: 14px;
+            font-size: 1rem; font-weight: 700; cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            font-family: inherit;
-            margin-top: 4px;
-            position: relative;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            font-family: inherit; margin-top: 4px;
+            position: relative; overflow: hidden;
             box-shadow: 0 8px 30px rgba(79, 70, 229, 0.2);
         }
-
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
-
-        .submit-btn:hover::before {
-            transform: translateX(100%);
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(79, 70, 229, 0.35);
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .submit-btn i {
-            font-size: 0.95rem;
-        }
-
-        /* ===== الرسائل ===== */
-        .message {
-            margin-top: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.82rem;
-            display: none;
-        }
-
-        .message.error {
-            display: block;
-            background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.15);
-        }
-
-        .message.success {
-            display: block;
-            background: rgba(52, 211, 153, 0.12);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.15);
-        }
-
-        .message.details {
-            display: block;
-            background: rgba(251, 191, 36, 0.08);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            font-size: 0.7rem;
-            font-family: monospace;
-            text-align: left;
-            direction: ltr;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-
-        /* ===== لوحة التحكم ===== */
-        #dashboard {
-            display: none;
-        }
-
-        #dashboard.active {
-            display: block;
-            animation: fadeSlide 0.5s ease;
-        }
-
+        .submit-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1), transparent); transform: translateX(-100%); transition: transform 0.6s ease; }
+        .submit-btn:hover::before { transform: translateX(100%); }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(79, 70, 229, 0.35); }
+        .submit-btn:active { transform: translateY(0); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+        .submit-btn i { font-size: 0.95rem; }
+        .message { margin-top: 14px; padding: 12px 16px; border-radius: 12px; text-align: center; font-weight: 600; font-size: 0.82rem; display: none; }
+        .message.error { display: block; background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.15); }
+        .message.success { display: block; background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.15); }
+        .message.details { display: block; background: rgba(251, 191, 36, 0.08); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.1); font-size: 0.7rem; font-family: monospace; text-align: left; direction: ltr; white-space: pre-wrap; word-break: break-all; }
+        #dashboard { display: none; }
+        #dashboard.active { display: block; animation: fadeSlide 0.5s ease; }
         .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; background: rgba(255, 255, 255, 0.03);
+            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
         }
-
-        .site-title {
-            font-size: 1.5rem;
-            font-weight: 900;
-            background: linear-gradient(90deg, #818cf8, #22d3ee, #818cf8);
-            background-size: 200% 100%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: textShimmer 4s linear infinite;
-        }
-
-        @keyframes textShimmer {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 200% 50%; }
-        }
-
-        .site-title span {
-            display: inline-block;
-            animation: letterFloat 3s ease-in-out infinite;
-            animation-delay: calc(var(--i) * 0.08s);
-        }
-
-        @keyframes letterFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .balance-box {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(251, 191, 36, 0.08);
-            padding: 8px 16px 8px 12px;
-            border-radius: 14px;
-            border: 1px solid rgba(251, 191, 36, 0.12);
-        }
-
-        .balance-box i {
-            font-size: 1.1rem;
-            color: #fbbf24;
-        }
-
-        .balance-box .amount {
-            font-size: 1.1rem;
-            font-weight: 800;
-            color: #fbbf24;
-            font-feature-settings: "tnum";
-        }
-
-        .balance-box .label {
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 0.6rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .dashboard-content {
-            text-align: center;
-            padding: 16px 0 4px;
-        }
-
-        .greeting {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 2px;
-        }
-
-        .greeting span {
-            background: linear-gradient(135deg, #818cf8, #22d3ee);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .sub-text {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 0.8rem;
-            margin-bottom: 20px;
-            font-weight: 300;
-        }
-
-        .logout-btn {
-            padding: 10px 28px;
-            background: rgba(239, 68, 68, 0.08);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.08);
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.82rem;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-family: inherit;
-        }
-
-        .logout-btn:hover {
-            background: rgba(239, 68, 68, 0.16);
-            transform: scale(1.02);
-        }
-
-        /* ===== تذييل ===== */
-        .footer {
-            text-align: center;
-            margin-top: 24px;
-            color: rgba(255, 255, 255, 0.04);
-            font-size: 0.6rem;
-            letter-spacing: 1.5px;
-            font-weight: 300;
-        }
-
-        /* ===== استجابة ===== */
-        @media (max-width: 520px) {
-            .container { padding: 28px 18px; border-radius: 32px; }
-            .header h1 { font-size: 1.8rem; }
-            .logo-ring { width: 64px; height: 64px; }
-            .logo-ring i { font-size: 26px; }
-            .navbar { flex-direction: column; align-items: stretch; text-align: center; }
-            .balance-box { justify-content: center; }
-            .site-title { font-size: 1.3rem; }
-        }
+        .site-title { font-size: 1.5rem; font-weight: 900; background: linear-gradient(90deg, #818cf8, #22d3ee, #818cf8); background-size: 200% 100%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: textShimmer 4s linear infinite; }
+        @keyframes textShimmer { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
+        .site-title span { display: inline-block; animation: letterFloat 3s ease-in-out infinite; animation-delay: calc(var(--i) * 0.08s); }
+        @keyframes letterFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        .balance-box { display: flex; align-items: center; gap: 12px; background: rgba(251, 191, 36, 0.08); padding: 8px 16px 8px 12px; border-radius: 14px; border: 1px solid rgba(251, 191, 36, 0.12); }
+        .balance-box i { font-size: 1.1rem; color: #fbbf24; }
+        .balance-box .amount { font-size: 1.1rem; font-weight: 800; color: #fbbf24; font-feature-settings: "tnum"; }
+        .balance-box .label { color: rgba(255, 255, 255, 0.25); font-size: 0.6rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .dashboard-content { text-align: center; padding: 16px 0 4px; }
+        .greeting { font-size: 1.4rem; font-weight: 700; color: white; margin-bottom: 2px; }
+        .greeting span { background: linear-gradient(135deg, #818cf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sub-text { color: rgba(255, 255, 255, 0.2); font-size: 0.8rem; margin-bottom: 20px; font-weight: 300; }
+        .logout-btn { padding: 10px 28px; background: rgba(239, 68, 68, 0.08); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.08); border-radius: 12px; cursor: pointer; font-weight: 700; font-size: 0.82rem; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; font-family: inherit; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.16); transform: scale(1.02); }
+        .footer { text-align: center; margin-top: 24px; color: rgba(255, 255, 255, 0.04); font-size: 0.6rem; letter-spacing: 1.5px; font-weight: 300; }
+        @media (max-width: 520px) { .container { padding: 28px 18px; border-radius: 32px; } .header h1 { font-size: 1.8rem; } .logo-ring { width: 64px; height: 64px; } .logo-ring i { font-size: 26px; } .navbar { flex-direction: column; align-items: stretch; text-align: center; } .balance-box { justify-content: center; } .site-title { font-size: 1.3rem; } }
     </style>
 </head>
 <body>
@@ -640,6 +244,17 @@
     </div>
 
     <script>
+        // =============================================
+        // ===== 🔗 رابط الخادم (API Base URL) =====
+        // =============================================
+        // غيّر هذا الرابط حسب بيئة التشغيل
+        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:3000'  // ✅ محلياً
+            : 'https://game22-hoas.onrender.com';  // ✅ على Render - غيّر إلى رابط تطبيقك
+
+        console.log('🔗 رابط الخادم:', API_BASE_URL);
+        console.log('🌍 البيئة:', window.location.hostname);
+
         // ===== جزيئات =====
         (function() {
             const c = document.getElementById('particles');
@@ -703,7 +318,7 @@
             btn.dataset.original = btn.innerHTML;
         });
 
-        // ===== تسجيل الدخول =====
+        // ===== تسجيل الدخول (مع رابط الخادم) =====
         document.getElementById('loginBtn').addEventListener('click', async () => {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
@@ -716,12 +331,17 @@
 
             setLoading(btn, true);
             try {
-                const res = await fetch('/api/login', {
+                const url = `${API_BASE_URL}/api/login`;
+                console.log('📤 إرسال طلب تسجيل دخول إلى:', url);
+                
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
+                console.log('📥 استجابة تسجيل الدخول:', data);
+                
                 if (!res.ok) throw new Error(data.error || 'فشل تسجيل الدخول');
 
                 localStorage.setItem('token', data.token);
@@ -729,14 +349,14 @@
                 showMsg(msg, '✅ تم تسجيل الدخول بنجاح', 'success');
                 setTimeout(() => showDashboard(data.user), 400);
             } catch (e) {
-                showMsg(msg, '❌ ' + e.message);
                 console.error('❌ خطأ في تسجيل الدخول:', e);
+                showMsg(msg, '❌ ' + e.message);
             } finally {
                 setLoading(btn, false);
             }
         });
 
-        // ===== إنشاء حساب (مع عرض تفاصيل الخطأ) =====
+        // ===== إنشاء حساب (مع رابط الخادم) =====
         document.getElementById('registerBtn').addEventListener('click', async () => {
             const username = document.getElementById('registerUsername').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
@@ -755,8 +375,11 @@
 
             setLoading(btn, true);
             try {
-                console.log('📤 إرسال طلب إنشاء حساب:', { username, password: '***' });
-                const res = await fetch('/api/register', {
+                const url = `${API_BASE_URL}/api/register`;
+                console.log('📤 إرسال طلب إنشاء حساب إلى:', url);
+                console.log('📦 البيانات:', { username, password: '***' });
+                
+                const res = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -766,7 +389,6 @@
                 console.log('📥 استجابة الخادم:', data);
                 
                 if (!res.ok) {
-                    // عرض تفاصيل الخطأ إن وجدت
                     const errorMsg = data.error || 'فشل إنشاء الحساب';
                     const details = data.details ? `\n📋 التفاصيل: ${JSON.stringify(data.details, null, 2)}` : '';
                     showMsg(msg, '❌ ' + errorMsg + details, 'details');
