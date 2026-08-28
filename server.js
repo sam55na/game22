@@ -133,7 +133,7 @@ async function initDatabase() {
         );
         console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
-        // الإعدادات الافتراضية
+        // ===== الإعدادات الافتراضية (الألوان) =====
         const defaultSettings = [
             ['site_name', 'Game Wars'],
             ['primary_color', '#6366f1'],
@@ -277,6 +277,16 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ===== جلب إعدادات الموقع (بما فيها الألوان) =====
+app.get('/api/settings', async (req, res) => {
+    try {
+        const settings = await db.getSettings();
+        res.json(settings);
+    } catch (error) {
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+    }
+});
+
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -348,9 +358,13 @@ app.post('/api/login', async (req, res) => {
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await db.saveSession(user.id, token, expiresAt);
 
+        // جلب الإعدادات مع التوكن
+        const settings = await db.getSettings();
+
         res.json({
             token,
-            user: { id: user.id, username: user.username, role: user.role }
+            user: { id: user.id, username: user.username, role: user.role },
+            settings: settings
         });
     } catch (error) {
         console.error('❌ خطأ في تسجيل الدخول:', error);
@@ -372,7 +386,14 @@ app.post('/api/verify', async (req, res) => {
             return res.status(401).json({ error: 'جلسة غير صالحة' });
         }
 
-        res.json({ id: decoded.id, username: decoded.username, role: decoded.role });
+        const settings = await db.getSettings();
+
+        res.json({
+            id: decoded.id,
+            username: decoded.username,
+            role: decoded.role,
+            settings: settings
+        });
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ error: 'انتهت صلاحية التوكن' });
@@ -485,7 +506,9 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'settings_update', `تحديث: ${key} = ${value}`]
         );
-        res.json({ message: 'تم تحديث الإعداد' });
+        // إرجاع الإعدادات المحدثة
+        const settings = await db.getSettings();
+        res.json({ message: 'تم تحديث الإعداد', settings: settings });
     } catch (error) {
         res.status(500).json({ error: 'حدث خطأ' });
     }

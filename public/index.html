@@ -2,12 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Game Wars</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        /* ===== متغيرات الألوان ===== */
+        /* ===== متغيرات الألوان (سيتم تحديثها بواسطة JavaScript) ===== */
         :root {
             --primary: #6366f1;
             --secondary: #0891b2;
@@ -17,11 +17,22 @@
             --card-bg: rgba(255,255,255,0.03);
             --border: rgba(255,255,255,0.05);
             --glow: rgba(99,102,241,0.15);
-            --radius: 14px;
+            --radius: 16px;
             --transition: 0.3s ease;
+            --font-size: 16px;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
             background: var(--bg);
@@ -29,6 +40,18 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            font-size: var(--font-size);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        /* ===== منع التكبير ===== */
+        input,
+        select,
+        textarea,
+        button {
+            font-size: 16px !important;
         }
 
         /* ===== خلفية متحركة ===== */
@@ -36,17 +59,44 @@
             position: fixed;
             border-radius: 50%;
             filter: blur(120px);
-            opacity: 0.15;
+            opacity: 0.12;
             pointer-events: none;
             z-index: 0;
             animation: orbFloat 25s ease-in-out infinite;
+            transition: background 0.3s ease;
         }
-        .bg-orb.orb1 { width: 500px; height: 500px; background: var(--primary); top: -100px; right: -100px; }
-        .bg-orb.orb2 { width: 400px; height: 400px; background: var(--secondary); bottom: -50px; left: -50px; animation-delay: -8s; }
-        .bg-orb.orb3 { width: 300px; height: 300px; background: var(--accent); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -15s; }
+        .bg-orb.orb1 {
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            top: -100px;
+            right: -100px;
+        }
+        .bg-orb.orb2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary);
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -8s;
+        }
+        .bg-orb.orb3 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -15s;
+        }
         @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-60px, 50px) scale(1.1); }
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                transform: translate(-60px, 50px) scale(1.1);
+            }
         }
 
         /* ===== الشريط العلوي ===== */
@@ -58,22 +108,27 @@
             z-index: 100;
             background: rgba(10, 10, 26, 0.92);
             backdrop-filter: blur(16px);
-            padding: 6px 20px;
+            padding: 10px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 50px;
+            height: 64px;
             border-bottom: 1px solid var(--border);
+            transition: border-color 0.3s ease;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 1rem;
+            gap: 12px;
+            font-size: 1.4rem;
             font-weight: 800;
         }
-        .brand i { font-size: 1.1rem; color: var(--primary); }
+        .brand i {
+            font-size: 1.6rem;
+            color: var(--primary);
+            transition: color 0.3s ease;
+        }
         .brand .letters {
             display: flex;
             gap: 0px;
@@ -84,13 +139,25 @@
             animation: letterFall 4.5s ease-in-out infinite;
             animation-delay: calc(var(--i) * 0.12s);
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 1.4rem;
         }
         @keyframes letterFall {
-            0% { transform: translateY(-40px) rotate(160deg); opacity: 0; }
-            12% { transform: translateY(0) rotate(0); opacity: 1; }
-            82% { transform: translateY(0) rotate(0); opacity: 1; }
-            100% { transform: translateY(25px) rotate(-12deg); opacity: 0; }
+            0% {
+                transform: translateY(-50px) rotate(160deg);
+                opacity: 0;
+            }
+            12% {
+                transform: translateY(0) rotate(0);
+                opacity: 1;
+            }
+            82% {
+                transform: translateY(0) rotate(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(30px) rotate(-12deg);
+                opacity: 0;
+            }
         }
         .brand .letters span:nth-child(1) { --i: 0; }
         .brand .letters span:nth-child(2) { --i: 1; }
@@ -105,40 +172,68 @@
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
         .btn {
-            padding: 4px 12px;
+            padding: 8px 20px;
             border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 0.7rem;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
             transition: all var(--transition);
             font-family: inherit;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             white-space: nowrap;
+            min-height: 40px;
         }
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--glow); }
-        .btn-outline { background: transparent; border: 1px solid var(--border); color: rgba(255,255,255,0.4); }
-        .btn-outline:hover { background: var(--card-bg); color: #fff; }
-        .btn-danger { background: rgba(239,68,68,0.08); color: #f87171; border: 1px solid rgba(239,68,68,0.06); }
-        .btn-danger:hover { background: rgba(239,68,68,0.15); }
-        .avatar {
-            width: 28px; height: 28px; border-radius: 50%;
+        .btn-primary {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.7rem; cursor: pointer;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px var(--glow);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .btn-outline:hover {
+            background: var(--card-bg);
+            color: #fff;
+        }
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.08);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.06);
+        }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.15);
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.3s ease;
         }
 
         /* ===== المحتوى ===== */
         .main {
-            margin-top: 58px;
-            padding: 16px 20px;
-            max-width: 1100px;
+            margin-top: 76px;
+            padding: 24px 32px;
+            max-width: 1200px;
             margin-left: auto;
             margin-right: auto;
             flex: 1;
@@ -149,203 +244,285 @@
 
         /* ===== صفحة تسجيل الدخول ===== */
         .auth-box {
-            max-width: 340px;
-            margin: 20px auto;
+            max-width: 420px;
+            margin: 30px auto;
             background: var(--card-bg);
             border-radius: var(--radius);
-            padding: 24px 20px;
+            padding: 32px 28px;
             border: 1px solid var(--border);
             backdrop-filter: blur(8px);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         .auth-box .logo-icon {
             text-align: center;
-            font-size: 2rem;
+            font-size: 3rem;
             color: var(--primary);
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            transition: color 0.3s ease;
         }
         .auth-box h2 {
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             color: var(--text);
         }
 
         .tabs {
             display: flex;
-            gap: 4px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 10px;
-            padding: 4px;
-            margin-bottom: 16px;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 20px;
         }
         .tab-btn {
             flex: 1;
-            padding: 6px;
+            padding: 10px;
             border: none;
             background: transparent;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255, 255, 255, 0.3);
             font-weight: 600;
-            font-size: 0.7rem;
-            border-radius: 8px;
+            font-size: 0.9rem;
+            border-radius: 10px;
             cursor: pointer;
             transition: all var(--transition);
             font-family: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 6px;
         }
         .tab-btn.active {
-            background: rgba(99,102,241,0.12);
+            background: rgba(99, 102, 241, 0.12);
             color: #a5b4fc;
         }
-        .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.5); }
+        .tab-btn:hover:not(.active) {
+            color: rgba(255, 255, 255, 0.5);
+        }
 
-        .form { display: none; }
-        .form.active { display: block; animation: fadeUp 0.25s ease; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        .form {
+            display: none;
+        }
+        .form.active {
+            display: block;
+            animation: fadeUp 0.3s ease;
+        }
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-        .input-group { margin-bottom: 10px; }
+        .input-group {
+            margin-bottom: 14px;
+        }
         .input-group label {
             display: block;
-            color: rgba(255,255,255,0.25);
-            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin-bottom: 3px;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
         }
         .input-wrap {
             position: relative;
         }
         .input-wrap i {
             position: absolute;
-            right: 10px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255,255,255,0.06);
-            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.08);
+            font-size: 0.9rem;
         }
         .input-wrap input {
             width: 100%;
-            padding: 7px 32px 7px 10px;
-            background: rgba(255,255,255,0.03);
+            padding: 12px 44px 12px 14px;
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
-            border-radius: 8px;
+            border-radius: 10px;
             color: var(--text);
-            font-size: 0.8rem;
+            font-size: 1rem;
             font-family: inherit;
             outline: none;
             transition: all var(--transition);
+            min-height: 48px;
         }
         .input-wrap input:focus {
             border-color: var(--primary);
-            background: rgba(255,255,255,0.05);
-            box-shadow: 0 0 0 3px var(--glow);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 4px var(--glow);
         }
-        .input-wrap input::placeholder { color: rgba(255,255,255,0.06); }
+        .input-wrap input::placeholder {
+            color: rgba(255, 255, 255, 0.06);
+        }
 
         .submit-btn {
             width: 100%;
-            padding: 8px;
+            padding: 12px;
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: #fff;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 700;
-            font-size: 0.8rem;
+            font-size: 1rem;
             cursor: pointer;
             transition: all var(--transition);
             font-family: inherit;
-            margin-top: 2px;
+            margin-top: 4px;
+            min-height: 48px;
         }
-        .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--glow); }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px var(--glow);
+        }
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
 
         .msg {
-            margin-top: 10px;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             font-weight: 600;
             display: none;
             text-align: center;
         }
-        .msg.error { display: block; background: rgba(239,68,68,0.06); color: #f87171; border: 1px solid rgba(239,68,68,0.04); }
-        .msg.success { display: block; background: rgba(52,211,153,0.06); color: #34d399; border: 1px solid rgba(52,211,153,0.04); }
+        .msg.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.06);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.04);
+        }
+        .msg.success {
+            display: block;
+            background: rgba(52, 211, 153, 0.06);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.04);
+        }
 
         /* ===== الواجهة الرئيسية ===== */
-        .dashboard { display: none; }
-        .dashboard.active { display: block; animation: fadeUp 0.4s ease; }
+        .dashboard {
+            display: none;
+        }
+        .dashboard.active {
+            display: block;
+            animation: fadeUp 0.4s ease;
+        }
 
         .hero {
             text-align: center;
-            padding: 40px 20px;
+            padding: 50px 30px;
             background: var(--card-bg);
             border-radius: var(--radius);
             border: 1px solid var(--border);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .hero i { font-size: 3rem; color: var(--primary); margin-bottom: 12px; }
-        .hero h1 { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
-        .hero p { color: rgba(255,255,255,0.2); font-size: 0.8rem; }
+        .hero i {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+            transition: color 0.3s ease;
+        }
+        .hero h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .hero p {
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 1rem;
+        }
 
         /* ===== لوحة الإدارة ===== */
         .admin-panel {
             display: none;
-            margin-top: 16px;
+            margin-top: 24px;
         }
-        .admin-panel.active { display: block; animation: fadeUp 0.3s ease; }
+        .admin-panel.active {
+            display: block;
+            animation: fadeUp 0.3s ease;
+        }
 
         .admin-sidebar {
             display: flex;
-            gap: 4px;
+            gap: 6px;
             flex-wrap: wrap;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             background: var(--card-bg);
             border-radius: var(--radius);
-            padding: 6px;
+            padding: 8px;
             border: 1px solid var(--border);
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
         .admin-tab {
-            padding: 6px 14px;
+            padding: 10px 20px;
             border: none;
             background: transparent;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255, 255, 255, 0.3);
             font-weight: 600;
-            font-size: 0.7rem;
-            border-radius: 8px;
+            font-size: 0.9rem;
+            border-radius: 10px;
             cursor: pointer;
             transition: all var(--transition);
             font-family: inherit;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
+            min-height: 44px;
         }
         .admin-tab.active {
-            background: rgba(99,102,241,0.1);
+            background: rgba(99, 102, 241, 0.1);
             color: #a5b4fc;
         }
-        .admin-tab:hover:not(.active) { color: rgba(255,255,255,0.5); }
+        .admin-tab:hover:not(.active) {
+            color: rgba(255, 255, 255, 0.5);
+        }
 
-        .admin-content { display: none; }
-        .admin-content.active { display: block; animation: fadeUp 0.25s ease; }
+        .admin-content {
+            display: none;
+        }
+        .admin-content.active {
+            display: block;
+            animation: fadeUp 0.3s ease;
+        }
 
         /* ===== بطاقات الإحصائيات ===== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-            gap: 10px;
-            margin-bottom: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
         }
         .stat-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 12px 14px;
+            padding: 16px 18px;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .stat-card .label { color: rgba(255,255,255,0.15); font-size: 0.6rem; text-transform: uppercase; font-weight: 600; }
-        .stat-card .value { font-size: 1.3rem; font-weight: 800; margin-top: 2px; }
+        .stat-card .label {
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-top: 4px;
+        }
 
         /* ===== جداول ===== */
         .table-wrap {
@@ -353,97 +530,346 @@
             background: var(--card-bg);
             border-radius: var(--radius);
             border: 1px solid var(--border);
-            padding: 2px;
+            padding: 4px;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
-        th { text-align: right; padding: 8px 12px; color: rgba(255,255,255,0.15); font-weight: 600; font-size: 0.6rem; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-        td { padding: 6px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); color: rgba(255,255,255,0.4); }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        th {
+            text-align: right;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.15);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            color: rgba(255, 255, 255, 0.5);
+        }
 
         .btn-sm {
-            padding: 2px 8px;
+            padding: 4px 12px;
             border: none;
-            border-radius: 4px;
-            font-size: 0.55rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
             font-family: inherit;
             transition: all var(--transition);
+            min-height: 28px;
         }
-        .btn-sm.primary { background: rgba(99,102,241,0.08); color: #a5b4fc; }
-        .btn-sm.primary:hover { background: rgba(99,102,241,0.15); }
-        .btn-sm.danger { background: rgba(239,68,68,0.06); color: #f87171; }
-        .btn-sm.danger:hover { background: rgba(239,68,68,0.12); }
-        .btn-sm.success { background: rgba(52,211,153,0.06); color: #34d399; }
-        .btn-sm.success:hover { background: rgba(52,211,153,0.12); }
+        .btn-sm.primary {
+            background: rgba(99, 102, 241, 0.08);
+            color: #a5b4fc;
+        }
+        .btn-sm.primary:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+        .btn-sm.danger {
+            background: rgba(239, 68, 68, 0.06);
+            color: #f87171;
+        }
+        .btn-sm.danger:hover {
+            background: rgba(239, 68, 68, 0.12);
+        }
+        .btn-sm.success {
+            background: rgba(52, 211, 153, 0.06);
+            color: #34d399;
+        }
+        .btn-sm.success:hover {
+            background: rgba(52, 211, 153, 0.12);
+        }
 
         /* ===== إعدادات الألوان ===== */
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
         }
         .setting-item {
             background: var(--card-bg);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 12px;
+            border-radius: 10px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
             flex-wrap: wrap;
+            transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .setting-item .label { font-size: 0.65rem; font-weight: 500; color: rgba(255,255,255,0.25); }
-        .setting-item input, .setting-item select {
-            background: rgba(255,255,255,0.03);
+        .setting-item .label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .setting-item .color-preview {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
             border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 4px 8px;
+            flex-shrink: 0;
+        }
+        .setting-item input,
+        .setting-item select {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 6px 12px;
             color: var(--text);
             font-family: inherit;
-            font-size: 0.7rem;
+            font-size: 0.85rem;
             outline: none;
-            min-width: 80px;
+            min-width: 100px;
+            min-height: 36px;
+            transition: border-color 0.3s ease;
         }
-        .setting-item input[type="color"] { width: 30px; height: 28px; padding: 2px; cursor: pointer; min-width: unset; }
+        .setting-item input[type="color"] {
+            width: 40px;
+            height: 36px;
+            padding: 2px;
+            cursor: pointer;
+            min-width: unset;
+        }
+        .setting-item .save-color-btn {
+            padding: 4px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.08);
+            color: #a5b4fc;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all var(--transition);
+            font-family: inherit;
+            min-height: 28px;
+        }
+        .setting-item .save-color-btn:hover {
+            background: rgba(99, 102, 241, 0.15);
+        }
+        .setting-item .save-color-btn.saved {
+            background: rgba(52, 211, 153, 0.08);
+            color: #34d399;
+        }
 
         /* ===== سجلات ===== */
         .log-entry {
-            padding: 4px 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.01);
+            padding: 8px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.01);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
-            font-size: 0.65rem;
-            color: rgba(255,255,255,0.15);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.2);
         }
-        .log-entry .time { color: rgba(255,255,255,0.05); font-size: 0.55rem; }
-        .log-entry .user { color: #a5b4fc; font-weight: 500; }
+        .log-entry .time {
+            color: rgba(255, 255, 255, 0.05);
+            font-size: 0.7rem;
+        }
+        .log-entry .user {
+            color: #a5b4fc;
+            font-weight: 500;
+        }
 
         /* ===== استجابة ===== */
-        @media (max-width: 700px) {
-            .navbar { padding: 4px 12px; height: 44px; }
-            .brand { font-size: 0.85rem; gap: 6px; }
-            .brand .letters span { font-size: 0.85rem; }
-            .main { padding: 12px; margin-top: 50px; }
-            .auth-box { padding: 16px 14px; max-width: 100%; margin: 8px 0; }
-            .btn span { display: none; }
-            .hero h1 { font-size: 1.2rem; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-            .admin-sidebar { padding: 4px; }
-            .admin-tab { font-size: 0.6rem; padding: 4px 10px; }
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 8px 16px;
+                height: 56px;
+            }
+            .brand {
+                font-size: 1.2rem;
+                gap: 8px;
+            }
+            .brand .letters span {
+                font-size: 1.2rem;
+            }
+            .brand i {
+                font-size: 1.3rem;
+            }
+            .main {
+                padding: 16px;
+                margin-top: 64px;
+            }
+            .auth-box {
+                padding: 24px 18px;
+                max-width: 100%;
+                margin: 16px 0;
+            }
+            .auth-box h2 {
+                font-size: 1.3rem;
+            }
+            .btn span {
+                display: none;
+            }
+            .btn {
+                padding: 6px 14px;
+                font-size: 0.8rem;
+                min-height: 36px;
+            }
+            .avatar {
+                width: 34px;
+                height: 34px;
+                font-size: 0.85rem;
+            }
+            .hero h1 {
+                font-size: 1.5rem;
+            }
+            .hero i {
+                font-size: 3rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .admin-sidebar {
+                padding: 6px;
+                gap: 4px;
+            }
+            .admin-tab {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+                min-height: 36px;
+            }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            .input-wrap input {
+                padding: 10px 38px 10px 12px;
+                min-height: 42px;
+                font-size: 0.95rem;
+            }
+            .submit-btn {
+                padding: 10px;
+                min-height: 42px;
+                font-size: 0.95rem;
+            }
         }
+
         @media (max-width: 420px) {
-            .brand { font-size: 0.75rem; gap: 4px; }
-            .brand .letters span { font-size: 0.75rem; }
-            .auth-box { padding: 12px 10px; border-radius: 10px; }
-            .input-wrap input { padding: 5px 28px 5px 8px; font-size: 0.7rem; }
-            .submit-btn { padding: 6px; font-size: 0.7rem; }
-            .stats-grid { grid-template-columns: 1fr; }
-            .hero i { font-size: 2rem; }
-            .hero h1 { font-size: 1rem; }
+            .navbar {
+                padding: 6px 12px;
+                height: 48px;
+            }
+            .brand {
+                font-size: 1rem;
+                gap: 6px;
+            }
+            .brand .letters span {
+                font-size: 1rem;
+            }
+            .brand i {
+                font-size: 1.1rem;
+            }
+            .main {
+                padding: 12px;
+                margin-top: 56px;
+            }
+            .auth-box {
+                padding: 16px 14px;
+                border-radius: 12px;
+            }
+            .auth-box h2 {
+                font-size: 1.1rem;
+            }
+            .auth-box .logo-icon {
+                font-size: 2.2rem;
+            }
+            .hero {
+                padding: 30px 16px;
+            }
+            .hero h1 {
+                font-size: 1.2rem;
+            }
+            .hero i {
+                font-size: 2.2rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .btn {
+                padding: 4px 10px;
+                font-size: 0.7rem;
+                min-height: 30px;
+            }
+            .avatar {
+                width: 28px;
+                height: 28px;
+                font-size: 0.7rem;
+            }
+            .admin-tab {
+                font-size: 0.65rem;
+                padding: 4px 10px;
+                min-height: 30px;
+            }
+            .input-wrap input {
+                padding: 8px 32px 8px 10px;
+                min-height: 36px;
+                font-size: 0.85rem;
+            }
+            .submit-btn {
+                padding: 8px;
+                min-height: 36px;
+                font-size: 0.85rem;
+            }
+            .tab-btn {
+                font-size: 0.75rem;
+                padding: 6px;
+            }
+            .stat-card .value {
+                font-size: 1.3rem;
+            }
+            .setting-item {
+                padding: 8px 12px;
+            }
+            .setting-item input {
+                min-width: 60px;
+                font-size: 0.75rem;
+            }
+            .log-entry {
+                font-size: 0.7rem;
+                padding: 6px 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .brand .letters span {
+                font-size: 0.8rem;
+            }
+            .brand i {
+                font-size: 0.9rem;
+            }
+            .btn {
+                font-size: 0.6rem;
+                padding: 3px 8px;
+                min-height: 26px;
+            }
+            .avatar {
+                width: 24px;
+                height: 24px;
+                font-size: 0.6rem;
+            }
+            .auth-box {
+                padding: 12px 10px;
+            }
+            .input-wrap input {
+                padding: 6px 28px 6px 8px;
+                min-height: 32px;
+                font-size: 0.8rem;
+            }
+            .submit-btn {
+                padding: 6px;
+                min-height: 32px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -543,13 +969,13 @@
                         <div class="stat-card"><div class="label">تسجيلات اليوم</div><div class="value" id="statToday">0</div></div>
                         <div class="stat-card"><div class="label">دخول اليوم</div><div class="value" id="statLogins">0</div></div>
                     </div>
-                    <div id="recentLogs" style="background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);padding:10px;"></div>
+                    <div id="recentLogs" style="background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);padding:14px;"></div>
                 </div>
 
                 <!-- المستخدمين -->
                 <div class="admin-content" id="admin-users">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
-                        <span style="color:rgba(255,255,255,0.12);font-size:0.65rem;"><i class="fas fa-users"></i> قائمة المستخدمين</span>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                        <span style="color:rgba(255,255,255,0.12);font-size:0.8rem;"><i class="fas fa-users"></i> قائمة المستخدمين</span>
                         <button class="btn-sm primary" onclick="loadUsers()"><i class="fas fa-sync-alt"></i> تحديث</button>
                     </div>
                     <div class="table-wrap">
@@ -563,7 +989,6 @@
                 <!-- إعدادات -->
                 <div class="admin-content" id="admin-settings">
                     <div class="settings-grid" id="settingsGrid"></div>
-                    <button class="btn-sm primary" style="margin-top:12px;padding:5px 18px;" onclick="saveSettings()"><i class="fas fa-save"></i> حفظ</button>
                 </div>
 
                 <!-- سجلات -->
@@ -581,6 +1006,59 @@
         const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
         let token = localStorage.getItem('token');
         let currentUser = null;
+        let currentSettings = {};
+
+        // =============================================
+        // ===== تطبيق الألوان العالمية =====
+        // =============================================
+        function applyGlobalColors(settings) {
+            const colorMap = {
+                'primary_color': '--primary',
+                'secondary_color': '--secondary',
+                'accent_color': '--accent',
+                'bg_color': '--bg',
+                'text_color': '--text',
+                'card_bg': '--card-bg',
+                'border_color': '--border',
+                'glow_color': '--glow'
+            };
+
+            for (const [key, cssVar] of Object.entries(colorMap)) {
+                if (settings[key]) {
+                    document.documentElement.style.setProperty(cssVar, settings[key]);
+                }
+            }
+
+            // تحديث خلفية الجسم
+            if (settings.bg_color) {
+                document.body.style.background = settings.bg_color;
+            }
+
+            // تحديث الكرات الخلفية
+            const orbs = document.querySelectorAll('.bg-orb');
+            if (orbs.length >= 3) {
+                if (settings.primary_color) orbs[0].style.background = settings.primary_color;
+                if (settings.secondary_color) orbs[1].style.background = settings.secondary_color;
+                if (settings.accent_color) orbs[2].style.background = settings.accent_color;
+            }
+
+            currentSettings = settings;
+        }
+
+        // =============================================
+        // ===== جلب الإعدادات من الخادم =====
+        // =============================================
+        async function loadGlobalSettings() {
+            try {
+                const res = await fetch(`${API}/api/settings`);
+                const settings = await res.json();
+                if (res.ok) {
+                    applyGlobalColors(settings);
+                }
+            } catch (e) {
+                console.error('خطأ في جلب الإعدادات:', e);
+            }
+        }
 
         // =============================================
         // ===== دوال مساعدة =====
@@ -643,7 +1121,8 @@
             document.getElementById('adminPanel').classList.remove('active');
             document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
             updateNavbar(null);
-            document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
+            document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
+                m.textContent = ''; });
         }
 
         // ===== تسجيل الدخول =====
@@ -669,6 +1148,11 @@
                 currentUser = data.user;
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(currentUser));
+
+                // تطبيق الألوان من الخادم
+                if (data.settings) {
+                    applyGlobalColors(data.settings);
+                }
 
                 showMsg(msg, '✅ تم الدخول', 'success');
                 setTimeout(() => {
@@ -779,44 +1263,75 @@
                     border_color: 'لون الحواف',
                     glow_color: 'لون التوهج'
                 };
+
                 grid.innerHTML = Object.entries(settings).map(([k, v]) => {
-                    let input = k.includes('color') ? `<input type="color" value="${v}" data-key="${k}" />` :
-                        `<input type="text" value="${v}" data-key="${k}" />`;
+                    let input = '';
+                    if (k.includes('color')) {
+                        const cssVar = {
+                            'primary_color': '--primary',
+                            'secondary_color': '--secondary',
+                            'accent_color': '--accent',
+                            'bg_color': '--bg',
+                            'text_color': '--text',
+                            'card_bg': '--card-bg',
+                            'border_color': '--border',
+                            'glow_color': '--glow'
+                        } [k] || '';
+
+                        input = `
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="color" value="${v}" id="color_${k}" />
+                                <button class="save-color-btn" onclick="saveColorSetting('${k}', document.getElementById('color_${k}').value)">
+                                    <i class="fas fa-check"></i> حفظ
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        input = `<input type="text" value="${v}" data-key="${k}" />`;
+                    }
                     return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
                 }).join('');
             } catch (e) {}
         }
 
-        async function saveSettings() {
-            const inputs = document.querySelectorAll('#settingsGrid input');
+        // ===== حفظ إعداد اللون بشكل منفصل =====
+        async function saveColorSetting(key, value) {
+            const btn = event.target.closest('.save-color-btn');
+            const originalText = btn.innerHTML;
+
             try {
-                for (const el of inputs) {
-                    await apiFetch('/api/admin/settings', {
-                        method: 'POST',
-                        body: JSON.stringify({ key: el.dataset.key, value: el.value })
-                    });
-                    // تطبيق اللون فوراً
-                    if (el.dataset.key === 'primary_color') {
-                        document.documentElement.style.setProperty('--primary', el.value);
-                    } else if (el.dataset.key === 'secondary_color') {
-                        document.documentElement.style.setProperty('--secondary', el.value);
-                    } else if (el.dataset.key === 'accent_color') {
-                        document.documentElement.style.setProperty('--accent', el.value);
-                    } else if (el.dataset.key === 'bg_color') {
-                        document.documentElement.style.setProperty('--bg', el.value);
-                        document.body.style.background = el.value;
-                    } else if (el.dataset.key === 'text_color') {
-                        document.documentElement.style.setProperty('--text', el.value);
-                    } else if (el.dataset.key === 'card_bg') {
-                        document.documentElement.style.setProperty('--card-bg', el.value);
-                    } else if (el.dataset.key === 'border_color') {
-                        document.documentElement.style.setProperty('--border', el.value);
-                    } else if (el.dataset.key === 'glow_color') {
-                        document.documentElement.style.setProperty('--glow', el.value);
-                    }
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+
+                const result = await apiFetch('/api/admin/settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ key, value })
+                });
+
+                // تطبيق اللون فوراً
+                if (result.settings) {
+                    applyGlobalColors(result.settings);
                 }
-                alert('✅ تم حفظ الإعدادات');
-            } catch (e) { alert('❌ خطأ في الحفظ'); }
+
+                btn.innerHTML = '<i class="fas fa-check"></i> تم';
+                btn.classList.add('saved');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('saved');
+                    btn.disabled = false;
+                }, 2000);
+
+                // تحديث الإحصائيات
+                loadStats();
+
+            } catch (e) {
+                btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+                alert('❌ خطأ في حفظ اللون: ' + e.message);
+            }
         }
 
         async function loadLogs() {
@@ -879,7 +1394,8 @@
                 const tab = btn.dataset.tab;
                 document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
                 document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
-                document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
+                document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
+                    m.textContent = ''; });
             };
         });
 
@@ -926,9 +1442,13 @@
         });
 
         // =============================================
-        // ===== استعادة الجلسة =====
+        // ===== التهيئة =====
         // =============================================
-        (function() {
+        async function init() {
+            // تحميل الإعدادات العالمية أولاً
+            await loadGlobalSettings();
+
+            // استعادة الجلسة
             const userData = localStorage.getItem('user');
             if (userData) {
                 try {
@@ -939,7 +1459,8 @@
                         document.getElementById('dashboardPage').classList.add('active');
                         updateNavbar(currentUser);
                         document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
-                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' : 'مستخدم';
+                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' :
+                            'مستخدم';
 
                         if (currentUser.role === 'admin') {
                             document.getElementById('adminPanel').classList.add('active');
@@ -950,7 +1471,9 @@
                     }
                 } catch (_) { localStorage.clear(); }
             }
-        })();
+        }
+
+        init();
     </script>
 </body>
 </html>
