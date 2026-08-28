@@ -8,182 +8,111 @@ const { Pool } = require('pg');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_key_change_this_in_production';
+const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123456';
 
 // ===== إعداد قاعدة البيانات =====
-function parseDatabaseUrl(url) {
-    if (!url) return null;
-    try {
-        const parsed = new URL(url);
-        const sslMode = parsed.searchParams.get('ssl') || parsed.searchParams.get('sslmode') || 'prefer';
-        let sslConfig = false;
-        if (sslMode === 'require' || sslMode === 'true' || sslMode === 'verify-full') {
-            sslConfig = { rejectUnauthorized: false };
-        } else if (sslMode === 'prefer') {
-            sslConfig = { rejectUnauthorized: false };
-        }
-        return {
-            host: parsed.hostname,
-            port: parseInt(parsed.port) || 5432,
-            user: parsed.username,
-            password: parsed.password,
-            database: parsed.pathname.slice(1),
-            ssl: sslConfig,
-            connectionTimeoutMillis: 10000,
-            idleTimeoutMillis: 30000,
-            max: 20
-        };
-    } catch (error) {
-        console.error('❌ خطأ في تحليل رابط قاعدة البيانات:', error.message);
-        return null;
-    }
-}
-
 function createPool() {
-    const dbUrl = process.env.DATABASE_URL || process.env.DB_URL;
-    let config = {};
+    const dbUrl = process.env.DATABASE_URL;
     if (dbUrl) {
-        console.log('🔗 استخدام رابط قاعدة البيانات من البيئة');
-        const parsed = parseDatabaseUrl(dbUrl);
-        if (parsed) config = parsed;
-        else {
-            console.error('❌ رابط قاعدة البيانات غير صالح، استخدام الإعدادات اليدوية');
-            config = getManualConfig();
+        try {
+            const parsed = new URL(dbUrl);
+            return new Pool({
+                host: parsed.hostname,
+                port: parseInt(parsed.port) || 5432,
+                user: parsed.username,
+                password: parsed.password,
+                database: parsed.pathname.slice(1),
+                ssl: { rejectUnauthorized: false },
+                connectionTimeoutMillis: 10000,
+                max: 20
+            });
+        } catch (e) {
+            console.error('❌ خطأ في رابط قاعدة البيانات:', e.message);
         }
-    } else {
-        console.log('📝 استخدام إعدادات قاعدة البيانات اليدوية');
-        config = getManualConfig();
     }
-    return new Pool(config);
-}
-
-function getManualConfig() {
-    const sslMode = process.env.DB_SSL_MODE || 'prefer';
-    let sslConfig = false;
-    if (sslMode === 'require' || sslMode === 'true') sslConfig = { rejectUnauthorized: false };
-    else if (sslMode === 'prefer') sslConfig = { rejectUnauthorized: false };
-    return {
+    return new Pool({
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT) || 5432,
         user: process.env.DB_USER || 'postgres',
         password: process.env.DB_PASSWORD || 'postgres',
         database: process.env.DB_NAME || 'user_system',
-        ssl: sslConfig,
+        ssl: process.env.DB_SSL_MODE === 'require' ? { rejectUnauthorized: false } : false,
         connectionTimeoutMillis: 10000,
-        idleTimeoutMillis: 30000,
         max: 20
-    };
+    });
 }
 
 const pool = createPool();
 
-// ===== دوال قاعدة البيانات =====
-const db = {
-    findUser: async (username) => {
-        try {
-            const result = await pool.query('SELECT * FROM users WHERE username = $1', [username.toLowerCase().trim()]);
-            return result.rows[0] || null;
-        } catch (error) {
-            console.error('خطأ في البحث عن المستخدم:', error.message);
-            throw error;
-        }
-    },
-    createUser: async (username, hashedPassword) => {
-        try {
-            const result = await pool.query(
-                `INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, balance, created_at`,
-                [username.toLowerCase().trim(), hashedPassword]
-            );
-            return result.rows[0];
-        } catch (error) {
-            console.error('خطأ في إنشاء المستخدم:', error.message);
-            throw error;
-        }
-    },
-    updateLastLogin: async (username) => {
-        try {
-            await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE username = $1', [username.toLowerCase().trim()]);
-        } catch (error) {
-            console.error('خطأ في تحديث آخر تسجيل دخول:', error.message);
-            throw error;
-        }
-    },
-    getUserData: async (username) => {
-        try {
-            const result = await pool.query('SELECT username, balance FROM users WHERE username = $1', [username.toLowerCase().trim()]);
-            return result.rows[0] || null;
-        } catch (error) {
-            console.error('خطأ في جلب بيانات المستخدم:', error.message);
-            throw error;
-        }
-    }
-};
-
 // ===== تهيئة قاعدة البيانات =====
-async function initializeDatabase() {
+async function initDB() {
     const client = await pool.connect();
     try {
-        console.log('🔄 جاري التحقق من قاعدة البيانات...');
-        await client.query('SELECT NOW()');
-        const tableCheck = await client.query(`
-            SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users');
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL,
+                balance DECIMAL(15,2) DEFAULT 1000.00,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP
+            );
+            CREATE INDEX IF NOT EXISTS idx_username ON users(username);
         `);
-        if (!tableCheck.rows[0].exists) {
-            console.log('📦 تهيئة قاعدة البيانات للمرة الأولى...');
-            await client.query(`
-                CREATE TABLE users (
-                    id SERIAL PRIMARY KEY,
-                    username VARCHAR(50) UNIQUE NOT NULL,
-                    password_hash VARCHAR(255) NOT NULL,
-                    balance DECIMAL(15,2) DEFAULT 1000.00,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    last_login TIMESTAMP
-                );
-                CREATE INDEX idx_username ON users(username);
-            `);
-            console.log('✅ تم إنشاء الجداول بنجاح');
-            if (process.env.NODE_ENV !== 'production') {
-                const hashedPassword = await bcrypt.hash('admin123', 10);
-                await client.query(
-                    `INSERT INTO users (username, password_hash, balance) VALUES ($1, $2, $3)`,
-                    ['admin', hashedPassword, 9999.99]
-                );
-                console.log('👤 تم إنشاء مستخدم تجريبي: admin / admin123');
-            }
-        } else {
-            console.log('✅ قاعدة البيانات موجودة بالفعل');
+        console.log('✅ قاعدة البيانات جاهزة');
+        
+        // مستخدم تجريبي
+        const check = await client.query('SELECT * FROM users WHERE username = $1', ['admin']);
+        if (check.rows.length === 0) {
+            const hash = await bcrypt.hash('admin123', 10);
+            await client.query('INSERT INTO users (username, password_hash, balance) VALUES ($1, $2, $3)', ['admin', hash, 9999.99]);
+            console.log('👤 مستخدم تجريبي: admin / admin123');
         }
-        return true;
-    } catch (error) {
-        console.error('❌ خطأ في تهيئة قاعدة البيانات:', error.message);
-        return false;
+    } catch (e) {
+        console.error('❌ خطأ في تهيئة قاعدة البيانات:', e.message);
     } finally {
         client.release();
     }
 }
+
+// ===== دوال المساعدة =====
+const db = {
+    findUser: async (username) => {
+        const res = await pool.query('SELECT * FROM users WHERE username = $1', [username.toLowerCase().trim()]);
+        return res.rows[0] || null;
+    },
+    createUser: async (username, passwordHash) => {
+        const res = await pool.query(
+            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, balance',
+            [username.toLowerCase().trim(), passwordHash]
+        );
+        return res.rows[0];
+    },
+    updateLogin: async (username) => {
+        await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE username = $1', [username.toLowerCase().trim()]);
+    },
+    getUser: async (username) => {
+        const res = await pool.query('SELECT username, balance FROM users WHERE username = $1', [username.toLowerCase().trim()]);
+        return res.rows[0] || null;
+    }
+};
 
 // ===== إعداد Express =====
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// ===== API Routes =====
-
-// الصفحة الرئيسية
+// ===== الصفحة الرئيسية =====
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// التحقق من صحة الخادم
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// إنشاء حساب
+// ===== API: إنشاء حساب =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         
+        // التحقق
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
@@ -194,26 +123,33 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
         }
         
-        const existingUser = await db.findUser(username);
-        if (existingUser) {
+        // التحقق من التكرار
+        const existing = await db.findUser(username);
+        if (existing) {
             return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
-
+        
+        // تشفير كلمة المرور
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+        
+        // إنشاء المستخدم
         const newUser = await db.createUser(username, hashedPassword);
         
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'تم إنشاء الحساب بنجاح',
-            user: { username: newUser.username, balance: parseFloat(newUser.balance) }
+            user: {
+                username: newUser.username,
+                balance: parseFloat(newUser.balance)
+            }
         });
     } catch (error) {
         console.error('❌ خطأ في التسجيل:', error);
-        res.status(500).json({ error: 'حدث خطأ في الخادم، يرجى المحاولة مرة أخرى' });
+        res.status(500).json({ error: 'حدث خطأ في الخادم' });
     }
 });
 
-// تسجيل الدخول
+// ===== API: تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -221,85 +157,77 @@ app.post('/api/login', async (req, res) => {
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
-
+        
         const user = await db.findUser(username);
         if (!user) {
             return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         }
-
+        
         const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
             return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         }
-
-        await db.updateLastLogin(username);
-
+        
+        await db.updateLogin(username);
+        
         const token = jwt.sign(
             { username: user.username, balance: parseFloat(user.balance), id: user.id },
             JWT_SECRET,
             { expiresIn: '7d' }
         );
-
+        
         res.json({
             token,
-            user: { username: user.username, balance: parseFloat(user.balance) }
+            user: {
+                username: user.username,
+                balance: parseFloat(user.balance)
+            }
         });
     } catch (error) {
         console.error('❌ خطأ في تسجيل الدخول:', error);
-        res.status(500).json({ error: 'حدث خطأ في الخادم، يرجى المحاولة مرة أخرى' });
+        res.status(500).json({ error: 'حدث خطأ في الخادم' });
     }
 });
 
-// التحقق من التوكن
+// ===== API: التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
         if (!token) {
             return res.status(401).json({ error: 'غير مصرح' });
         }
-
+        
         const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await db.getUserData(decoded.username);
+        const user = await db.getUser(decoded.username);
         
         if (!user) {
             return res.status(404).json({ error: 'المستخدم غير موجود' });
         }
-
-        res.json({ username: user.username, balance: parseFloat(user.balance) });
+        
+        res.json({
+            username: user.username,
+            balance: parseFloat(user.balance)
+        });
     } catch (error) {
-        if (error.name === 'JsonWebTokenError') {
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
             return res.status(401).json({ error: 'توكن غير صالح' });
         }
-        if (error.name === 'TokenExpiredError') {
-            return res.status(401).json({ error: 'انتهت صلاحية التوكن' });
-        }
-        console.error('❌ خطأ في التحقق:', error);
         res.status(500).json({ error: 'حدث خطأ في الخادم' });
     }
 });
 
-// معالجة الأخطاء
+// ===== معالجة المسارات غير الموجودة =====
 app.use((req, res) => {
     res.status(404).json({ error: 'المسار غير موجود' });
 });
 
-app.use((err, req, res, next) => {
-    console.error('❌ خطأ غير متوقع:', err);
-    res.status(500).json({ error: 'حدث خطأ داخلي في الخادم' });
-});
-
 // ===== تشغيل الخادم =====
-async function startServer() {
-    try {
-        await initializeDatabase();
-        app.listen(PORT, () => {
-            console.log(`\n🚀 الخادم يعمل على http://localhost:${PORT}`);
-            console.log(`🌍 البيئة: ${process.env.NODE_ENV || 'development'}\n`);
-        });
-    } catch (error) {
-        console.error('❌ فشل تشغيل الخادم:', error.message);
-        process.exit(1);
-    }
+async function start() {
+    await initDB();
+    app.listen(PORT, () => {
+        console.log(`\n🚀 الخادم يعمل على http://localhost:${PORT}`);
+        console.log(`🌍 البيئة: ${process.env.NODE_ENV || 'development'}\n`);
+    });
 }
 
-startServer();
+start();

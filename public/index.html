@@ -2,11 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>LuxWeb - منصة احترافية</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LuxWeb</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
+        /* ===== الأساسيات ===== */
         * {
             margin: 0;
             padding: 0;
@@ -14,12 +15,12 @@
         }
 
         body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Inter', sans-serif;
             min-height: 100vh;
-            background: #0b0b1a;
+            background: #0a0a1a;
             background-image: 
-                radial-gradient(ellipse at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 90% 80%, rgba(6, 182, 212, 0.12) 0%, transparent 50%);
+                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(6, 182, 212, 0.10) 0%, transparent 60%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,8 +29,61 @@
             overflow: hidden;
         }
 
-        /* خلفية متحركة متطورة */
-        .bg-particles {
+        /* ===== خلفية متحركة ثلاثية الأبعاد ===== */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-orb.orb1 {
+            width: 500px;
+            height: 500px;
+            background: #6366f1;
+            top: -150px;
+            right: -150px;
+            animation: orbFloat1 25s ease-in-out infinite;
+        }
+
+        .bg-orb.orb2 {
+            width: 400px;
+            height: 400px;
+            background: #06b6d4;
+            bottom: -100px;
+            left: -100px;
+            animation: orbFloat2 30s ease-in-out infinite;
+        }
+
+        .bg-orb.orb3 {
+            width: 300px;
+            height: 300px;
+            background: #8b5cf6;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: orbFloat3 20s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-80px, 60px) scale(1.1); }
+        }
+
+        @keyframes orbFloat2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(60px, -80px) scale(1.2); }
+        }
+
+        @keyframes orbFloat3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.2; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.4; }
+        }
+
+        /* ===== جزيئات صغيرة ===== */
+        .particles {
             position: fixed;
             inset: 0;
             z-index: 0;
@@ -37,89 +91,108 @@
             overflow: hidden;
         }
 
-        .bg-particles span {
+        .particles span {
             position: absolute;
-            width: 4px;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.06);
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 50%;
-            animation: floatParticle linear infinite;
+            animation: particleFloat linear infinite;
         }
 
-        @keyframes floatParticle {
+        @keyframes particleFloat {
             0% { transform: translateY(100vh) scale(0); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
 
-        /* الحاوية الرئيسية */
+        /* ===== الحاوية ===== */
         .container {
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 440px;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 40px;
-            padding: 40px 35px;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(32px);
+            -webkit-backdrop-filter: blur(32px);
+            border-radius: 48px;
+            padding: 40px 32px;
             border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.02);
-            animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            animation: containerIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px) scale(0.97); }
+        @keyframes containerIn {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* الهيدر */
+        /* ===== الهيدر ===== */
         .header {
             text-align: center;
             margin-bottom: 32px;
         }
 
-        .logo-icon {
+        .logo-ring {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #6366f1, #06b6d4);
-            border-radius: 24px;
-            font-size: 32px;
-            color: white;
             margin-bottom: 16px;
-            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.3);
-            transition: transform 0.3s ease;
+            position: relative;
+            box-shadow: 0 12px 48px rgba(99, 102, 241, 0.25);
         }
 
-        .logo-icon:hover {
-            transform: rotate(-5deg) scale(1.02);
+        .logo-ring::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #06b6d4, #8b5cf6);
+            opacity: 0.3;
+            filter: blur(12px);
+            z-index: -1;
+            animation: ringPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes ringPulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.2); opacity: 0.6; }
+        }
+
+        .logo-ring i {
+            font-size: 32px;
+            color: white;
         }
 
         .header h1 {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: 900;
             color: white;
             letter-spacing: -0.5px;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            background: linear-gradient(135deg, #ffffff, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .header p {
-            color: rgba(255, 255, 255, 0.35);
-            font-size: 0.85rem;
-            margin-top: 4px;
+            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.8rem;
             font-weight: 400;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
         }
 
-        /* التبويبات */
+        /* ===== التبويبات ===== */
         .tabs {
             display: flex;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.03);
             border-radius: 16px;
             padding: 4px;
             margin-bottom: 28px;
@@ -128,88 +201,89 @@
 
         .tab-btn {
             flex: 1;
-            padding: 12px;
+            padding: 12px 8px;
             border: none;
             background: transparent;
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.85rem;
             font-weight: 700;
             border-radius: 13px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            font-family: inherit;
         }
 
         .tab-btn i {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .tab-btn.active {
-            background: rgba(99, 102, 241, 0.25);
-            color: white;
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.08);
         }
 
         .tab-btn:hover:not(.active) {
-            color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.03);
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.02);
         }
 
-        /* النماذج */
+        /* ===== النماذج ===== */
         .form {
             display: none;
-            animation: fadeIn 0.4s ease;
+            animation: fadeSlide 0.4s ease;
         }
 
         .form.active {
             display: block;
         }
 
-        @keyframes fadeIn {
+        @keyframes fadeSlide {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 16px;
         }
 
         .form-group label {
             display: block;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.7rem;
             font-weight: 700;
-            margin-bottom: 6px;
-            letter-spacing: 0.5px;
             text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
         }
 
-        .form-group .input-wrapper {
+        .input-wrap {
             position: relative;
         }
 
-        .form-group .input-wrapper i {
+        .input-wrap i {
             position: absolute;
             right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.12);
+            font-size: 0.9rem;
             transition: color 0.3s ease;
         }
 
-        .form-group .input-wrapper:focus-within i {
+        .input-wrap:focus-within i {
             color: #818cf8;
         }
 
-        .form-group input {
+        .input-wrap input {
             width: 100%;
-            padding: 14px 18px 14px 44px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 2px solid rgba(255, 255, 255, 0.06);
+            padding: 14px 44px 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 2px solid rgba(255, 255, 255, 0.04);
             border-radius: 14px;
             color: white;
             font-size: 0.95rem;
@@ -218,17 +292,18 @@
             outline: none;
         }
 
-        .form-group input:focus {
-            border-color: #6366f1;
-            background: rgba(255, 255, 255, 0.06);
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        .input-wrap input::placeholder {
+            color: rgba(255, 255, 255, 0.1);
+            font-weight: 300;
         }
 
-        .form-group input::placeholder {
-            color: rgba(255, 255, 255, 0.15);
+        .input-wrap input:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.05);
         }
 
-        /* زر الإرسال */
+        /* ===== الزر ===== */
         .submit-btn {
             width: 100%;
             padding: 16px;
@@ -244,17 +319,28 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-top: 8px;
             font-family: inherit;
+            margin-top: 4px;
+            position: relative;
+            overflow: hidden;
         }
 
-        .submit-btn i {
-            font-size: 1rem;
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .submit-btn:hover::before {
+            transform: translateX(100%);
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 16px 40px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.3);
         }
 
         .submit-btn:active {
@@ -262,44 +348,48 @@
         }
 
         .submit-btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none !important;
         }
 
-        /* الرسائل */
+        .submit-btn i {
+            font-size: 0.95rem;
+        }
+
+        /* ===== الرسائل ===== */
         .message {
-            margin-top: 16px;
+            margin-top: 14px;
             padding: 12px 16px;
             border-radius: 12px;
             text-align: center;
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             display: none;
         }
 
         .message.error {
             display: block;
-            background: rgba(239, 68, 68, 0.08);
+            background: rgba(239, 68, 68, 0.06);
             color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.08);
         }
 
         .message.success {
             display: block;
-            background: rgba(52, 211, 153, 0.08);
+            background: rgba(52, 211, 153, 0.06);
             color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.12);
+            border: 1px solid rgba(52, 211, 153, 0.08);
         }
 
-        /* لوحة التحكم */
+        /* ===== لوحة التحكم ===== */
         #dashboard {
             display: none;
         }
 
         #dashboard.active {
             display: block;
-            animation: fadeIn 0.5s ease;
+            animation: fadeSlide 0.5s ease;
         }
 
         .navbar {
@@ -307,65 +397,65 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 18px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
             margin-bottom: 24px;
             flex-wrap: wrap;
             gap: 12px;
         }
 
         .site-title {
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             font-weight: 900;
-            background: linear-gradient(90deg, #818cf8, #06b6d4, #818cf8);
+            background: linear-gradient(90deg, #818cf8, #22d3ee, #818cf8);
             background-size: 200% 100%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            animation: shimmerText 4s linear infinite;
+            animation: textShimmer 4s linear infinite;
         }
 
-        @keyframes shimmerText {
+        @keyframes textShimmer {
             0% { background-position: 0% 50%; }
             100% { background-position: 200% 50%; }
         }
 
         .site-title span {
             display: inline-block;
-            animation: floatLetters 3s ease-in-out infinite;
+            animation: letterFloat 3s ease-in-out infinite;
             animation-delay: calc(var(--i) * 0.08s);
         }
 
-        @keyframes floatLetters {
+        @keyframes letterFloat {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
+            50% { transform: translateY(-5px); }
         }
 
         .balance-box {
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(99, 102, 241, 0.12);
-            padding: 8px 18px 8px 14px;
+            background: rgba(251, 191, 36, 0.06);
+            padding: 8px 16px 8px 12px;
             border-radius: 14px;
-            border: 1px solid rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.08);
         }
 
         .balance-box i {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #fbbf24;
         }
 
         .balance-box .amount {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 800;
-            color: white;
+            color: #fbbf24;
             font-feature-settings: "tnum";
         }
 
         .balance-box .label {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -373,35 +463,38 @@
 
         .dashboard-content {
             text-align: center;
-            padding: 20px 0 8px;
+            padding: 16px 0 4px;
         }
 
-        .dashboard-content .greeting {
-            font-size: 1.3rem;
+        .greeting {
+            font-size: 1.4rem;
             font-weight: 700;
             color: white;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
-        .dashboard-content .greeting span {
-            color: #818cf8;
+        .greeting span {
+            background: linear-gradient(135deg, #818cf8, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .dashboard-content .sub-text {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.85rem;
+        .sub-text {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.8rem;
             margin-bottom: 20px;
+            font-weight: 300;
         }
 
         .logout-btn {
             padding: 10px 28px;
-            background: rgba(239, 68, 68, 0.08);
+            background: rgba(239, 68, 68, 0.06);
             color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.06);
             border-radius: 12px;
             cursor: pointer;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
@@ -410,89 +503,102 @@
         }
 
         .logout-btn:hover {
-            background: rgba(239, 68, 68, 0.15);
+            background: rgba(239, 68, 68, 0.12);
             transform: scale(1.02);
         }
 
-        .logout-btn i {
-            font-size: 0.9rem;
-        }
-
-        /* تذييل */
+        /* ===== تذييل ===== */
         .footer {
             text-align: center;
             margin-top: 24px;
-            color: rgba(255, 255, 255, 0.06);
-            font-size: 0.65rem;
-            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.03);
+            font-size: 0.6rem;
+            letter-spacing: 1.5px;
+            font-weight: 300;
         }
 
-        /* استجابة */
+        /* ===== استجابة ===== */
         @media (max-width: 520px) {
-            .container { padding: 28px 18px; }
-            .header h1 { font-size: 1.6rem; }
-            .logo-icon { width: 60px; height: 60px; font-size: 28px; }
+            .container { padding: 28px 18px; border-radius: 32px; }
+            .header h1 { font-size: 1.8rem; }
+            .logo-ring { width: 64px; height: 64px; }
+            .logo-ring i { font-size: 26px; }
             .navbar { flex-direction: column; align-items: stretch; text-align: center; }
             .balance-box { justify-content: center; }
+            .site-title { font-size: 1.3rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="bg-particles" id="particles"></div>
+    <!-- خلفية متحركة -->
+    <div class="bg-orb orb1"></div>
+    <div class="bg-orb orb2"></div>
+    <div class="bg-orb orb3"></div>
+    <div class="particles" id="particles"></div>
 
     <div class="container">
         <!-- الهيدر -->
         <div class="header">
-            <div class="logo-icon"><i class="fas fa-crown"></i></div>
+            <div class="logo-ring">
+                <i class="fas fa-gem"></i>
+            </div>
             <h1>LuxWeb</h1>
             <p>منصة متطورة بتقنيات المستقبل</p>
         </div>
 
-        <!-- قسم المصادقة -->
+        <!-- المصادقة -->
         <div id="authSection">
             <div class="tabs">
-                <button class="tab-btn active" data-tab="login"><i class="fas fa-sign-in-alt"></i> تسجيل دخول</button>
-                <button class="tab-btn" data-tab="register"><i class="fas fa-user-plus"></i> إنشاء حساب</button>
+                <button class="tab-btn active" data-tab="login">
+                    <i class="fas fa-sign-in-alt"></i> دخول
+                </button>
+                <button class="tab-btn" data-tab="register">
+                    <i class="fas fa-user-plus"></i> حساب
+                </button>
             </div>
 
-            <!-- نموذج تسجيل الدخول -->
+            <!-- تسجيل الدخول -->
             <div class="form active" id="loginForm">
                 <div class="form-group">
-                    <label><i class="fas fa-user" style="margin-left:6px;"></i> اسم المستخدم</label>
-                    <div class="input-wrapper">
+                    <label>اسم المستخدم</label>
+                    <div class="input-wrap">
                         <i class="fas fa-user"></i>
-                        <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" autocomplete="username" />
+                        <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-lock" style="margin-left:6px;"></i> كلمة المرور</label>
-                    <div class="input-wrapper">
+                    <label>كلمة المرور</label>
+                    <div class="input-wrap">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" autocomplete="current-password" />
+                        <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" />
                     </div>
                 </div>
-                <button class="submit-btn" id="loginBtn"><i class="fas fa-arrow-right"></i> تسجيل الدخول</button>
+                <button class="submit-btn" id="loginBtn">
+                    <i class="fas fa-arrow-right"></i> تسجيل الدخول
+                </button>
                 <div class="message" id="loginMessage"></div>
             </div>
 
-            <!-- نموذج إنشاء حساب -->
+            <!-- إنشاء حساب -->
             <div class="form" id="registerForm">
                 <div class="form-group">
-                    <label><i class="fas fa-user" style="margin-left:6px;"></i> اسم المستخدم</label>
-                    <div class="input-wrapper">
+                    <label>اسم المستخدم</label>
+                    <div class="input-wrap">
                         <i class="fas fa-user"></i>
-                        <input type="text" id="registerUsername" placeholder="3 أحرف على الأقل" autocomplete="username" />
+                        <input type="text" id="registerUsername" placeholder="3 أحرف على الأقل" />
                     </div>
                 </div>
                 <div class="form-group">
-                    <label><i class="fas fa-lock" style="margin-left:6px;"></i> كلمة المرور</label>
-                    <div class="input-wrapper">
+                    <label>كلمة المرور</label>
+                    <div class="input-wrap">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="registerPassword" placeholder="6 أحرف على الأقل" autocomplete="new-password" />
+                        <input type="password" id="registerPassword" placeholder="6 أحرف على الأقل" />
                     </div>
                 </div>
-                <button class="submit-btn" id="registerBtn"><i class="fas fa-sparkles"></i> إنشاء حساب</button>
+                <button class="submit-btn" id="registerBtn">
+                    <i class="fas fa-sparkles"></i> إنشاء حساب
+                </button>
                 <div class="message" id="registerMessage"></div>
             </div>
         </div>
@@ -512,52 +618,54 @@
             <div class="dashboard-content">
                 <div class="greeting">مرحباً، <span id="displayUsername">المستخدم</span></div>
                 <div class="sub-text">مرحباً بك في منصتك المتطورة</div>
-                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</button>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+                </button>
             </div>
         </div>
 
-        <div class="footer">© 2026 LuxWeb — v2.0</div>
+        <div class="footer">LuxWeb — v2.0</div>
     </div>
 
     <script>
-        // ===== جزيئات الخلفية =====
-        (function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 60; i++) {
-                const span = document.createElement('span');
-                const size = Math.random() * 6 + 2;
-                span.style.width = size + 'px';
-                span.style.height = size + 'px';
-                span.style.left = Math.random() * 100 + '%';
-                span.style.animationDuration = (Math.random() * 30 + 20) + 's';
-                span.style.animationDelay = (Math.random() * 20) + 's';
-                container.appendChild(span);
+        // ===== جزيئات =====
+        (function() {
+            const c = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const s = document.createElement('span');
+                const size = Math.random() * 4 + 1;
+                s.style.width = size + 'px';
+                s.style.height = size + 'px';
+                s.style.left = Math.random() * 100 + '%';
+                s.style.animationDuration = (Math.random() * 25 + 20) + 's';
+                s.style.animationDelay = (Math.random() * 20) + 's';
+                c.appendChild(s);
             }
         })();
 
-        // ===== تأثير تموج اسم الموقع =====
-        function createWaveTitle() {
-            const title = document.getElementById('siteTitle');
+        // ===== تموج اسم الموقع =====
+        function renderTitle() {
+            const el = document.getElementById('siteTitle');
             const text = 'LuxWeb';
-            title.innerHTML = text.split('').map((char, i) => 
-                `<span style="--i:${i}">${char}</span>`
+            el.innerHTML = text.split('').map((ch, i) =>
+                `<span style="--i:${i}">${ch}</span>`
             ).join('');
         }
 
         // ===== التبويبات =====
-        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabs = document.querySelectorAll('.tab-btn');
         const forms = {
             login: document.getElementById('loginForm'),
             register: document.getElementById('registerForm')
         };
 
-        tabBtns.forEach(btn => {
+        tabs.forEach(btn => {
             btn.addEventListener('click', () => {
-                tabBtns.forEach(b => b.classList.remove('active'));
+                tabs.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                const tab = btn.dataset.tab;
-                Object.keys(forms).forEach(key => {
-                    forms[key].classList.toggle('active', key === tab);
+                const key = btn.dataset.tab;
+                Object.keys(forms).forEach(k => {
+                    forms[k].classList.toggle('active', k === key);
                 });
                 document.querySelectorAll('.message').forEach(m => {
                     m.className = 'message';
@@ -566,16 +674,16 @@
             });
         });
 
-        // ===== دوال مساعدة =====
-        function showMessage(element, text, type = 'error') {
-            element.textContent = text;
-            element.className = `message ${type}`;
+        // ===== دوال =====
+        function showMsg(el, text, type = 'error') {
+            el.textContent = text;
+            el.className = `message ${type}`;
         }
 
         function setLoading(btn, loading) {
             btn.disabled = loading;
-            btn.innerHTML = loading ? 
-                '<i class="fas fa-spinner fa-spin"></i> جاري...' : 
+            btn.innerHTML = loading ?
+                '<i class="fas fa-spinner fa-spin"></i> جاري...' :
                 btn.dataset.original;
         }
 
@@ -591,7 +699,7 @@
             const btn = document.getElementById('loginBtn');
 
             if (!username || !password) {
-                return showMessage(msg, '❌ يرجى ملء جميع الحقول');
+                return showMsg(msg, '❌ يرجى ملء جميع الحقول');
             }
 
             setLoading(btn, true);
@@ -602,14 +710,14 @@
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'حدث خطأ');
+                if (!res.ok) throw new Error(data.error || 'فشل تسجيل الدخول');
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                showMessage(msg, '✅ تم تسجيل الدخول بنجاح!', 'success');
+                showMsg(msg, '✅ تم تسجيل الدخول بنجاح', 'success');
                 setTimeout(() => showDashboard(data.user), 400);
-            } catch (error) {
-                showMessage(msg, '❌ ' + error.message);
+            } catch (e) {
+                showMsg(msg, '❌ ' + e.message);
             } finally {
                 setLoading(btn, false);
             }
@@ -623,13 +731,13 @@
             const btn = document.getElementById('registerBtn');
 
             if (!username || !password) {
-                return showMessage(msg, '❌ يرجى ملء جميع الحقول');
+                return showMsg(msg, '❌ يرجى ملء جميع الحقول');
             }
             if (username.length < 3) {
-                return showMessage(msg, '❌ اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
+                return showMsg(msg, '❌ اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
             }
             if (password.length < 6) {
-                return showMessage(msg, '❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+                return showMsg(msg, '❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
             }
 
             setLoading(btn, true);
@@ -640,16 +748,16 @@
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'حدث خطأ');
+                if (!res.ok) throw new Error(data.error || 'فشل إنشاء الحساب');
 
-                showMessage(msg, '✅ تم إنشاء الحساب! يمكنك تسجيل الدخول الآن', 'success');
+                showMsg(msg, '✅ تم إنشاء الحساب! يمكنك تسجيل الدخول', 'success');
                 document.getElementById('registerUsername').value = '';
                 document.getElementById('registerPassword').value = '';
                 setTimeout(() => {
                     document.querySelector('[data-tab="login"]').click();
                 }, 1200);
-            } catch (error) {
-                showMessage(msg, '❌ ' + error.message);
+            } catch (e) {
+                showMsg(msg, '❌ ' + e.message);
             } finally {
                 setLoading(btn, false);
             }
@@ -661,7 +769,7 @@
             document.getElementById('dashboard').classList.add('active');
             document.getElementById('displayUsername').textContent = user.username;
             document.getElementById('userBalance').textContent = user.balance;
-            createWaveTitle();
+            renderTitle();
         }
 
         // ===== تسجيل الخروج =====
@@ -678,7 +786,7 @@
         });
 
         // ===== التحقق من الجلسة =====
-        (function checkSession() {
+        (function() {
             const token = localStorage.getItem('token');
             const userData = localStorage.getItem('user');
             if (token && userData) {
@@ -687,35 +795,29 @@
                     if (user.username && user.balance !== undefined) {
                         showDashboard(user);
                     }
-                } catch (e) {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                }
+                } catch (_) { localStorage.clear(); }
             }
         })();
 
-        // ===== Enter key =====
-        document.querySelectorAll('input').forEach(input => {
-            input.addEventListener('keypress', (e) => {
+        // ===== Enter =====
+        document.querySelectorAll('input').forEach(inp => {
+            inp.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    const form = input.closest('.form');
-                    if (form.id === 'loginForm') {
-                        document.getElementById('loginBtn').click();
-                    } else if (form.id === 'registerForm') {
-                        document.getElementById('registerBtn').click();
-                    }
+                    const form = inp.closest('.form');
+                    if (form.id === 'loginForm') document.getElementById('loginBtn').click();
+                    else if (form.id === 'registerForm') document.getElementById('registerBtn').click();
                 }
             });
         });
 
         // ===== تحقق فوري =====
         document.getElementById('registerUsername').addEventListener('input', function() {
-            this.style.borderColor = this.value.length >= 3 ? '#34d399' : 
-                                     this.value.length > 0 ? '#f87171' : 'rgba(255,255,255,0.06)';
+            this.style.borderColor = this.value.length >= 3 ? 'rgba(52,211,153,0.3)' :
+                this.value.length > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.04)';
         });
         document.getElementById('registerPassword').addEventListener('input', function() {
-            this.style.borderColor = this.value.length >= 6 ? '#34d399' : 
-                                     this.value.length > 0 ? '#f87171' : 'rgba(255,255,255,0.06)';
+            this.style.borderColor = this.value.length >= 6 ? 'rgba(52,211,153,0.3)' :
+                this.value.length > 0 ? 'rgba(239,68,68,0.3)' : 'rgba(255,255,255,0.04)';
         });
     </script>
 </body>
