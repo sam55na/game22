@@ -29,7 +29,6 @@ function createPool() {
             });
         } catch (e) {
             console.error('❌ خطأ في تحليل رابط قاعدة البيانات:', e.message);
-            console.error('📝 الرابط المستخدم:', dbUrl);
         }
     }
     console.log('📝 استخدام إعدادات قاعدة البيانات اليدوية');
@@ -74,7 +73,6 @@ async function initDB() {
         }
     } catch (e) {
         console.error('❌ خطأ في تهيئة قاعدة البيانات:', e.message);
-        console.error('📝 تفاصيل الخطأ:', e.stack);
     } finally {
         client.release();
     }
@@ -125,14 +123,18 @@ const db = {
 // ===== إعداد Express =====
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
-// ===== الصفحة الرئيسية =====
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ===== IMPORTANT: مسارات API أولاً =====
+// هذا يضمن أن طلبات API لا تلتقطها خدمة الملفات الثابتة
+
+// ===== API Routes =====
+
+// التحقق من صحة الخادم
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ===== API: إنشاء حساب (مع طباعة أخطاء تفصيلية) =====
+// إنشاء حساب
 app.post('/api/register', async (req, res) => {
     console.log('\n📝 [طلب إنشاء حساب]');
     console.log('📦 البيانات المستلمة:', req.body);
@@ -207,7 +209,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ===== API: تسجيل الدخول =====
+// تسجيل الدخول
 app.post('/api/login', async (req, res) => {
     console.log('\n📝 [طلب تسجيل دخول]');
     console.log('📦 البيانات المستلمة:', req.body);
@@ -251,9 +253,7 @@ app.post('/api/login', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ خطأ غير متوقع في تسجيل الدخول:');
-        console.error('📝 الرسالة:', error.message);
-        console.error('📝 التفاصيل:', error.stack);
+        console.error('❌ خطأ غير متوقع في تسجيل الدخول:', error.message);
         res.status(500).json({ 
             error: 'حدث خطأ في الخادم',
             details: error.message
@@ -261,7 +261,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ===== API: التحقق من التوكن =====
+// التحقق من التوكن
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -289,10 +289,24 @@ app.post('/api/verify', async (req, res) => {
     }
 });
 
-// ===== معالجة المسارات غير الموجودة =====
+// ===== IMPORTANT: ملفات ثابتة بعد API =====
+// هذا يضمن أن API تعمل قبل محاولة إرجاع index.html
+app.use(express.static('public'));
+
+// ===== الصفحة الرئيسية (للمسار / فقط) =====
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ===== معالجة المسارات غير الموجودة (بعد كل شيء) =====
 app.use((req, res) => {
     console.log(`⚠️ مسار غير موجود: ${req.method} ${req.url}`);
-    res.status(404).json({ error: 'المسار غير موجود' });
+    // إذا كان الطلب لـ API، أعد JSON
+    if (req.url.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API غير موجود' });
+    }
+    // وإلا أعد الصفحة الرئيسية (للمسارات الأمامية)
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ===== تشغيل الخادم =====
