@@ -27,7 +27,7 @@ const pool = new Pool({
 });
 
 // =============================================
-// ===== MIDDLEWARE (الترتيب مهم جداً) =====
+// ===== MIDDLEWARE (ترتيب صحيح) =====
 // =============================================
 
 // 1. الأمان والضغط
@@ -51,11 +51,11 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
-// 3. JSON و URL Encoded (قبل أي شيء)
+// 3. JSON Parser (مهم جداً)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 4. Rate Limiting (بعد JSON)
+// 4. Rate Limiting
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -63,9 +63,7 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     validate: { xForwardedForHeader: false },
-    keyGenerator: (req) => {
-        return req.ip || req.connection.remoteAddress || 'unknown';
-    }
+    keyGenerator: (req) => req.ip || req.connection.remoteAddress || 'unknown'
 });
 app.use('/api/', limiter);
 
@@ -131,7 +129,6 @@ async function initDatabase() {
             );
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
@@ -305,13 +302,15 @@ const db = {
 };
 
 // =============================================
-// ===== API ROUTES (قبل أي شيء آخر) =====
+// ===== API ROUTES (يجب أن تكون قبل static) =====
 // =============================================
 
+// التحقق من صحة الخادم
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// جلب إعدادات الموقع
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -321,11 +320,14 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
+// ===== تسجيل مستخدم جديد =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
         const userAgent = req.headers['user-agent'];
+
+        console.log('📝 محاولة تسجيل:', { username, ip });
 
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
@@ -370,6 +372,8 @@ app.post('/api/register', async (req, res) => {
             );
         }
 
+        console.log('✅ تم إنشاء الحساب:', username);
+
         res.status(201).json({
             message: 'تم إنشاء الحساب بنجاح',
             user: { 
@@ -387,11 +391,14 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// ===== تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
         const userAgent = req.headers['user-agent'];
+
+        console.log('📝 محاولة دخول:', { username, ip });
 
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
@@ -399,14 +406,17 @@ app.post('/api/login', async (req, res) => {
 
         const user = await db.findUser(username);
         if (!user) {
+            console.log('❌ مستخدم غير موجود:', username);
             return res.status(401).json({ error: 'بيانات غير صحيحة' });
         }
         if (!user.is_active) {
+            console.log('❌ حساب معطل:', username);
             return res.status(403).json({ error: 'الحساب معطل' });
         }
 
         const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
+            console.log('❌ كلمة مرور خاطئة:', username);
             return res.status(401).json({ error: 'بيانات غير صحيحة' });
         }
 
@@ -426,6 +436,8 @@ app.post('/api/login', async (req, res) => {
 
         const settings = await db.getSettings();
 
+        console.log('✅ تم تسجيل الدخول:', username);
+
         res.json({
             token,
             user: { 
@@ -442,6 +454,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// ===== التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -621,15 +634,19 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 // ===== STATIC FILES (بعد API Routes) =====
 // =============================================
 
-// تقديم الملفات الثابتة
-app.use(express.static('public'));
+// تقديم الملفات الثابتة من مجلد public
+app.use(express.static(path.join(__dirname, 'public')));
 
 // =============================================
-// ===== FALLBACK FOR SPA (في النهاية) =====
+// ===== FALLBACK (في النهاية) =====
 // =============================================
 
-// أي طلب غير معالج يذهب إلى index.html
+// أي طلب غير معالج (غير API) يذهب إلى index.html
 app.get('*', (req, res) => {
+    // إذا كان الطلب يبدأ بـ /api، نرسل خطأ 404 بدلاً من HTML
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API غير موجود' });
+    }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
