@@ -978,7 +978,8 @@
         // =============================================
         // ===== الإعدادات =====
         // =============================================
-        const API = window.location.origin;
+        // ✅ تم تثبيت الرابط الأساسي للخادم
+        const API = 'https://game22-hoas.onrender.com';
         const REQUEST_TIMEOUT = 60000;
         let token = localStorage.getItem('token');
         let currentUser = null;
@@ -1016,6 +1017,13 @@
                 });
                 clearTimeout(timeoutId);
                 hideConnectionStatus();
+
+                // ✅ التحقق من نوع الاستجابة لتجنب خطأ JSON
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    throw new Error('الخادم أعاد HTML بدلاً من JSON. تأكد من أن الخادم يعمل بشكل صحيح.');
+                }
+
                 return response;
             } catch (error) {
                 clearTimeout(timeoutId);
@@ -1023,7 +1031,7 @@
                     showConnectionStatus('⏰ انتهت مهلة الانتظار (60 ثانية)، يرجى المحاولة مرة أخرى', 'error');
                     throw new Error('انتهت مهلة الانتظار، يرجى المحاولة مرة أخرى');
                 }
-                showConnectionStatus('❌ لا يمكن الاتصال بالخادم، يرجى التحقق من الاتصال', 'error');
+                showConnectionStatus('❌ لا يمكن الاتصال بالخادم: ' + error.message, 'error');
                 throw error;
             }
         }
@@ -1693,6 +1701,7 @@
         // ===== التهيئة =====
         // =============================================
         async function init() {
+            // تحميل الإعدادات العالمية أولاً
             await loadGlobalSettings();
 
             // استعادة اسم الموقع من localStorage
@@ -1701,6 +1710,7 @@
                 updateSiteName(savedSiteName);
             }
 
+            // التحقق من وجود مستخدم مسجل
             const userData = localStorage.getItem('user');
             if (userData) {
                 try {
@@ -1721,9 +1731,12 @@
                             document.getElementById('adminToggle').innerHTML = '<i class="fas fa-crown"></i> <span>إخفاء</span>';
                         }
                     }
-                } catch (_) { localStorage.clear(); }
+                } catch (_) { 
+                    localStorage.clear(); 
+                }
             }
 
+            // التحقق من اتصال الخادم
             try {
                 await fetchWithTimeout(`${API}/api/health`);
                 showConnectionStatus('✅ الخادم متصل', 'success');
@@ -1732,6 +1745,7 @@
             }
         }
 
+        // بدء التطبيق
         init();
     </script>
 </body>
