@@ -38,7 +38,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
             fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:"],
-            connectSrc: ["'self'", "https://apisyria.com", "https://api.coinex.com"]
+            connectSrc: ["'self'", "https://apisyria.com"]
         }
     }
 }));
@@ -152,67 +152,6 @@ async function initDatabase() {
         await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);');
         await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_txid ON transactions(txid);');
 
-        await client.query(`
-            CREATE TABLE crypto_currencies (
-                currency_key TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                symbol TEXT NOT NULL,
-                network TEXT NOT NULL,
-                min_amount REAL DEFAULT 1,
-                max_amount REAL DEFAULT 100000,
-                is_enabled INTEGER DEFAULT 1,
-                priority INTEGER DEFAULT 0,
-                decimals INTEGER DEFAULT 8,
-                is_internal INTEGER DEFAULT 0,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        await client.query(`
-            CREATE TABLE crypto_addresses (
-                currency_key TEXT PRIMARY KEY,
-                symbol TEXT NOT NULL,
-                network TEXT NOT NULL,
-                address TEXT NOT NULL,
-                memo TEXT,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        await client.query(`
-            CREATE TABLE crypto_payments (
-                request_id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                currency_key TEXT NOT NULL,
-                currency_name TEXT NOT NULL,
-                amount_usd REAL NOT NULL,
-                crypto_amount REAL NOT NULL,
-                amount_syp REAL NOT NULL,
-                bonus_amount REAL DEFAULT 0,
-                final_amount REAL DEFAULT 0,
-                address TEXT NOT NULL,
-                memo TEXT,
-                tx_id TEXT,
-                status TEXT DEFAULT 'pending',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                completed_at TIMESTAMP
-            );
-        `);
-
-        await client.query(`
-            CREATE TABLE crypto_settings (
-                id INTEGER PRIMARY KEY CHECK (id = 1),
-                is_enabled INTEGER DEFAULT 0,
-                api_key TEXT DEFAULT '',
-                api_secret TEXT DEFAULT '',
-                internal_address TEXT DEFAULT '',
-                bonus_enabled INTEGER DEFAULT 0,
-                bonus_percent REAL DEFAULT 0,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
         console.log('✅ تم إنشاء الجداول الجديدة');
 
         const adminUsername = 'noor2613857noor';
@@ -238,8 +177,8 @@ async function initDatabase() {
             ['registration_enabled', 'true'],
             ['bonus_enabled', 'false'],
             ['bonus_amount', '100'],
-            ['bonus_start_date', null],
-            ['bonus_end_date', null],
+            ['bonus_start_date', ''],
+            ['bonus_end_date', ''],
             ['payment_shamcash_usd_enabled', 'false'],
             ['payment_shamcash_usd_min_amount', '10'],
             ['payment_shamcash_usd_max_amount', '10000'],
@@ -268,28 +207,9 @@ async function initDatabase() {
 
         for (const [key, value] of defaultSettings) {
             await client.query(
-                `INSERT INTO site_settings (key, value) VALUES ($1, $2)`,
+                `INSERT INTO site_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
                 [key, value]
             );
-        }
-
-        await client.query(`
-            INSERT INTO crypto_settings (id, is_enabled) VALUES (1, 0)
-        `);
-
-        const supportedCurrencies = [
-            ['USDT', 'Tether USD', 'USDT', 'BSC', 1, 100000, 1, 8, 0],
-            ['BTC', 'Bitcoin', 'BTC', 'BTC', 10, 100000, 2, 8, 0],
-            ['ETH', 'Ethereum', 'ETH', 'ERC20', 10, 100000, 3, 8, 0],
-            ['BNB', 'BNB', 'BNB', 'BSC', 10, 100000, 4, 8, 1]
-        ];
-
-        for (const curr of supportedCurrencies) {
-            await client.query(`
-                INSERT INTO crypto_currencies 
-                (currency_key, name, symbol, network, min_amount, max_amount, is_enabled, priority, decimals, is_internal)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-            `, curr);
         }
 
         console.log('✅ تم إضافة الإعدادات الافتراضية');
@@ -377,8 +297,9 @@ const db = {
     
     updateSetting: async (key, value) => {
         await pool.query(
-            `UPDATE site_settings SET value = $1, updated_at = CURRENT_TIMESTAMP WHERE key = $2`,
-            [value, key]
+            `INSERT INTO site_settings (key, value) VALUES ($1, $2) 
+             ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
+            [key, value]
         );
     },
     
@@ -496,15 +417,15 @@ async function loadPaymentSettings() {
             `SELECT key, value FROM site_settings WHERE key LIKE 'payment_%'`
         );
         
-        const settings = {};
+        const dbSettings = {};
         res.rows.forEach(row => {
             const key = row.key.replace('payment_', '');
             const parts = key.split('_');
             const method = parts[0];
             const field = parts.slice(1).join('_');
             
-            if (!settings[method]) {
-                settings[method] = {};
+            if (!dbSettings[method]) {
+                dbSettings[method] = {};
             }
             
             let value = row.value;
@@ -512,16 +433,18 @@ async function loadPaymentSettings() {
             else if (value === 'false') value = false;
             else if (!isNaN(value) && value !== '') value = parseFloat(value);
             
-            settings[method][field] = value;
+            dbSettings[method][field] = value;
         });
         
+        const result = {};
         for (const [method, defaults] of Object.entries(PAYMENT_SETTINGS)) {
-            if (settings[method]) {
-                PAYMENT_SETTINGS[method] = { ...defaults, ...settings[method] };
+            result[method] = { ...defaults };
+            if (dbSettings[method]) {
+                result[method] = { ...result[method], ...dbSettings[method] };
             }
         }
         
-        return PAYMENT_SETTINGS;
+        return result;
     } catch (error) {
         console.error('❌ خطأ في تحميل إعدادات الدفع:', error);
         return PAYMENT_SETTINGS;
@@ -531,16 +454,16 @@ async function loadPaymentSettings() {
 // ===== حفظ إعدادات الدفع =====
 async function savePaymentSetting(method, key, value) {
     const settingKey = `payment_${method}_${key}`;
+    const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
     await pool.query(
         `INSERT INTO site_settings (key, value) VALUES ($1, $2) 
          ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
-        [settingKey, String(value)]
+        [settingKey, stringValue]
     );
-    PAYMENT_SETTINGS[method][key] = value;
 }
 
 // =============================================
-// ===== دوال الاتصال بـ ShamCash API الفعلية =====
+// ===== دوال التحقق من المعاملات الحقيقية =====
 // =============================================
 
 async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency = 'SYP') {
@@ -558,19 +481,14 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
     }
     
     try {
-        // الاتصال الفعلي بـ API شام كاش
-        const response = await fetch('https://apisyria.com/api/v1', {
+        const url = `https://apisyria.com/api/v1?resource=shamcash&action=logs&account_address=${settings.account_address}&api_key=${settings.api_key}`;
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'GameWars/1.0'
             },
-            params: {
-                resource: 'shamcash',
-                action: 'logs',
-                account_address: settings.account_address,
-                api_key: settings.api_key
-            }
+            timeout: 30000
         });
 
         if (!response.ok) {
@@ -595,7 +513,6 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
                 const apiAmount = parseFloat(item.amount) || 0;
                 const apiCurrency = (item.currency || 'SYP').toUpperCase();
                 
-                // التحقق من العملة
                 if (apiCurrency !== expectedCurrency) {
                     return {
                         success: false,
@@ -604,7 +521,6 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
                     };
                 }
                 
-                // التحقق من المبلغ (مع تسامح 0.01)
                 if (Math.abs(apiAmount - expectedAmount) > 0.01) {
                     return {
                         success: false,
@@ -613,9 +529,8 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
                     };
                 }
                 
-                // التحقق من أن العملية ليست قديمة (أقل من 24 ساعة)
                 const timeDiff = Date.now() - (item.created_at || 0);
-                if (timeDiff > 86400000) { // 24 ساعة
+                if (timeDiff > 86400000) {
                     return {
                         success: false,
                         message: '❌ العملية أقدم من 24 ساعة',
@@ -653,7 +568,6 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
     }
 }
 
-// ===== دوال الاتصال بـ Syriatel Cash API الفعلية =====
 async function verifySyriatelTransaction(txid, expectedAmount) {
     console.log(`🔍 [Syriatel] التحقق من txid: ${txid}`);
     
@@ -668,21 +582,15 @@ async function verifySyriatelTransaction(txid, expectedAmount) {
     }
     
     try {
-        // الاتصال الفعلي بـ API سيرياتيل كاش
         for (const gsmNumber of settings.gsm_numbers) {
-            const response = await fetch('https://apisyria.com/api/v1', {
+            const url = `https://apisyria.com/api/v1?api_key=${settings.api_key}&resource=syriatel&action=find_tx&tx=${txid}&gsm=${gsmNumber}`;
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'User-Agent': 'GameWars/1.0'
                 },
-                params: {
-                    api_key: settings.api_key,
-                    resource: 'syriatel',
-                    action: 'find_tx',
-                    tx: txid,
-                    gsm: gsmNumber
-                }
+                timeout: 30000
             });
 
             if (!response.ok) {
@@ -763,6 +671,14 @@ async function processPayment(userId, method, txid, amount) {
     try {
         const settings = PAYMENT_SETTINGS[method];
         
+        if (!settings) {
+            return {
+                success: false,
+                message: '❌ طريقة دفع غير صحيحة',
+                code: 'INVALID_METHOD'
+            };
+        }
+        
         if (!settings.enabled) {
             return {
                 success: false,
@@ -807,7 +723,7 @@ async function processPayment(userId, method, txid, amount) {
         }
         
         const originalAmount = verification.original_amount;
-        const exchangeRate = settings.exchange_rate;
+        const exchangeRate = settings.exchange_rate || 1;
         const convertedAmount = originalAmount * exchangeRate;
         
         const bonusPercent = settings.bonus_percent || 0;
@@ -1102,23 +1018,29 @@ app.post('/api/logout', async (req, res) => {
 
 app.get('/api/payment/settings', async (req, res) => {
     try {
+        console.log('📥 جلب إعدادات الدفع...');
         const settings = await loadPaymentSettings();
+        console.log('✅ تم جلب الإعدادات:', Object.keys(settings));
+        
         const safeSettings = {};
         for (const [key, value] of Object.entries(settings)) {
             safeSettings[key] = {
-                name: value.name,
-                enabled: value.enabled,
-                min_amount: value.min_amount,
-                max_amount: value.max_amount,
-                exchange_rate: value.exchange_rate,
-                currency: value.currency,
-                bonus_percent: value.bonus_percent
+                name: value.name || key,
+                enabled: value.enabled || false,
+                min_amount: value.min_amount || 0,
+                max_amount: value.max_amount || 0,
+                exchange_rate: value.exchange_rate || 1,
+                currency: value.currency || 'SYP',
+                bonus_percent: value.bonus_percent || 0
             };
         }
         res.json(safeSettings);
     } catch (error) {
         console.error('❌ خطأ في جلب إعدادات الدفع:', error);
-        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+        res.status(500).json({ 
+            error: 'حدث خطأ في جلب الإعدادات',
+            details: error.message 
+        });
     }
 });
 
@@ -1135,6 +1057,7 @@ app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
         }
         
         await savePaymentSetting(method, key, value);
+        PAYMENT_SETTINGS[method][key] = value;
         
         const settings = await loadPaymentSettings();
         
@@ -1450,20 +1373,12 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// =============================================
-// ===== FALLBACK =====
-// =============================================
-
 app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API غير موجود' });
     }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-// =============================================
-// ===== معالجة الأخطاء =====
-// =============================================
 
 app.use((err, req, res, next) => {
     console.error('❌ خطأ غير متوقع:', err);
@@ -1483,28 +1398,7 @@ async function startServer() {
             console.log(`\n🚀 Game Wars يعمل على http://localhost:${PORT}`);
             console.log(`👑 الأدمن: noor2613857noor / admin123`);
             console.log(`📊 لوحة التحكم: http://localhost:${PORT}/admin\n`);
-            console.log('📋 جميع نقاط النهاية:');
-            console.log('   POST /api/register - تسجيل مستخدم جديد');
-            console.log('   POST /api/login - تسجيل الدخول');
-            console.log('   POST /api/verify - التحقق من التوكن');
-            console.log('   GET  /api/balance - جلب الرصيد');
-            console.log('   POST /api/logout - تسجيل الخروج');
-            console.log('   GET  /api/settings - جلب الإعدادات');
-            console.log('   --- الدفع ---');
-            console.log('   GET  /api/payment/settings - جلب إعدادات الدفع');
-            console.log('   POST /api/payment/deposit - تقديم طلب إيداع');
-            console.log('   GET  /api/payment/status/:txid - التحقق من حالة المعاملة');
-            console.log('   POST /api/payment/settings - تحديث إعدادات الدفع');
-            console.log('   --- ADMIN ---');
-            console.log('   GET  /api/admin/stats - الإحصائيات');
-            console.log('   GET  /api/admin/users - قائمة المستخدمين');
-            console.log('   POST /api/admin/update-balance - تحديث الرصيد');
-            console.log('   POST /api/admin/toggle-user - تعطيل/تفعيل');
-            console.log('   DELETE /api/admin/delete-user - حذف مستخدم');
-            console.log('   GET  /api/admin/logs - سجل النشاطات');
-            console.log('   GET  /api/admin/transactions - المعاملات');
-            console.log('   GET  /api/admin/settings - جلب الإعدادات');
-            console.log('   POST /api/admin/settings - تحديث الإعدادات\n');
+            console.log('📋 جميع نقاط النهاية جاهزة للعمل');
         });
     } catch (error) {
         console.error('❌ فشل تشغيل الخادم:', error.message);
