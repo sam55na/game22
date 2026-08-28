@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام LuxWeb - تسجيل الدخول المتطور</title>
+    <style>
+        /* ===== الثيم الأساسي ===== */
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5a4bd1;
+            --secondary: #00cec9;
+            --bg-dark: #0a0a1a;
+            --glass: rgba(255, 255, 255, 0.08);
+            --text: #ffffff;
+            --shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            --border-glow: 0 0 30px rgba(108, 92, 231, 0.25);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Tahoma', system-ui, sans-serif;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(108, 92, 231, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 50%, rgba(0, 206, 201, 0.08) 0%, transparent 50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ===== خلفية متحركة ===== */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            display: block;
+            width: 20px;
+            height: 20px;
+            background: rgba(108, 92, 231, 0.06);
+            border-radius: 50%;
+            animation: float 20s infinite;
+            filter: blur(8px);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.5; }
+            90% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* ===== الحاوية ===== */
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 450px;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px 35px;
+            box-shadow: var(--shadow), var(--border-glow);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* ===== الشعار ===== */
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6c5ce7, #00cec9, #6c5ce7);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 4s ease infinite;
+            letter-spacing: -1px;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .logo p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* ===== التبويبات ===== */
+        .tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 15px;
+            padding: 4px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 8px 25px rgba(108, 92, 231, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: rgba(255, 255, 255, 0.7);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        /* ===== النماذج ===== */
+        .form {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .form.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.15);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group input:autofill {
+            background: rgba(255, 255, 255, 0.06);
+            color: white;
+        }
+
+        /* ===== زر الإرسال ===== */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(108, 92, 231, 0.35);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.08), transparent);
+            transform: rotate(45deg);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ===== الرسائل ===== */
+        .message {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .message.error {
+            display: block;
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 68, 68, 0.15);
+        }
+
+        .message.success {
+            display: block;
+            background: rgba(68, 255, 68, 0.08);
+            color: #51cf66;
+            border: 1px solid rgba(68, 255, 68, 0.12);
+        }
+
+        /* ===== لوحة التحكم ===== */
+        #dashboard {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        #dashboard.active {
+            display: block;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .site-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #6c5ce7, #00cec9, #fd79a8, #6c5ce7);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: textWave 3s ease infinite;
+            letter-spacing: 1px;
+        }
+
+        @keyframes textWave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .site-title span {
+            display: inline-block;
+            animation: bounceLetters 2s ease infinite;
+            animation-delay: calc(var(--i) * 0.08s);
+        }
+
+        @keyframes bounceLetters {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .balance-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(108, 92, 231, 0.15);
+            padding: 8px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .balance-box .icon {
+            font-size: 1.3rem;
+        }
+
+        .balance-box .amount {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #00cec9;
+        }
+
+        .balance-box .label {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.7rem;
+        }
+
+        .dashboard-content {
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            padding: 25px 0;
+        }
+
+        .dashboard-content h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .dashboard-content p {
+            line-height: 1.8;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            margin-top: 18px;
+            padding: 11px 30px;
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 68, 68, 0.2);
+            transform: scale(1.03);
+        }
+
+        .db-status {
+            text-align: center;
+            margin-top: 18px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* ===== استجابة للجوال ===== */
+        @media (max-width: 600px) {
+            .container { padding: 25px 18px; }
+            .logo h1 { font-size: 2rem; }
+            .navbar { flex-direction: column; align-items: stretch; text-align: center; }
+            .balance-box { justify-content: center; }
+            .site-title { font-size: 1.3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-animation" id="bgAnimation"></div>
+
+    <div class="container" id="app">
+        
+        <div class="logo">
+            <h1>✨ LuxWeb</h1>
+            <p>منصة متطورة مع PostgreSQL 🐘</p>
+        </div>
+
+        <!-- ===== نموذج تسجيل الدخول ===== -->
+        <div id="authSection">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="login">تسجيل دخول</button>
+                <button class="tab-btn" data-tab="register">إنشاء حساب</button>
+            </div>
+
+            <div class="form active" id="loginForm">
+                <div class="form-group">
+                    <label>👤 اسم المستخدم</label>
+                    <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>🔒 كلمة المرور</label>
+                    <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" autocomplete="current-password">
+                </div>
+                <button class="submit-btn" id="loginBtn">🚀 تسجيل الدخول</button>
+                <div class="message" id="loginMessage"></div>
+            </div>
+
+            <div class="form" id="registerForm">
+                <div class="form-group">
+                    <label>👤 اسم المستخدم</label>
+                    <input type="text" id="registerUsername" placeholder="اختر اسم مستخدم (3 أحرف على الأقل)" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label>🔒 كلمة المرور</label>
+                    <input type="password" id="registerPassword" placeholder="اختر كلمة مرور (6 أحرف على الأقل)" autocomplete="new-password">
+                </div>
+                <button class="submit-btn" id="registerBtn">✨ إنشاء حساب</button>
+                <div class="message" id="registerMessage"></div>
+            </div>
+        </div>
+
+        <!-- ===== لوحة التحكم ===== -->
+        <div id="dashboard">
+            <div class="navbar">
+                <div class="site-title" id="siteTitle"></div>
+                <div class="balance-box">
+                    <span class="icon">💰</span>
+                    <div>
+                        <div class="label">الرصيد</div>
+                        <div class="amount" id="userBalance">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-content">
+                <h2>👋 مرحباً، <span id="displayUsername">المستخدم</span></h2>
+                <p>تم تخزين بياناتك في PostgreSQL 🐘<br>
+                نظام آمن ومتطور مع أفضل الممارسات.</p>
+                <button class="logout-btn" id="logoutBtn">🚪 تسجيل الخروج</button>
+            </div>
+        </div>
+
+        <div class="db-status">⚡ PostgreSQL 🐘 | LuxWeb v1.0</div>
+    </div>
+
+    <script>
+        // ===== خلفية متحركة =====
+        (function createBackground() {
+            const container = document.getElementById('bgAnimation');
+            for (let i = 0; i < 30; i++) {
+                const span = document.createElement('span');
+                const size = Math.random() * 40 + 8;
+                span.style.width = size + 'px';
+                span.style.height = size + 'px';
+                span.style.left = Math.random() * 100 + '%';
+                span.style.animationDelay = Math.random() * 18 + 's';
+                span.style.animationDuration = (Math.random() * 25 + 15) + 's';
+                container.appendChild(span);
+            }
+        })();
+
+        // ===== تأثير تموج الحروف =====
+        function createWaveTitle() {
+            const title = document.getElementById('siteTitle');
+            const text = 'LuxWeb';
+            title.innerHTML = text.split('').map((char, i) => 
+                `<span style="--i:${i}">${char}</span>`
+            ).join('');
+        }
+
+        // ===== تبديل التبويبات =====
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const forms = {
+            login: document.getElementById('loginForm'),
+            register: document.getElementById('registerForm')
+        };
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const tab = btn.dataset.tab;
+                Object.keys(forms).forEach(key => {
+                    forms[key].classList.toggle('active', key === tab);
+                });
+                
+                document.querySelectorAll('.message').forEach(m => {
+                    m.className = 'message';
+                    m.textContent = '';
+                });
+            });
+        });
+
+        // ===== دوال مساعدة =====
+        function showMessage(element, text, type = 'error') {
+            element.textContent = text;
+            element.className = `message ${type}`;
+        }
+
+        function clearMessages() {
+            document.querySelectorAll('.message').forEach(m => {
+                m.className = 'message';
+                m.textContent = '';
+            });
+        }
+
+        function setLoading(button, loading) {
+            button.disabled = loading;
+            button.textContent = loading ? '⏳ جاري...' : button.dataset.original || 'إرسال';
+        }
+
+        // حفظ النص الأصلي للأزرار
+        document.querySelectorAll('.submit-btn').forEach(btn => {
+            btn.dataset.original = btn.textContent;
+        });
+
+        // ===== تسجيل الدخول =====
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const msg = document.getElementById('loginMessage');
+            const btn = document.getElementById('loginBtn');
+
+            if (!username || !password) {
+                return showMessage(msg, '❌ يرجى ملء جميع الحقول');
+            }
+
+            setLoading(btn, true);
+            clearMessages();
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'حدث خطأ');
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                showMessage(msg, '✅ تم تسجيل الدخول بنجاح!', 'success');
+                setTimeout(() => showDashboard(data.user), 400);
+
+            } catch (error) {
+                showMessage(msg, '❌ ' + error.message);
+            } finally {
+                setLoading(btn, false);
+            }
+        });
+
+        // ===== إنشاء حساب =====
+        document.getElementById('registerBtn').addEventListener('click', async () => {
+            const username = document.getElementById('registerUsername').value.trim();
+            const password = document.getElementById('registerPassword').value.trim();
+            const msg = document.getElementById('registerMessage');
+            const btn = document.getElementById('registerBtn');
+
+            if (!username || !password) {
+                return showMessage(msg, '❌ يرجى ملء جميع الحقول');
+            }
+            if (username.length < 3) {
+                return showMessage(msg, '❌ اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
+            }
+            if (password.length < 6) {
+                return showMessage(msg, '❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+            }
+
+            setLoading(btn, true);
+            clearMessages();
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'حدث خطأ');
+
+                showMessage(msg, '✅ تم إنشاء الحساب! يمكنك تسجيل الدخول الآن', 'success');
+                
+                document.getElementById('registerUsername').value = '';
+                document.getElementById('registerPassword').value = '';
+
+                setTimeout(() => {
+                    document.querySelector('[data-tab="login"]').click();
+                }, 1200);
+
+            } catch (error) {
+                showMessage(msg, '❌ ' + error.message);
+            } finally {
+                setLoading(btn, false);
+            }
+        });
+
+        // ===== عرض لوحة التحكم =====
+        function showDashboard(user) {
+            document.getElementById('authSection').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            document.getElementById('displayUsername').textContent = user.username;
+            document.getElementById('userBalance').textContent = user.balance;
+            createWaveTitle();
+        }
+
+        // ===== تسجيل الخروج =====
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            document.getElementById('dashboard').classList.remove('active');
+            document.getElementById('authSection').style.display = 'block';
+            document.querySelector('[data-tab="login"]').click();
+            clearMessages();
+        });
+
+        // ===== التحقق من الجلسة =====
+        (function checkSession() {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('user');
+            
+            if (token && userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    if (user.username && user.balance !== undefined) {
+                        showDashboard(user);
+                    }
+                } catch (e) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                }
+            }
+        })();
+
+        // ===== إدخال سريع بالضغط على Enter =====
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    const form = input.closest('.form');
+                    if (form.id === 'loginForm') {
+                        document.getElementById('loginBtn').click();
+                    } else if (form.id === 'registerForm') {
+                        document.getElementById('registerBtn').click();
+                    }
+                }
+            });
+        });
+
+        // ===== التحقق من صحة الإدخال أثناء الكتابة =====
+        document.getElementById('registerUsername').addEventListener('input', function() {
+            if (this.value.length > 0 && this.value.length < 3) {
+                this.style.borderColor = '#ff6b6b';
+            } else if (this.value.length >= 3) {
+                this.style.borderColor = '#51cf66';
+            } else {
+                this.style.borderColor = 'rgba(255,255,255,0.06)';
+            }
+        });
+
+        document.getElementById('registerPassword').addEventListener('input', function() {
+            if (this.value.length > 0 && this.value.length < 6) {
+                this.style.borderColor = '#ff6b6b';
+            } else if (this.value.length >= 6) {
+                this.style.borderColor = '#51cf66';
+            } else {
+                this.style.borderColor = 'rgba(255,255,255,0.06)';
+            }
+        });
+    </script>
+</body>
+</html>
