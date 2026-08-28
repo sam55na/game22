@@ -7,7 +7,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
@@ -27,30 +31,33 @@
             z-index: 100;
             background: rgba(10, 10, 26, 0.92);
             backdrop-filter: blur(16px);
-            padding: 10px 32px;
+            padding: 6px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 60px;
+            height: 50px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            gap: 10px;
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 12px;
-            font-size: 1.15rem;
+            gap: 8px;
+            font-size: 1rem;
             font-weight: 800;
+            flex-shrink: 0;
         }
 
         .brand i {
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             color: #6366f1;
         }
 
         .brand .letters {
             display: flex;
-            gap: 1px;
+            gap: 0px;
+            direction: ltr;
         }
 
         .brand .letters span {
@@ -58,13 +65,26 @@
             animation: fall 4.5s ease-in-out infinite;
             animation-delay: calc(var(--i) * 0.12s);
             font-weight: 800;
+            font-size: 1rem;
         }
 
         @keyframes fall {
-            0% { transform: translateY(-50px) rotate(160deg); opacity: 0; }
-            12% { transform: translateY(0) rotate(0); opacity: 1; }
-            82% { transform: translateY(0) rotate(0); opacity: 1; }
-            100% { transform: translateY(30px) rotate(-12deg); opacity: 0; }
+            0% {
+                transform: translateY(-40px) rotate(160deg);
+                opacity: 0;
+            }
+            12% {
+                transform: translateY(0) rotate(0);
+                opacity: 1;
+            }
+            82% {
+                transform: translateY(0) rotate(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(25px) rotate(-12deg);
+                opacity: 0;
+            }
         }
 
         .brand .letters span:nth-child(1) { --i: 0; }
@@ -80,147 +100,154 @@
         .nav-actions {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
         .btn {
-            padding: 7px 18px;
+            padding: 4px 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
             font-family: inherit;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 5px;
+            white-space: nowrap;
         }
 
         .btn-primary {
             background: linear-gradient(135deg, #4f46e5, #0891b2);
             color: #fff;
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(79,70,229,0.25); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79, 70, 229, 0.2); }
 
         .btn-outline {
             background: transparent;
-            border: 1px solid rgba(255,255,255,0.08);
-            color: rgba(255,255,255,0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.4);
         }
-        .btn-outline:hover { background: rgba(255,255,255,0.04); color: #fff; }
+        .btn-outline:hover { background: rgba(255, 255, 255, 0.04); color: #fff; }
 
         .btn-danger {
-            background: rgba(239,68,68,0.1);
+            background: rgba(239, 68, 68, 0.08);
             color: #f87171;
-            border: 1px solid rgba(239,68,68,0.08);
+            border: 1px solid rgba(239, 68, 68, 0.06);
         }
-        .btn-danger:hover { background: rgba(239,68,68,0.18); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.15); }
 
         .avatar {
-            width: 34px;
-            height: 34px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4f46e5, #0891b2);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.7rem;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         /* ===== المحتوى ===== */
         .main {
-            margin-top: 70px;
-            padding: 28px 32px;
-            max-width: 1100px;
+            margin-top: 58px;
+            padding: 16px 20px;
+            max-width: 900px;
             margin-left: auto;
             margin-right: auto;
             flex: 1;
+            width: 100%;
         }
 
         .empty-state {
             text-align: center;
-            padding: 60px 20px;
-            color: rgba(255,255,255,0.08);
+            padding: 40px 20px;
+            color: rgba(255, 255, 255, 0.06);
         }
 
         .empty-state i {
-            font-size: 3.2rem;
+            font-size: 2.4rem;
             display: block;
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
         .empty-state h2 {
-            color: rgba(255,255,255,0.15);
+            color: rgba(255, 255, 255, 0.12);
             font-weight: 700;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
         }
         .empty-state p {
-            color: rgba(255,255,255,0.06);
-            font-size: 0.85rem;
-            margin-top: 6px;
+            color: rgba(255, 255, 255, 0.04);
+            font-size: 0.75rem;
+            margin-top: 4px;
         }
 
         /* ===== نموذج المصادقة ===== */
         .auth-box {
-            max-width: 380px;
-            margin: 20px auto;
-            background: rgba(255,255,255,0.02);
-            border-radius: 28px;
-            padding: 28px 24px;
-            border: 1px solid rgba(255,255,255,0.04);
+            max-width: 320px;
+            margin: 12px auto;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 20px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .tabs {
             display: flex;
-            gap: 4px;
-            background: rgba(255,255,255,0.02);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 22px;
+            gap: 3px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 16px;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 9px;
+            padding: 6px;
             border: none;
             background: transparent;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255, 255, 255, 0.2);
             font-weight: 600;
-            font-size: 0.8rem;
-            border-radius: 10px;
+            font-size: 0.7rem;
+            border-radius: 8px;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
             font-family: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .tab-btn.active {
-            background: rgba(79,70,229,0.15);
+            background: rgba(79, 70, 229, 0.12);
             color: #a5b4fc;
         }
-        .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.5); }
+        .tab-btn:hover:not(.active) { color: rgba(255, 255, 255, 0.4); }
 
         .form { display: none; }
-        .form.active { display: block; animation: fadeUp 0.3s ease; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .form.active { display: block; animation: fadeUp 0.25s ease; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
 
         .input-group {
-            margin-bottom: 14px;
+            margin-bottom: 10px;
         }
 
         .input-group label {
             display: block;
-            color: rgba(255,255,255,0.25);
-            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.6rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 5px;
+            letter-spacing: 0.3px;
+            margin-bottom: 3px;
         }
 
         .input-wrap {
@@ -229,80 +256,95 @@
 
         .input-wrap i {
             position: absolute;
-            right: 14px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255,255,255,0.08);
-            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.06);
+            font-size: 0.7rem;
         }
 
         .input-wrap input {
             width: 100%;
-            padding: 11px 40px 11px 14px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 10px;
+            padding: 7px 32px 7px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
             color: #fff;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             font-family: inherit;
             outline: none;
             transition: all 0.2s ease;
         }
 
         .input-wrap input:focus {
-            border-color: rgba(79,70,229,0.3);
-            background: rgba(255,255,255,0.05);
+            border-color: rgba(79, 70, 229, 0.25);
+            background: rgba(255, 255, 255, 0.05);
         }
-        .input-wrap input::placeholder { color: rgba(255,255,255,0.06); }
+        .input-wrap input::placeholder { color: rgba(255, 255, 255, 0.05); }
 
         .submit-btn {
             width: 100%;
-            padding: 12px;
+            padding: 8px;
             background: linear-gradient(135deg, #4f46e5, #0891b2);
             color: #fff;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
             font-family: inherit;
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
-        .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(79,70,229,0.2); }
+        .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(79, 70, 229, 0.15); }
         .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
         .msg {
-            margin-top: 12px;
-            padding: 10px 14px;
-            border-radius: 8px;
-            font-size: 0.8rem;
+            margin-top: 10px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
             font-weight: 600;
             display: none;
             text-align: center;
         }
 
-        .msg.error { display: block; background: rgba(239,68,68,0.06); color: #f87171; border: 1px solid rgba(239,68,68,0.06); }
-        .msg.success { display: block; background: rgba(52,211,153,0.06); color: #34d399; border: 1px solid rgba(52,211,153,0.06); }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.06); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.04); }
+        .msg.success { display: block; background: rgba(52, 211, 153, 0.06); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.04); }
 
         /* ===== استجابة ===== */
         @media (max-width: 700px) {
-            .navbar { padding: 8px 16px; height: 52px; }
-            .brand { font-size: 1rem; }
-            .brand .letters span { font-size: 0.9rem; }
-            .main { padding: 16px; margin-top: 60px; }
-            .auth-box { margin: 10px; padding: 20px 16px; border-radius: 20px; }
+            .navbar { padding: 4px 12px; height: 44px; }
+            .brand { font-size: 0.85rem; gap: 6px; }
+            .brand .letters span { font-size: 0.85rem; }
+            .main { padding: 12px; margin-top: 50px; }
+            .auth-box { padding: 16px 14px; max-width: 100%; margin: 8px 0; }
             .btn span { display: none; }
-            .nav-actions { gap: 8px; }
+            .nav-actions { gap: 5px; }
+            .btn { padding: 3px 8px; font-size: 0.65rem; }
+            .avatar { width: 24px; height: 24px; font-size: 0.6rem; }
         }
 
         @media (max-width: 420px) {
-            .brand { font-size: 0.85rem; gap: 8px; }
+            .brand { font-size: 0.75rem; gap: 4px; }
             .brand .letters span { font-size: 0.75rem; }
-            .btn { padding: 5px 12px; font-size: 0.7rem; }
-            .avatar { width: 28px; height: 28px; font-size: 0.7rem; }
-            .auth-box { padding: 16px 12px; border-radius: 16px; }
+            .brand i { font-size: 0.85rem; }
+            .auth-box { padding: 12px 10px; border-radius: 14px; }
+            .input-wrap input { padding: 5px 28px 5px 8px; font-size: 0.7rem; }
+            .submit-btn { padding: 6px; font-size: 0.7rem; }
+            .tab-btn { font-size: 0.6rem; padding: 4px; }
+            .btn { padding: 2px 6px; font-size: 0.55rem; }
+            .empty-state i { font-size: 1.8rem; }
+            .empty-state h2 { font-size: 0.9rem; }
+        }
+
+        @media (max-width: 360px) {
+            .brand .letters span { font-size: 0.65rem; }
+            .brand i { font-size: 0.7rem; }
+            .nav-actions { gap: 3px; }
+            .avatar { width: 20px; height: 20px; font-size: 0.5rem; }
+            .btn { padding: 2px 5px; font-size: 0.5rem; }
         }
     </style>
 </head>
@@ -311,7 +353,7 @@
     <nav class="navbar">
         <div class="brand">
             <i class="fas fa-gamepad"></i>
-            <div class="letters">
+            <div class="letters" dir="ltr">
                 <span>G</span><span>a</span><span>m</span><span>e</span>
                 <span style="margin-right:2px;"></span>
                 <span>W</span><span>a</span><span>r</span><span>s</span>
@@ -338,14 +380,14 @@
                     <label>اسم المستخدم</label>
                     <div class="input-wrap">
                         <i class="fas fa-user"></i>
-                        <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" />
+                        <input type="text" id="loginUsername" placeholder="اسم المستخدم" />
                     </div>
                 </div>
                 <div class="input-group">
                     <label>كلمة المرور</label>
                     <div class="input-wrap">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" />
+                        <input type="password" id="loginPassword" placeholder="كلمة المرور" />
                     </div>
                 </div>
                 <button class="submit-btn" id="loginBtn">دخول</button>
@@ -401,7 +443,7 @@
                 document.getElementById('emptyState').innerHTML = `
                     <i class="fas fa-gamepad"></i>
                     <h2>مرحباً ${user.username}</h2>
-                    <p style="color:rgba(255,255,255,0.06);">أنت مسجل الدخول</p>
+                    <p style="color:rgba(255,255,255,0.04);">أنت مسجل الدخول</p>
                 `;
             } else {
                 nav.innerHTML = `<button class="btn btn-primary" id="showLogin"><i class="fas fa-sign-in-alt"></i> <span>دخول</span></button>`;
@@ -412,7 +454,7 @@
                 document.getElementById('emptyState').innerHTML = `
                     <i class="fas fa-gamepad"></i>
                     <h2>Game Wars</h2>
-                    <p style="color:rgba(255,255,255,0.06);">سجل الدخول لبدء التجربة</p>
+                    <p style="color:rgba(255,255,255,0.04);">سجل الدخول لبدء التجربة</p>
                 `;
             }
         }
@@ -514,6 +556,47 @@
                 updateNavbar(null);
             }
         })();
+
+        // ===== إصلاح مشكلة لوحة الإدارة =====
+        // التحقق من صلاحية الأدمن عند تحميل الصفحة
+        async function checkAdminAccess() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                const res = await fetch(`${API}/api/verify`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.role === 'admin') {
+                    // إضافة زر لوحة الإدارة في الشريط
+                    const nav = document.getElementById('navActions');
+                    if (!document.getElementById('adminLink')) {
+                        const adminBtn = document.createElement('a');
+                        adminBtn.id = 'adminLink';
+                        adminBtn.href = '/admin';
+                        adminBtn.style.cssText = `
+                            color: #a5b4fc;
+                            font-size: 0.7rem;
+                            font-weight: 600;
+                            text-decoration: none;
+                            padding: 3px 10px;
+                            border-radius: 6px;
+                            border: 1px solid rgba(79,70,229,0.15);
+                            background: rgba(79,70,229,0.05);
+                            transition: all 0.2s ease;
+                        `;
+                        adminBtn.textContent = '👑 لوحة';
+                        adminBtn.onmouseover = () => { adminBtn.style.background = 'rgba(79,70,229,0.1)'; };
+                        adminBtn.onmouseout = () => { adminBtn.style.background = 'rgba(79,70,229,0.05)'; };
+                        nav.prepend(adminBtn);
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // استدعاء التحقق بعد تحميل الصفحة
+        setTimeout(checkAdminAccess, 500);
     </script>
 </body>
 </html>

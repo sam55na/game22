@@ -9,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const path = require('path');
 const { Pool } = require('pg');
 
+// ===== إعدادات =====
 const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_key_123456';
@@ -127,7 +128,7 @@ async function initDatabase() {
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
-        // ===== 3. إنشاء حساب الأدمن فقط =====
+        // ===== 3. إنشاء حساب الأدمن =====
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
         const hash = await bcrypt.hash(adminPassword, 10);
@@ -289,12 +290,14 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ===== تسجيل مستخدم جديد =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const userAgent = req.headers['user-agent'];
 
+        // التحقق
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
@@ -305,11 +308,13 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' });
         }
 
+        // التحقق من التكرار
         const existing = await db.findUser(username);
         if (existing) {
             return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
 
+        // تشفير كلمة المرور
         const hash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, hash, ip, userAgent);
 
@@ -324,6 +329,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// ===== تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -334,31 +340,41 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
 
+        // البحث عن المستخدم
         const user = await db.findUser(username);
         if (!user) {
             return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         }
 
+        // التحقق من الحساب
         if (!user.is_active) {
             return res.status(403).json({ error: 'الحساب معطل، يرجى التواصل مع الدعم' });
         }
 
+        // التحقق من كلمة المرور
         const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
             return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         }
 
+        // تحديث آخر تسجيل دخول
         const updatedUser = await db.login(username, ip, userAgent);
         if (!updatedUser) {
             return res.status(500).json({ error: 'حدث خطأ في تحديث الجلسة' });
         }
 
+        // إنشاء التوكن
         const token = jwt.sign(
-            { id: user.id, username: user.username, role: user.role },
+            { 
+                id: user.id,
+                username: user.username, 
+                role: user.role 
+            },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
 
+        // حفظ الجلسة في قاعدة البيانات
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await db.saveSession(user.id, token, expiresAt);
 
@@ -377,6 +393,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// ===== التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -386,6 +403,7 @@ app.post('/api/verify', async (req, res) => {
 
         const decoded = jwt.verify(token, JWT_SECRET);
         
+        // التحقق من وجود الجلسة في قاعدة البيانات
         const sessionCheck = await pool.query(
             'SELECT * FROM sessions WHERE token = $1 AND expires_at > NOW()',
             [token]
@@ -435,6 +453,7 @@ const verifyAdmin = async (req, res, next) => {
     }
 };
 
+// ===== جلب الإحصائيات =====
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
@@ -444,6 +463,7 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== جلب المستخدمين =====
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     try {
         const users = await db.getUsers();
@@ -453,6 +473,7 @@ app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== تعطيل/تفعيل المستخدم =====
 app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     try {
         const { username, active } = req.body;
@@ -471,6 +492,7 @@ app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== حذف مستخدم =====
 app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     try {
         const { username } = req.body;
@@ -493,6 +515,7 @@ app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== جلب سجل النشاطات =====
 app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
@@ -503,6 +526,7 @@ app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== جلب إعدادات الموقع =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -512,6 +536,7 @@ app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== تحديث إعدادات الموقع =====
 app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const { key, value } = req.body;
@@ -535,14 +560,15 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 
 app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ===== معالجة الأخطاء =====
 app.use((req, res) => {
     res.status(404).json({ error: 'المسار غير موجود' });
 });
@@ -571,6 +597,7 @@ async function startServer() {
     }
 }
 
+// ===== إغلاق نظيف =====
 process.on('SIGTERM', async () => {
     console.log('🛑 إيقاف الخادم...');
     await pool.end();
