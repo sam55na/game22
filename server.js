@@ -77,6 +77,11 @@ async function initDatabase() {
 
         // مسح الجداول القديمة
         console.log('🗑️ جاري مسح الجداول القديمة...');
+        await client.query('DROP TABLE IF EXISTS crypto_payments CASCADE;');
+        await client.query('DROP TABLE IF EXISTS crypto_addresses CASCADE;');
+        await client.query('DROP TABLE IF EXISTS crypto_currencies CASCADE;');
+        await client.query('DROP TABLE IF EXISTS crypto_settings CASCADE;');
+        await client.query('DROP TABLE IF EXISTS transactions CASCADE;');
         await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
         await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
         await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
@@ -142,6 +147,97 @@ async function initDatabase() {
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
 
+        // ===== جداول نظام الدفع =====
+
+        // جدول المعاملات
+        await client.query(`
+            CREATE TABLE transactions (
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+                username VARCHAR(50),
+                type VARCHAR(20) NOT NULL,
+                amount DECIMAL(15,2) NOT NULL,
+                method VARCHAR(50),
+                txid VARCHAR(255) UNIQUE,
+                bonus_amount DECIMAL(15,2) DEFAULT 0,
+                bonus_percent DECIMAL(5,2) DEFAULT 0,
+                old_balance DECIMAL(15,2),
+                new_balance DECIMAL(15,2),
+                status VARCHAR(20) DEFAULT 'pending',
+                details TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_txid ON transactions(txid);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_status ON transactions(status);');
+
+        // جدول العملات الرقمية
+        await client.query(`
+            CREATE TABLE crypto_currencies (
+                currency_key TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                symbol TEXT NOT NULL,
+                network TEXT NOT NULL,
+                min_amount REAL DEFAULT 1,
+                max_amount REAL DEFAULT 100000,
+                is_enabled INTEGER DEFAULT 1,
+                priority INTEGER DEFAULT 0,
+                decimals INTEGER DEFAULT 8,
+                is_internal INTEGER DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // جدول عناوين العملات الرقمية
+        await client.query(`
+            CREATE TABLE crypto_addresses (
+                currency_key TEXT PRIMARY KEY,
+                symbol TEXT NOT NULL,
+                network TEXT NOT NULL,
+                address TEXT NOT NULL,
+                memo TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // جدول طلبات الدفع بالعملات الرقمية
+        await client.query(`
+            CREATE TABLE crypto_payments (
+                request_id TEXT PRIMARY KEY,
+                user_id TEXT NOT NULL,
+                currency_key TEXT NOT NULL,
+                currency_name TEXT NOT NULL,
+                amount_usd REAL NOT NULL,
+                crypto_amount REAL NOT NULL,
+                amount_syp REAL NOT NULL,
+                bonus_amount REAL DEFAULT 0,
+                final_amount REAL DEFAULT 0,
+                address TEXT NOT NULL,
+                memo TEXT,
+                tx_id TEXT,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                completed_at TIMESTAMP
+            );
+        `);
+
+        // جدول إعدادات العملات الرقمية
+        await client.query(`
+            CREATE TABLE crypto_settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                is_enabled INTEGER DEFAULT 0,
+                api_key TEXT DEFAULT '',
+                api_secret TEXT DEFAULT '',
+                internal_address TEXT DEFAULT '',
+                bonus_enabled INTEGER DEFAULT 0,
+                bonus_percent REAL DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         console.log('✅ تم إنشاء الجداول الجديدة');
 
         // ===== إنشاء حساب الأدمن =====
@@ -170,7 +266,34 @@ async function initDatabase() {
             ['bonus_enabled', 'false'],
             ['bonus_amount', '100'],
             ['bonus_start_date', null],
-            ['bonus_end_date', null]
+            ['bonus_end_date', null],
+            // إعدادات شام كاش دولار
+            ['payment_shamcash_usd_enabled', 'false'],
+            ['payment_shamcash_usd_min_amount', '10'],
+            ['payment_shamcash_usd_max_amount', '10000'],
+            ['payment_shamcash_usd_exchange_rate', '13000'],
+            ['payment_shamcash_usd_currency', 'USD'],
+            ['payment_shamcash_usd_bonus_percent', '0'],
+            ['payment_shamcash_usd_api_key', ''],
+            ['payment_shamcash_usd_account_address', ''],
+            // إعدادات شام كاش ليرة
+            ['payment_shamcash_syp_enabled', 'false'],
+            ['payment_shamcash_syp_min_amount', '1000'],
+            ['payment_shamcash_syp_max_amount', '1000000'],
+            ['payment_shamcash_syp_exchange_rate', '1'],
+            ['payment_shamcash_syp_currency', 'SYP'],
+            ['payment_shamcash_syp_bonus_percent', '0'],
+            ['payment_shamcash_syp_api_key', ''],
+            ['payment_shamcash_syp_account_address', ''],
+            // إعدادات سيرياتيل كاش
+            ['payment_syriatel_enabled', 'false'],
+            ['payment_syriatel_min_amount', '1000'],
+            ['payment_syriatel_max_amount', '1000000'],
+            ['payment_syriatel_exchange_rate', '1'],
+            ['payment_syriatel_currency', 'SYP'],
+            ['payment_syriatel_bonus_percent', '0'],
+            ['payment_syriatel_api_key', ''],
+            ['payment_syriatel_gsm_numbers', '[]']
         ];
 
         for (const [key, value] of defaultSettings) {
@@ -179,6 +302,28 @@ async function initDatabase() {
                 [key, value]
             );
         }
+
+        // ===== إعدادات العملات الرقمية الافتراضية =====
+        await client.query(`
+            INSERT INTO crypto_settings (id, is_enabled) VALUES (1, 0)
+        `);
+
+        // ===== العملات الرقمية المدعومة =====
+        const supportedCurrencies = [
+            ['USDT', 'Tether USD', 'USDT', 'BSC', 1, 100000, 1, 8, 0],
+            ['BTC', 'Bitcoin', 'BTC', 'BTC', 10, 100000, 2, 8, 0],
+            ['ETH', 'Ethereum', 'ETH', 'ERC20', 10, 100000, 3, 8, 0],
+            ['BNB', 'BNB', 'BNB', 'BSC', 10, 100000, 4, 8, 1]
+        ];
+
+        for (const curr of supportedCurrencies) {
+            await client.query(`
+                INSERT INTO crypto_currencies 
+                (currency_key, name, symbol, network, min_amount, max_amount, is_enabled, priority, decimals, is_internal)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            `, curr);
+        }
+
         console.log('✅ تم إضافة الإعدادات الافتراضية');
         console.log('✅ تهيئة قاعدة البيانات مكتملة');
 
@@ -198,6 +343,14 @@ const db = {
         const res = await pool.query(
             'SELECT id, username, password_hash, balance, role, is_active FROM users WHERE username = $1',
             [username.toLowerCase().trim()]
+        );
+        return res.rows[0] || null;
+    },
+    
+    findUserById: async (id) => {
+        const res = await pool.query(
+            'SELECT id, username, balance, role, is_active FROM users WHERE id = $1',
+            [id]
         );
         return res.rows[0] || null;
     },
@@ -314,10 +467,653 @@ const db = {
         return res.rows[0]?.balance || null;
     },
     
+    updateBalanceById: async (userId, newBalance) => {
+        const res = await pool.query(
+            `UPDATE users SET balance = $1, updated_at = CURRENT_TIMESTAMP 
+             WHERE id = $2 RETURNING balance`,
+            [newBalance, userId]
+        );
+        return res.rows[0]?.balance || null;
+    },
+    
     clearSessions: async (userId) => {
         await pool.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
     }
 };
+
+// =============================================
+// ===== نظام الدفع =====
+// =============================================
+
+// ===== إعدادات الدفع =====
+const PAYMENT_SETTINGS = {
+    shamcash_usd: {
+        name: 'شام كاش (دولار)',
+        enabled: false,
+        min_amount: 10,
+        max_amount: 10000,
+        exchange_rate: 13000,
+        currency: 'USD',
+        bonus_percent: 0,
+        api_key: '',
+        account_address: ''
+    },
+    shamcash_syp: {
+        name: 'شام كاش (ليرة)',
+        enabled: false,
+        min_amount: 1000,
+        max_amount: 1000000,
+        exchange_rate: 1,
+        currency: 'SYP',
+        bonus_percent: 0,
+        api_key: '',
+        account_address: ''
+    },
+    syriatel: {
+        name: 'سيرياتيل كاش',
+        enabled: false,
+        min_amount: 1000,
+        max_amount: 1000000,
+        exchange_rate: 1,
+        currency: 'SYP',
+        bonus_percent: 0,
+        api_key: '',
+        gsm_numbers: []
+    }
+};
+
+// ===== تحميل إعدادات الدفع =====
+async function loadPaymentSettings() {
+    try {
+        const res = await pool.query(
+            `SELECT key, value FROM site_settings WHERE key LIKE 'payment_%'`
+        );
+        
+        const settings = {};
+        res.rows.forEach(row => {
+            const key = row.key.replace('payment_', '');
+            const parts = key.split('_');
+            const method = parts[0];
+            const field = parts.slice(1).join('_');
+            
+            if (!settings[method]) {
+                settings[method] = {};
+            }
+            
+            let value = row.value;
+            if (value === 'true') value = true;
+            else if (value === 'false') value = false;
+            else if (!isNaN(value) && value !== '') value = parseFloat(value);
+            
+            settings[method][field] = value;
+        });
+        
+        for (const [method, defaults] of Object.entries(PAYMENT_SETTINGS)) {
+            if (settings[method]) {
+                PAYMENT_SETTINGS[method] = { ...defaults, ...settings[method] };
+            }
+        }
+        
+        return PAYMENT_SETTINGS;
+    } catch (error) {
+        console.error('❌ خطأ في تحميل إعدادات الدفع:', error);
+        return PAYMENT_SETTINGS;
+    }
+}
+
+// ===== حفظ إعدادات الدفع =====
+async function savePaymentSetting(method, key, value) {
+    const settingKey = `payment_${method}_${key}`;
+    await pool.query(
+        `INSERT INTO site_settings (key, value) VALUES ($1, $2) 
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
+        [settingKey, String(value)]
+    );
+    PAYMENT_SETTINGS[method][key] = value;
+}
+
+// ===== المعاملات المؤقتة =====
+const pendingVerifications = new Map();
+const processedTxids = new Set();
+const processingLocks = new Map();
+
+// ===== العملات الرقمية المدعومة =====
+const SUPPORTED_CURRENCIES = {
+    USDT: { name: 'Tether USD', symbol: 'USDT', network: 'BSC', min_usd: 1, max_usd: 100000, priority: 1, decimals: 8, is_internal: false },
+    BTC: { name: 'Bitcoin', symbol: 'BTC', network: 'BTC', min_usd: 10, max_usd: 100000, priority: 2, decimals: 8, is_internal: false },
+    ETH: { name: 'Ethereum', symbol: 'ETH', network: 'ERC20', min_usd: 10, max_usd: 100000, priority: 3, decimals: 8, is_internal: false },
+    BNB: { name: 'BNB', symbol: 'BNB', network: 'BSC', min_usd: 10, max_usd: 100000, priority: 4, decimals: 8, is_internal: true }
+};
+
+// =============================================
+// ===== دوال التحقق من المعاملات =====
+// =============================================
+
+// ===== التحقق من ShamCash API =====
+async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency = 'SYP') {
+    console.log(`🔍 [ShamCash] التحقق من txid: ${txid}`);
+    
+    const methodKey = expectedCurrency === 'USD' ? 'shamcash_usd' : 'shamcash_syp';
+    const settings = PAYMENT_SETTINGS[methodKey];
+    
+    if (!settings.enabled) {
+        return { success: false, message: '❌ شام كاش غير مفعل', code: 'DISABLED' };
+    }
+    
+    if (!settings.api_key || !settings.account_address) {
+        return { success: false, message: '❌ لم يتم تهيئة شام كاش', code: 'NOT_INITIALIZED' };
+    }
+    
+    try {
+        const result = await mockShamCashAPI(txid, settings.account_address, settings.api_key);
+        
+        if (!result.success) {
+            return result;
+        }
+        
+        const apiAmount = result.amount;
+        const apiCurrency = result.currency;
+        
+        if (apiCurrency !== expectedCurrency) {
+            return {
+                success: false,
+                message: `❌ العملة غير متطابقة! متوقع: ${expectedCurrency}, موجود: ${apiCurrency}`,
+                code: 'CURRENCY_MISMATCH'
+            };
+        }
+        
+        if (Math.abs(apiAmount - expectedAmount) > 0.01) {
+            return {
+                success: false,
+                message: `❌ المبلغ غير متطابق! متوقع: ${expectedAmount}, موجود: ${apiAmount}`,
+                code: 'AMOUNT_MISMATCH'
+            };
+        }
+        
+        return {
+            success: true,
+            txid: txid,
+            original_amount: apiAmount,
+            currency: apiCurrency,
+            status: 'completed',
+            timestamp: result.timestamp || Date.now(),
+            sender: result.sender || 'غير معروف',
+            receiver: settings.account_address,
+            code: 'SUCCESS'
+        };
+        
+    } catch (error) {
+        console.error('❌ خطأ في التحقق من شام كاش:', error);
+        return {
+            success: false,
+            message: `❌ خطأ في التحقق: ${error.message}`,
+            code: 'API_ERROR'
+        };
+    }
+}
+
+// ===== محاكاة ShamCash API =====
+async function mockShamCashAPI(txid, accountAddress, apiKey) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (txid.startsWith('SHAM_')) {
+                const parts = txid.split('_');
+                const amount = parseFloat(parts[1]) || 100;
+                const currency = parts[2] || 'SYP';
+                resolve({
+                    success: true,
+                    amount: amount,
+                    currency: currency === 'USD' ? 'USD' : 'SYP',
+                    sender: 'محول',
+                    timestamp: Date.now()
+                });
+            } else {
+                resolve({
+                    success: false,
+                    message: '❌ رقم العملية غير موجود',
+                    code: 'TX_NOT_FOUND'
+                });
+            }
+        }, 2000);
+    });
+}
+
+// ===== التحقق من Syriatel Cash API =====
+async function verifySyriatelTransaction(txid, expectedAmount) {
+    console.log(`🔍 [Syriatel] التحقق من txid: ${txid}`);
+    
+    const settings = PAYMENT_SETTINGS.syriatel;
+    
+    if (!settings.enabled) {
+        return { success: false, message: '❌ سيرياتيل كاش غير مفعل', code: 'DISABLED' };
+    }
+    
+    if (!settings.api_key || !settings.gsm_numbers || settings.gsm_numbers.length === 0) {
+        return { success: false, message: '❌ لم يتم تهيئة سيرياتيل كاش', code: 'NOT_INITIALIZED' };
+    }
+    
+    try {
+        const result = await mockSyriatelAPI(txid, settings.api_key, settings.gsm_numbers);
+        
+        if (!result.success) {
+            return result;
+        }
+        
+        const apiAmount = result.amount;
+        
+        if (Math.abs(apiAmount - expectedAmount) > 0.01) {
+            return {
+                success: false,
+                message: `❌ المبلغ غير متطابق! متوقع: ${expectedAmount}, موجود: ${apiAmount}`,
+                code: 'AMOUNT_MISMATCH'
+            };
+        }
+        
+        return {
+            success: true,
+            txid: txid,
+            original_amount: apiAmount,
+            currency: 'SYP',
+            status: 'completed',
+            gsm: result.gsm,
+            sender: result.sender || 'غير معروف',
+            code: 'SUCCESS'
+        };
+        
+    } catch (error) {
+        console.error('❌ خطأ في التحقق من سيرياتيل:', error);
+        return {
+            success: false,
+            message: `❌ خطأ في التحقق: ${error.message}`,
+            code: 'API_ERROR'
+        };
+    }
+}
+
+// ===== محاكاة Syriatel API =====
+async function mockSyriatelAPI(txid, apiKey, gsmNumbers) {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            if (txid.startsWith('SYR_')) {
+                const amount = parseFloat(txid.split('_')[1]) || 100;
+                resolve({
+                    success: true,
+                    amount: amount,
+                    gsm: gsmNumbers[0] || '0999999999',
+                    sender: 'مرسل',
+                    timestamp: Date.now()
+                });
+            } else {
+                resolve({
+                    success: false,
+                    message: '❌ رقم العملية غير موجود',
+                    code: 'TX_NOT_FOUND'
+                });
+            }
+        }, 2000);
+    });
+}
+
+// =============================================
+// ===== دوال العملات الرقمية =====
+// =============================================
+
+// ===== جلب عنوان الإيداع =====
+async function getCryptoAddress(currencyKey) {
+    try {
+        const res = await pool.query(
+            'SELECT address, memo FROM crypto_addresses WHERE currency_key = $1',
+            [currencyKey]
+        );
+        return res.rows[0] || null;
+    } catch (error) {
+        console.error('❌ خطأ في جلب عنوان العملة:', error);
+        return null;
+    }
+}
+
+// ===== حفظ عنوان الإيداع =====
+async function saveCryptoAddress(currencyKey, symbol, network, address, memo = '') {
+    try {
+        await pool.query(`
+            INSERT INTO crypto_addresses (currency_key, symbol, network, address, memo, updated_at)
+            VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+            ON CONFLICT (currency_key) DO UPDATE SET 
+                symbol = $2, network = $3, address = $4, memo = $5, updated_at = CURRENT_TIMESTAMP
+        `, [currencyKey, symbol, network, address, memo]);
+        return true;
+    } catch (error) {
+        console.error('❌ خطأ في حفظ عنوان العملة:', error);
+        return false;
+    }
+}
+
+// ===== جلب سعر العملة =====
+async function getCryptoPrice(currency) {
+    if (currency === 'USDT') return 1.0;
+    
+    try {
+        const res = await pool.query(
+            'SELECT value FROM site_settings WHERE key = $1',
+            [`crypto_price_${currency}`]
+        );
+        if (res.rows.length > 0) {
+            return parseFloat(res.rows[0].value) || 0;
+        }
+        return 0;
+    } catch (error) {
+        console.error('❌ خطأ في جلب سعر العملة:', error);
+        return 0;
+    }
+}
+
+// ===== حساب كمية العملة =====
+function getCryptoAmount(amountUsd, currency) {
+    if (currency === 'USDT') return amountUsd;
+    const price = SUPPORTED_CURRENCIES[currency]?.price || 0;
+    if (price <= 0) return 0;
+    return amountUsd / price;
+}
+
+// ===== حساب البونص =====
+async function calculateBonus(userId, amount, method) {
+    const settings = PAYMENT_SETTINGS[method];
+    const bonusPercent = settings.bonus_percent || 0;
+    
+    if (bonusPercent <= 0) {
+        return { bonusAmount: 0, bonusPercent: 0, bonusType: null };
+    }
+    
+    const bonusAmount = amount * (bonusPercent / 100);
+    
+    return {
+        bonusAmount: bonusAmount,
+        bonusPercent: bonusPercent,
+        bonusType: `auto_${method}`
+    };
+}
+
+// =============================================
+// ===== معالجة الدفع =====
+// =============================================
+
+async function processPayment(userId, method, txid, amount) {
+    console.log(`💰 [Payment] معالجة: user=${userId}, method=${method}, txid=${txid}, amount=${amount}`);
+    
+    if (processedTxids.has(txid)) {
+        return {
+            success: false,
+            message: '❌ رقم العملية هذا مستخدم مسبقاً',
+            code: 'TXID_ALREADY_USED'
+        };
+    }
+    
+    if (processingLocks.has(txid)) {
+        return {
+            success: false,
+            message: '❌ هذه العملية قيد المعالجة',
+            code: 'LOCKED'
+        };
+    }
+    
+    processingLocks.set(txid, Date.now());
+    
+    try {
+        const settings = PAYMENT_SETTINGS[method];
+        
+        if (!settings.enabled) {
+            return {
+                success: false,
+                message: `❌ طريقة الدفع غير مفعلة`,
+                code: 'DISABLED'
+            };
+        }
+        
+        if (amount < settings.min_amount) {
+            return {
+                success: false,
+                message: `❌ أقل من الحد الأدنى (${settings.min_amount})`,
+                code: 'BELOW_MIN'
+            };
+        }
+        
+        if (amount > settings.max_amount) {
+            return {
+                success: false,
+                message: `❌ أكبر من الحد الأقصى (${settings.max_amount})`,
+                code: 'ABOVE_MAX'
+            };
+        }
+        
+        let verification;
+        if (method === 'shamcash_usd') {
+            verification = await verifyShamCashTransaction(txid, amount, 'USD');
+        } else if (method === 'shamcash_syp') {
+            verification = await verifyShamCashTransaction(txid, amount, 'SYP');
+        } else if (method === 'syriatel') {
+            verification = await verifySyriatelTransaction(txid, amount);
+        } else {
+            return {
+                success: false,
+                message: '❌ طريقة غير مدعومة',
+                code: 'INVALID_METHOD'
+            };
+        }
+        
+        if (!verification.success) {
+            return verification;
+        }
+        
+        const originalAmount = verification.original_amount;
+        const exchangeRate = settings.exchange_rate;
+        const convertedAmount = originalAmount * exchangeRate;
+        
+        const bonus = await calculateBonus(userId, convertedAmount, method);
+        const finalAmount = convertedAmount + bonus.bonusAmount;
+        
+        const user = await db.findUserById(userId);
+        if (!user) {
+            return {
+                success: false,
+                message: '❌ المستخدم غير موجود',
+                code: 'USER_NOT_FOUND'
+            };
+        }
+        
+        const oldBalance = parseFloat(user.balance);
+        const newBalance = oldBalance + finalAmount;
+        
+        await db.updateBalanceById(userId, newBalance);
+        
+        processedTxids.add(txid);
+        
+        await pool.query(
+            `INSERT INTO transactions (user_id, username, type, amount, method, txid, bonus_amount, bonus_percent, old_balance, new_balance, status)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+            [
+                user.id,
+                user.username,
+                'deposit',
+                finalAmount,
+                settings.name,
+                txid,
+                bonus.bonusAmount || 0,
+                bonus.bonusPercent || 0,
+                oldBalance,
+                newBalance,
+                'completed'
+            ]
+        );
+        
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details) 
+             VALUES ($1, $2, $3, $4)`,
+            [user.id, user.username, 'deposit', 
+             `إيداع عبر ${settings.name} - المبلغ: ${finalAmount} - رقم العملية: ${txid}`]
+        );
+        
+        return {
+            success: true,
+            txid: txid,
+            original_amount: originalAmount,
+            currency: verification.currency || 'SYP',
+            converted_amount: convertedAmount,
+            final_amount: finalAmount,
+            bonus_amount: bonus.bonusAmount || 0,
+            bonus_percent: bonus.bonusPercent || 0,
+            old_balance: oldBalance,
+            new_balance: newBalance,
+            method: settings.name,
+            code: 'SUCCESS'
+        };
+        
+    } catch (error) {
+        console.error('❌ خطأ في معالجة الدفع:', error);
+        return {
+            success: false,
+            message: `❌ خطأ في المعالجة: ${error.message}`,
+            code: 'PROCESSING_ERROR'
+        };
+    } finally {
+        processingLocks.delete(txid);
+    }
+}
+
+// =============================================
+// ===== معالجة الدفع بالعملات الرقمية =====
+// =============================================
+
+async function processCryptoPayment(userId, currencyKey, amountUsd, txid) {
+    console.log(`💰 [Crypto] معالجة: user=${userId}, currency=${currencyKey}, amount=${amountUsd}, txid=${txid}`);
+    
+    const currency = SUPPORTED_CURRENCIES[currencyKey];
+    if (!currency) {
+        return { success: false, message: '❌ عملة غير مدعومة', code: 'UNSUPPORTED_CURRENCY' };
+    }
+    
+    if (processedTxids.has(txid)) {
+        return {
+            success: false,
+            message: '❌ رقم العملية هذا مستخدم مسبقاً',
+            code: 'TXID_ALREADY_USED'
+        };
+    }
+    
+    if (processingLocks.has(txid)) {
+        return {
+            success: false,
+            message: '❌ هذه العملية قيد المعالجة',
+            code: 'LOCKED'
+        };
+    }
+    
+    processingLocks.set(txid, Date.now());
+    
+    try {
+        const settings = await pool.query(
+            'SELECT is_enabled, bonus_percent FROM crypto_settings WHERE id = 1'
+        );
+        const cryptoSettings = settings.rows[0] || { is_enabled: 0, bonus_percent: 0 };
+        
+        if (!cryptoSettings.is_enabled) {
+            return { success: false, message: '❌ نظام العملات الرقمية معطل', code: 'DISABLED' };
+        }
+        
+        if (amountUsd < currency.min_usd) {
+            return {
+                success: false,
+                message: `❌ أقل من الحد الأدنى ($${currency.min_usd})`,
+                code: 'BELOW_MIN'
+            };
+        }
+        
+        if (amountUsd > currency.max_usd) {
+            return {
+                success: false,
+                message: `❌ أكبر من الحد الأقصى ($${currency.max_usd})`,
+                code: 'ABOVE_MAX'
+            };
+        }
+        
+        const exchangeRate = 13000; // سعر الصرف الافتراضي
+        const amountSyp = amountUsd * exchangeRate;
+        
+        const bonusPercent = cryptoSettings.bonus_percent || 0;
+        const bonusAmount = amountSyp * (bonusPercent / 100);
+        const finalAmount = amountSyp + bonusAmount;
+        
+        const user = await db.findUserById(userId);
+        if (!user) {
+            return {
+                success: false,
+                message: '❌ المستخدم غير موجود',
+                code: 'USER_NOT_FOUND'
+            };
+        }
+        
+        const oldBalance = parseFloat(user.balance);
+        const newBalance = oldBalance + finalAmount;
+        
+        await db.updateBalanceById(userId, newBalance);
+        
+        processedTxids.add(txid);
+        
+        const cryptoAmount = getCryptoAmount(amountUsd, currencyKey);
+        
+        await pool.query(
+            `INSERT INTO transactions (user_id, username, type, amount, method, txid, bonus_amount, bonus_percent, old_balance, new_balance, status, details)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+            [
+                user.id,
+                user.username,
+                'deposit',
+                finalAmount,
+                `عملة رقمية ${currency.name}`,
+                txid,
+                bonusAmount,
+                bonusPercent,
+                oldBalance,
+                newBalance,
+                'completed',
+                `إيداع عبر ${currency.name} - المبلغ: ${cryptoAmount} ${currency.symbol}`
+            ]
+        );
+        
+        await pool.query(
+            `INSERT INTO activity_logs (user_id, username, action, details) 
+             VALUES ($1, $2, $3, $4)`,
+            [user.id, user.username, 'crypto_deposit', 
+             `إيداع عبر ${currency.name} - المبلغ: ${finalAmount} - رقم العملية: ${txid}`]
+        );
+        
+        return {
+            success: true,
+            txid: txid,
+            original_amount: amountUsd,
+            currency: 'USD',
+            crypto_amount: cryptoAmount,
+            crypto_symbol: currency.symbol,
+            converted_amount: amountSyp,
+            final_amount: finalAmount,
+            bonus_amount: bonusAmount,
+            bonus_percent: bonusPercent,
+            old_balance: oldBalance,
+            new_balance: newBalance,
+            method: `عملة رقمية ${currency.name}`,
+            code: 'SUCCESS'
+        };
+        
+    } catch (error) {
+        console.error('❌ خطأ في معالجة الدفع بالعملات الرقمية:', error);
+        return {
+            success: false,
+            message: `❌ خطأ في المعالجة: ${error.message}`,
+            code: 'PROCESSING_ERROR'
+        };
+    } finally {
+        processingLocks.delete(txid);
+    }
+}
 
 // =============================================
 // ===== API ROUTES =====
@@ -348,7 +1144,6 @@ app.post('/api/register', async (req, res) => {
 
         console.log('📝 محاولة تسجيل:', { username, ip });
 
-        // التحقق من صحة الإدخال
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
@@ -359,19 +1154,16 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'كلمة المرور 8 أحرف على الأقل' });
         }
 
-        // التحقق من وجود المستخدم
         const existing = await db.findUser(username);
         if (existing) {
             return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
 
-        // التحقق من تفعيل التسجيل
         const settings = await db.getSettings();
         if (settings.registration_enabled === 'false') {
             return res.status(403).json({ error: 'التسجيل مغلق حالياً' });
         }
 
-        // حساب المكافأة
         let bonusAmount = 0;
         if (settings.bonus_enabled === 'true') {
             const now = new Date();
@@ -384,11 +1176,9 @@ app.post('/api/register', async (req, res) => {
             }
         }
 
-        // تشفير كلمة المرور
         const hash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, hash, ip, userAgent, bonusAmount);
 
-        // تسجيل نشاط المكافأة
         if (bonusAmount > 0) {
             await pool.query(
                 `INSERT INTO activity_logs (user_id, username, action, details) 
@@ -532,7 +1322,7 @@ app.get('/api/balance', async (req, res) => {
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        const user = await db.findUser(decoded.username);
+        const user = await db.findUserById(decoded.id);
         
         if (!user) {
             return res.status(404).json({ error: 'المستخدم غير موجود' });
@@ -554,6 +1344,255 @@ app.post('/api/logout', async (req, res) => {
         res.json({ message: 'تم تسجيل الخروج' });
     } catch (error) {
         res.status(500).json({ error: 'حدث خطأ' });
+    }
+});
+
+// =============================================
+// ===== API Routes للدفع =====
+// =============================================
+
+// ===== جلب إعدادات الدفع =====
+app.get('/api/payment/settings', async (req, res) => {
+    try {
+        const settings = await loadPaymentSettings();
+        const safeSettings = {};
+        for (const [key, value] of Object.entries(settings)) {
+            safeSettings[key] = {
+                name: value.name,
+                enabled: value.enabled,
+                min_amount: value.min_amount,
+                max_amount: value.max_amount,
+                exchange_rate: value.exchange_rate,
+                currency: value.currency,
+                bonus_percent: value.bonus_percent
+            };
+        }
+        res.json(safeSettings);
+    } catch (error) {
+        console.error('❌ خطأ في جلب إعدادات الدفع:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+    }
+});
+
+// ===== تحديث إعدادات الدفع (للمشرفين) =====
+app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
+    try {
+        const { method, key, value } = req.body;
+        
+        if (!method || !key) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        if (!PAYMENT_SETTINGS[method]) {
+            return res.status(400).json({ error: 'طريقة دفع غير صحيحة' });
+        }
+        
+        await savePaymentSetting(method, key, value);
+        
+        res.json({
+            message: 'تم تحديث الإعداد',
+            method: method,
+            key: key,
+            value: value
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث إعدادات الدفع:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
+    }
+});
+
+// ===== تقديم طلب إيداع =====
+app.post('/api/payment/deposit', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { method, txid, amount } = req.body;
+        
+        if (!method || !txid || !amount) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        if (!PAYMENT_SETTINGS[method]) {
+            return res.status(400).json({ error: 'طريقة دفع غير صحيحة' });
+        }
+        
+        const result = await processPayment(decoded.id, method, txid, amount);
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في معالجة الإيداع:', error);
+        res.status(500).json({ error: 'حدث خطأ في معالجة الإيداع' });
+    }
+});
+
+// ===== التحقق من حالة معاملة =====
+app.get('/api/payment/status/:txid', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { txid } = req.params;
+        
+        const result = await pool.query(
+            `SELECT * FROM transactions WHERE txid = $1 AND user_id = $2`,
+            [txid, decoded.id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ status: 'pending', message: 'جاري التحقق...' });
+        }
+        
+        const tx = result.rows[0];
+        res.json({
+            status: tx.status,
+            amount: tx.amount,
+            old_balance: tx.old_balance,
+            new_balance: tx.new_balance,
+            bonus_amount: tx.bonus_amount,
+            bonus_percent: tx.bonus_percent,
+            created_at: tx.created_at
+        });
+        
+    } catch (error) {
+        console.error('❌ خطأ في التحقق من حالة المعاملة:', error);
+        res.status(500).json({ error: 'حدث خطأ في التحقق' });
+    }
+});
+
+// =============================================
+// ===== API Routes للعملات الرقمية =====
+// =============================================
+
+// ===== جلب العملات المتاحة =====
+app.get('/api/crypto/currencies', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM crypto_currencies WHERE is_enabled = 1 ORDER BY priority ASC'
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error('❌ خطأ في جلب العملات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب العملات' });
+    }
+});
+
+// ===== جلب عنوان الإيداع =====
+app.get('/api/crypto/address/:currency', async (req, res) => {
+    try {
+        const { currency } = req.params;
+        const address = await getCryptoAddress(currency);
+        
+        if (!address) {
+            return res.status(404).json({ error: 'عنوان غير متوفر' });
+        }
+        
+        res.json(address);
+    } catch (error) {
+        console.error('❌ خطأ في جلب العنوان:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب العنوان' });
+    }
+});
+
+// ===== تحديث عنوان الإيداع (للمشرفين) =====
+app.post('/api/crypto/address', verifyAdmin, async (req, res) => {
+    try {
+        const { currency, address, memo } = req.body;
+        
+        if (!currency || !address) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        const currencyInfo = SUPPORTED_CURRENCIES[currency];
+        if (!currencyInfo) {
+            return res.status(400).json({ error: 'عملة غير مدعومة' });
+        }
+        
+        await saveCryptoAddress(currency, currencyInfo.symbol, currencyInfo.network, address, memo || '');
+        
+        res.json({ message: 'تم تحديث العنوان بنجاح' });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث العنوان:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث العنوان' });
+    }
+});
+
+// ===== تقديم طلب إيداع بالعملات الرقمية =====
+app.post('/api/crypto/deposit', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { currency, amount, txid } = req.body;
+        
+        if (!currency || !amount || !txid) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        if (!SUPPORTED_CURRENCIES[currency]) {
+            return res.status(400).json({ error: 'عملة غير مدعومة' });
+        }
+        
+        const result = await processCryptoPayment(decoded.id, currency, amount, txid);
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في معالجة الإيداع بالعملات الرقمية:', error);
+        res.status(500).json({ error: 'حدث خطأ في معالجة الإيداع' });
+    }
+});
+
+// ===== جلب إعدادات العملات الرقمية (للمشرفين) =====
+app.get('/api/crypto/settings', verifyAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM crypto_settings WHERE id = 1');
+        res.json(result.rows[0] || {});
+    } catch (error) {
+        console.error('❌ خطأ في جلب إعدادات العملات الرقمية:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+    }
+});
+
+// ===== تحديث إعدادات العملات الرقمية (للمشرفين) =====
+app.post('/api/crypto/settings', verifyAdmin, async (req, res) => {
+    try {
+        const { is_enabled, api_key, api_secret, internal_address, bonus_enabled, bonus_percent } = req.body;
+        
+        await pool.query(`
+            UPDATE crypto_settings SET 
+                is_enabled = $1,
+                api_key = $2,
+                api_secret = $3,
+                internal_address = $4,
+                bonus_enabled = $5,
+                bonus_percent = $6,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = 1
+        `, [is_enabled || 0, api_key || '', api_secret || '', internal_address || '', bonus_enabled || 0, bonus_percent || 0]);
+        
+        res.json({ message: 'تم تحديث الإعدادات بنجاح' });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث إعدادات العملات الرقمية:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
     }
 });
 
@@ -584,6 +1623,17 @@ const verifyAdmin = async (req, res, next) => {
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
+        
+        const totalDeposits = await pool.query(
+            "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'deposit' AND status = 'completed'"
+        );
+        const todayDeposits = await pool.query(
+            "SELECT COALESCE(SUM(amount), 0) FROM transactions WHERE type = 'deposit' AND status = 'completed' AND DATE(created_at) = CURRENT_DATE"
+        );
+        
+        stats.totalDeposits = parseFloat(totalDeposits.rows[0].sum) || 0;
+        stats.todayDeposits = parseFloat(todayDeposits.rows[0].sum) || 0;
+        
         res.json(stats);
     } catch (error) {
         console.error('❌ خطأ في جلب الإحصائيات:', error);
@@ -726,6 +1776,21 @@ app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== جلب المعاملات (للمشرفين) =====
+app.get('/api/admin/transactions', verifyAdmin, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 100;
+        const result = await pool.query(
+            `SELECT * FROM transactions ORDER BY created_at DESC LIMIT $1`,
+            [limit]
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error('❌ خطأ في جلب المعاملات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب المعاملات' });
+    }
+});
+
 // ===== جلب إعدادات الموقع (للأدمن) =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
@@ -771,7 +1836,6 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 // ===== STATIC FILES =====
 // =============================================
 
-// تقديم الملفات الثابتة
 app.use(express.static(path.join(__dirname, 'public')));
 
 // =============================================
@@ -779,7 +1843,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 // =============================================
 
 app.get('*', (req, res) => {
-    // إذا كان الطلب يبدأ بـ /api، نرسل خطأ 404
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API غير موجود' });
     }
@@ -802,6 +1865,8 @@ app.use((err, req, res, next) => {
 async function startServer() {
     try {
         await initDatabase();
+        await loadPaymentSettings();
+        
         app.listen(PORT, () => {
             console.log(`\n🚀 Game Wars يعمل على http://localhost:${PORT}`);
             console.log(`👑 الأدمن: noor2613857noor / admin123`);
@@ -813,6 +1878,14 @@ async function startServer() {
             console.log('   GET  /api/balance - جلب الرصيد');
             console.log('   POST /api/logout - تسجيل الخروج');
             console.log('   GET  /api/settings - جلب الإعدادات');
+            console.log('   --- الدفع ---');
+            console.log('   GET  /api/payment/settings - جلب إعدادات الدفع');
+            console.log('   POST /api/payment/deposit - تقديم طلب إيداع');
+            console.log('   GET  /api/payment/status/:txid - التحقق من حالة المعاملة');
+            console.log('   --- العملات الرقمية ---');
+            console.log('   GET  /api/crypto/currencies - جلب العملات المتاحة');
+            console.log('   GET  /api/crypto/address/:currency - جلب عنوان الإيداع');
+            console.log('   POST /api/crypto/deposit - تقديم طلب إيداع بالعملات الرقمية');
             console.log('   --- ADMIN ---');
             console.log('   GET  /api/admin/stats - الإحصائيات');
             console.log('   GET  /api/admin/users - قائمة المستخدمين');
@@ -820,8 +1893,13 @@ async function startServer() {
             console.log('   POST /api/admin/toggle-user - تعطيل/تفعيل');
             console.log('   DELETE /api/admin/delete-user - حذف مستخدم');
             console.log('   GET  /api/admin/logs - سجل النشاطات');
+            console.log('   GET  /api/admin/transactions - المعاملات');
             console.log('   GET  /api/admin/settings - جلب الإعدادات');
-            console.log('   POST /api/admin/settings - تحديث الإعدادات\n');
+            console.log('   POST /api/admin/settings - تحديث الإعدادات');
+            console.log('   POST /api/payment/settings - تحديث إعدادات الدفع');
+            console.log('   GET  /api/crypto/settings - جلب إعدادات العملات الرقمية');
+            console.log('   POST /api/crypto/settings - تحديث إعدادات العملات الرقمية');
+            console.log('   POST /api/crypto/address - تحديث عنوان الإيداع\n');
         });
     } catch (error) {
         console.error('❌ فشل تشغيل الخادم:', error.message);
