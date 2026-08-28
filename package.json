@@ -1,7 +1,7 @@
 {
-  "name": "luxury-login-system",
+  "name": "game-wars",
   "version": "1.0.0",
-  "description": "نظام تسجيل دخول متطور مع PostgreSQL - متوافق مع Render",
+  "description": "Game Wars Platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,7 +16,10 @@
     "jsonwebtoken": "^9.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.10.0",
+    "compression": "^1.7.4"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"

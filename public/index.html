@@ -5,38 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Game Wars</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        /* ===== الأساسيات ===== */
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            min-height: 100vh;
-            background: #0b0b1e;
-            background-image: 
-                radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.25) 0%, transparent 60%),
-                radial-gradient(ellipse at 80% 50%, rgba(6, 182, 212, 0.20) 0%, transparent 60%);
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
 
-        /* ===== خلفية متحركة ===== */
-        .bg-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.5;
-            pointer-events: none;
-            z-index: 0;
-            animation: orbFloat 20s ease-in-out infinite;
-        }
-        .bg-orb.orb1 { width: 600px; height: 600px; background: #4f46e5; top: -200px; right: -200px; animation-delay: 0s; }
-        .bg-orb.orb2 { width: 500px; height: 500px; background: #0891b2; bottom: -150px; left: -150px; animation-delay: -5s; }
-        .bg-orb.orb3 { width: 400px; height: 400px; background: #7c3aed; top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -10s; }
-        @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-100px, 80px) scale(1.1); }
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #0a0a1a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         /* ===== الشريط العلوي ===== */
@@ -46,689 +25,470 @@
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(11, 11, 30, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 12px 32px;
+            background: rgba(10, 10, 26, 0.92);
+            backdrop-filter: blur(16px);
+            padding: 10px 32px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 64px;
-            transition: all 0.3s ease;
+            height: 60px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
 
-        .navbar .brand {
+        .brand {
             display: flex;
             align-items: center;
             gap: 12px;
-            font-size: 1.5rem;
-            font-weight: 900;
-            color: white;
-            text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .navbar .brand i {
-            font-size: 1.6rem;
-            background: linear-gradient(135deg, #4f46e5, #0891b2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* ===== تأثير وقوع الحروف ===== */
-        .brand-letters {
-            display: flex;
-            gap: 2px;
-            position: relative;
-        }
-
-        .brand-letters span {
-            display: inline-block;
-            font-weight: 900;
-            font-size: 1.5rem;
-            color: white;
-            animation: letterFall 4s ease-in-out infinite;
-            animation-delay: calc(var(--i) * 0.15s);
-            position: relative;
-        }
-
-        @keyframes letterFall {
-            0% {
-                transform: translateY(-80px) rotate(180deg);
-                opacity: 0;
-                filter: blur(10px);
-            }
-            15% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-                filter: blur(0);
-            }
-            85% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 1;
-                filter: blur(0);
-            }
-            100% {
-                transform: translateY(60px) rotate(-20deg);
-                opacity: 0;
-                filter: blur(8px);
-            }
-        }
-
-        .brand-letters span:nth-child(1) { --i: 0; }
-        .brand-letters span:nth-child(2) { --i: 1; }
-        .brand-letters span:nth-child(3) { --i: 2; }
-        .brand-letters span:nth-child(4) { --i: 3; }
-        .brand-letters span:nth-child(5) { --i: 4; }
-        .brand-letters span:nth-child(6) { --i: 5; }
-        .brand-letters span:nth-child(7) { --i: 6; }
-        .brand-letters span:nth-child(8) { --i: 7; }
-        .brand-letters span:nth-child(9) { --i: 8; }
-
-        /* ===== رصيد المستخدم ===== */
-        .user-section {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .balance-box {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(251, 191, 36, 0.08);
-            padding: 6px 16px 6px 12px;
-            border-radius: 12px;
-            border: 1px solid rgba(251, 191, 36, 0.12);
-            transition: all 0.3s ease;
-        }
-
-        .balance-box:hover {
-            background: rgba(251, 191, 36, 0.12);
-            border-color: rgba(251, 191, 36, 0.2);
-        }
-
-        .balance-box i {
-            font-size: 1rem;
-            color: #fbbf24;
-        }
-
-        .balance-box .amount {
-            font-size: 1rem;
+            font-size: 1.15rem;
             font-weight: 800;
-            color: #fbbf24;
         }
 
-        .balance-box .label {
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.6rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .brand i {
+            font-size: 1.3rem;
+            color: #6366f1;
         }
 
-        .auth-btn {
-            padding: 8px 20px;
+        .brand .letters {
+            display: flex;
+            gap: 1px;
+        }
+
+        .brand .letters span {
+            display: inline-block;
+            animation: fall 4.5s ease-in-out infinite;
+            animation-delay: calc(var(--i) * 0.12s);
+            font-weight: 800;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-50px) rotate(160deg); opacity: 0; }
+            12% { transform: translateY(0) rotate(0); opacity: 1; }
+            82% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(30px) rotate(-12deg); opacity: 0; }
+        }
+
+        .brand .letters span:nth-child(1) { --i: 0; }
+        .brand .letters span:nth-child(2) { --i: 1; }
+        .brand .letters span:nth-child(3) { --i: 2; }
+        .brand .letters span:nth-child(4) { --i: 3; }
+        .brand .letters span:nth-child(5) { --i: 4; }
+        .brand .letters span:nth-child(6) { --i: 5; }
+        .brand .letters span:nth-child(7) { --i: 6; }
+        .brand .letters span:nth-child(8) { --i: 7; }
+        .brand .letters span:nth-child(9) { --i: 8; }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .btn {
+            padding: 7px 18px;
             border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 0.85rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             font-family: inherit;
-            background: linear-gradient(135deg, #4f46e5, #0891b2);
-            color: white;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .auth-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(79, 70, 229, 0.3);
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #0891b2);
+            color: #fff;
         }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(79,70,229,0.25); }
 
-        .auth-btn.outline {
+        .btn-outline {
             background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.6);
         }
+        .btn-outline:hover { background: rgba(255,255,255,0.04); color: #fff; }
 
-        .auth-btn.outline:hover {
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 255, 255, 0.3);
+        .btn-danger {
+            background: rgba(239,68,68,0.1);
+            color: #f87171;
+            border: 1px solid rgba(239,68,68,0.08);
         }
+        .btn-danger:hover { background: rgba(239,68,68,0.18); }
 
-        .user-avatar {
-            width: 36px;
-            height: 36px;
+        .avatar {
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4f46e5, #0891b2);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.9rem;
-            color: white;
+            font-size: 0.85rem;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .user-avatar:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(79, 70, 229, 0.3);
-        }
-
-        /* ===== المحتوى الرئيسي ===== */
-        .main-content {
-            margin-top: 80px;
-            padding: 32px;
-            max-width: 1200px;
+        /* ===== المحتوى ===== */
+        .main {
+            margin-top: 70px;
+            padding: 28px 32px;
+            max-width: 1100px;
             margin-left: auto;
             margin-right: auto;
-            position: relative;
-            z-index: 1;
-            min-height: calc(100vh - 80px);
+            flex: 1;
         }
 
-        .hero-section {
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255,255,255,0.08);
         }
 
-        .hero-section h1 {
-            font-size: 3rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, #ffffff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 16px;
+        .empty-state i {
+            font-size: 3.2rem;
+            display: block;
+            margin-bottom: 14px;
+        }
+        .empty-state h2 {
+            color: rgba(255,255,255,0.15);
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+        .empty-state p {
+            color: rgba(255,255,255,0.06);
+            font-size: 0.85rem;
+            margin-top: 6px;
         }
 
-        .hero-section p {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 1.1rem;
-            max-width: 600px;
-            margin: 0 auto;
-            line-height: 1.8;
-        }
-
-        .hero-section .status-badge {
-            display: inline-block;
-            padding: 8px 24px;
-            border-radius: 20px;
-            background: rgba(52, 211, 153, 0.08);
-            border: 1px solid rgba(52, 211, 153, 0.1);
-            color: #34d399;
-            font-weight: 600;
-            font-size: 0.8rem;
-            margin-top: 20px;
-        }
-
-        /* ===== الحاوية ===== */
-        .container {
-            max-width: 420px;
-            margin: 40px auto;
-            background: rgba(11, 11, 30, 0.85);
-            backdrop-filter: blur(32px);
-            border-radius: 48px;
-            padding: 40px 32px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.8);
+        /* ===== نموذج المصادقة ===== */
+        .auth-box {
+            max-width: 380px;
+            margin: 20px auto;
+            background: rgba(255,255,255,0.02);
+            border-radius: 28px;
+            padding: 28px 24px;
+            border: 1px solid rgba(255,255,255,0.04);
         }
 
         .tabs {
             display: flex;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 16px;
+            gap: 4px;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
             padding: 4px;
-            margin-bottom: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 22px;
         }
 
         .tab-btn {
             flex: 1;
-            padding: 12px 8px;
+            padding: 9px;
             border: none;
             background: transparent;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.85rem;
-            font-weight: 700;
-            border-radius: 13px;
+            color: rgba(255,255,255,0.25);
+            font-weight: 600;
+            font-size: 0.8rem;
+            border-radius: 10px;
             cursor: pointer;
-            transition: all 0.4s ease;
+            transition: all 0.25s ease;
+            font-family: inherit;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            font-family: inherit;
+            gap: 6px;
         }
 
         .tab-btn.active {
-            background: rgba(79, 70, 229, 0.25);
+            background: rgba(79,70,229,0.15);
             color: #a5b4fc;
-            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.1);
+        }
+        .tab-btn:hover:not(.active) { color: rgba(255,255,255,0.5); }
+
+        .form { display: none; }
+        .form.active { display: block; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        .input-group {
+            margin-bottom: 14px;
         }
 
-        .form {
-            display: none;
-            animation: fadeSlide 0.4s ease;
-        }
-        .form.active { display: block; }
-        @keyframes fadeSlide {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group { margin-bottom: 16px; }
-        .form-group label {
+        .input-group label {
             display: block;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255,255,255,0.25);
             font-size: 0.7rem;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            margin-bottom: 6px;
+            letter-spacing: 0.4px;
+            margin-bottom: 5px;
         }
 
         .input-wrap {
             position: relative;
         }
+
         .input-wrap i {
             position: absolute;
-            right: 16px;
+            right: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
+            color: rgba(255,255,255,0.08);
+            font-size: 0.85rem;
         }
-        .input-wrap:focus-within i { color: #818cf8; }
 
         .input-wrap input {
             width: 100%;
-            padding: 14px 44px 14px 18px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.06);
-            border-radius: 14px;
-            color: #ffffff;
-            font-size: 0.95rem;
+            padding: 11px 40px 11px 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.9rem;
             font-family: inherit;
-            transition: all 0.3s ease;
             outline: none;
+            transition: all 0.2s ease;
         }
-        .input-wrap input::placeholder { color: rgba(255, 255, 255, 0.12); }
+
         .input-wrap input:focus {
-            border-color: rgba(79, 70, 229, 0.5);
-            background: rgba(255, 255, 255, 0.07);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.08);
+            border-color: rgba(79,70,229,0.3);
+            background: rgba(255,255,255,0.05);
         }
+        .input-wrap input::placeholder { color: rgba(255,255,255,0.06); }
 
         .submit-btn {
             width: 100%;
-            padding: 16px;
+            padding: 12px;
             background: linear-gradient(135deg, #4f46e5, #0891b2);
-            color: white;
+            color: #fff;
             border: none;
-            border-radius: 14px;
-            font-size: 1rem;
+            border-radius: 10px;
             font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            transition: all 0.25s ease;
             font-family: inherit;
             margin-top: 4px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 8px 30px rgba(79, 70, 229, 0.2);
-        }
-        .submit-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s ease;
-        }
-        .submit-btn:hover::before { transform: translateX(100%); }
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(79, 70, 229, 0.35);
-        }
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
         }
 
-        .message {
-            margin-top: 14px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            text-align: center;
+        .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(79,70,229,0.2); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+        .msg {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
             font-weight: 600;
-            font-size: 0.82rem;
             display: none;
-        }
-        .message.error {
-            display: block;
-            background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.15);
-        }
-        .message.success {
-            display: block;
-            background: rgba(52, 211, 153, 0.12);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.15);
-        }
-        .message.details {
-            display: block;
-            background: rgba(251, 191, 36, 0.08);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.1);
-            font-size: 0.7rem;
-            font-family: monospace;
-            text-align: left;
-            direction: ltr;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-
-        #dashboard { display: none; }
-        #dashboard.active { display: block; animation: fadeSlide 0.5s ease; }
-
-        .footer {
             text-align: center;
-            margin-top: 24px;
-            color: rgba(255, 255, 255, 0.04);
-            font-size: 0.6rem;
-            letter-spacing: 1.5px;
         }
+
+        .msg.error { display: block; background: rgba(239,68,68,0.06); color: #f87171; border: 1px solid rgba(239,68,68,0.06); }
+        .msg.success { display: block; background: rgba(52,211,153,0.06); color: #34d399; border: 1px solid rgba(52,211,153,0.06); }
 
         /* ===== استجابة ===== */
-        @media (max-width: 768px) {
-            .navbar { padding: 10px 16px; height: 56px; }
-            .navbar .brand { font-size: 1.2rem; }
-            .brand-letters span { font-size: 1.2rem; }
-            .main-content { padding: 16px; margin-top: 64px; }
-            .hero-section h1 { font-size: 2rem; }
-            .container { padding: 24px 16px; border-radius: 32px; }
-            .user-section .balance-box .label { display: none; }
-            .auth-btn span { display: none; }
+        @media (max-width: 700px) {
+            .navbar { padding: 8px 16px; height: 52px; }
+            .brand { font-size: 1rem; }
+            .brand .letters span { font-size: 0.9rem; }
+            .main { padding: 16px; margin-top: 60px; }
+            .auth-box { margin: 10px; padding: 20px 16px; border-radius: 20px; }
+            .btn span { display: none; }
+            .nav-actions { gap: 8px; }
         }
 
-        @media (max-width: 480px) {
-            .navbar { padding: 8px 12px; height: 50px; }
-            .brand-letters span { font-size: 1rem; }
-            .balance-box { padding: 4px 10px; }
-            .balance-box .amount { font-size: 0.85rem; }
-            .user-avatar { width: 30px; height: 30px; font-size: 0.7rem; }
-            .hero-section { padding: 30px 16px; }
-            .hero-section h1 { font-size: 1.6rem; }
+        @media (max-width: 420px) {
+            .brand { font-size: 0.85rem; gap: 8px; }
+            .brand .letters span { font-size: 0.75rem; }
+            .btn { padding: 5px 12px; font-size: 0.7rem; }
+            .avatar { width: 28px; height: 28px; font-size: 0.7rem; }
+            .auth-box { padding: 16px 12px; border-radius: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- خلفية -->
-    <div class="bg-orb orb1"></div>
-    <div class="bg-orb orb2"></div>
-    <div class="bg-orb orb3"></div>
-
-    <!-- ===== الشريط العلوي ===== -->
-    <nav class="navbar" id="mainNav">
+    <nav class="navbar">
         <div class="brand">
             <i class="fas fa-gamepad"></i>
-            <div class="brand-letters" id="brandLetters">
+            <div class="letters">
                 <span>G</span><span>a</span><span>m</span><span>e</span>
-                <span style="margin-right:4px;"></span>
+                <span style="margin-right:2px;"></span>
                 <span>W</span><span>a</span><span>r</span><span>s</span>
             </div>
         </div>
-
-        <div class="user-section" id="userSection">
-            <!-- سيتم ملؤها بواسطة JavaScript -->
-        </div>
+        <div class="nav-actions" id="navActions"></div>
     </nav>
 
-    <!-- ===== المحتوى الرئيسي ===== -->
-    <div class="main-content">
-        <div class="hero-section" id="heroSection">
-            <h1>مرحباً بك في Game Wars</h1>
-            <p>منصة الألعاب المتطورة. انضم إلى المعركة وابدأ رحلتك الآن!</p>
-            <div class="status-badge">
-                <i class="fas fa-circle" style="color: #34d399; font-size: 0.6rem; margin-left: 8px;"></i>
-                النظام جاهز
-            </div>
+    <div class="main">
+        <div class="empty-state" id="emptyState">
+            <i class="fas fa-gamepad"></i>
+            <h2>Game Wars</h2>
+            <p>سجل الدخول لبدء التجربة</p>
         </div>
 
-        <!-- ===== نموذج تسجيل الدخول ===== -->
-        <div class="container" id="authContainer">
+        <div class="auth-box" id="authBox">
             <div class="tabs">
-                <button class="tab-btn active" data-tab="login">
-                    <i class="fas fa-sign-in-alt"></i> دخول
-                </button>
-                <button class="tab-btn" data-tab="register">
-                    <i class="fas fa-user-plus"></i> حساب
-                </button>
+                <button class="tab-btn active" data-tab="login"><i class="fas fa-sign-in-alt"></i> دخول</button>
+                <button class="tab-btn" data-tab="register"><i class="fas fa-user-plus"></i> حساب</button>
             </div>
 
-            <!-- تسجيل الدخول -->
             <div class="form active" id="loginForm">
-                <div class="form-group">
+                <div class="input-group">
                     <label>اسم المستخدم</label>
                     <div class="input-wrap">
                         <i class="fas fa-user"></i>
                         <input type="text" id="loginUsername" placeholder="أدخل اسم المستخدم" />
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="input-group">
                     <label>كلمة المرور</label>
                     <div class="input-wrap">
                         <i class="fas fa-lock"></i>
                         <input type="password" id="loginPassword" placeholder="أدخل كلمة المرور" />
                     </div>
                 </div>
-                <button class="submit-btn" id="loginBtn">
-                    <i class="fas fa-arrow-right"></i> تسجيل الدخول
-                </button>
-                <div class="message" id="loginMessage"></div>
+                <button class="submit-btn" id="loginBtn">دخول</button>
+                <div class="msg" id="loginMsg"></div>
             </div>
 
-            <!-- إنشاء حساب -->
             <div class="form" id="registerForm">
-                <div class="form-group">
+                <div class="input-group">
                     <label>اسم المستخدم</label>
                     <div class="input-wrap">
                         <i class="fas fa-user"></i>
                         <input type="text" id="registerUsername" placeholder="3 أحرف على الأقل" />
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="input-group">
                     <label>كلمة المرور</label>
                     <div class="input-wrap">
                         <i class="fas fa-lock"></i>
-                        <input type="password" id="registerPassword" placeholder="6 أحرف على الأقل" />
+                        <input type="password" id="registerPassword" placeholder="8 أحرف على الأقل" />
                     </div>
                 </div>
-                <button class="submit-btn" id="registerBtn">
-                    <i class="fas fa-sparkles"></i> إنشاء حساب
-                </button>
-                <div class="message" id="registerMessage"></div>
+                <button class="submit-btn" id="registerBtn">إنشاء حساب</button>
+                <div class="msg" id="registerMsg"></div>
             </div>
         </div>
-
-        <div class="footer">Game Wars — v3.0</div>
     </div>
 
     <script>
-        // ===== رابط الخادم =====
-        const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000'
-            : 'https://game22-hoas.onrender.com';
+        const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://game22-hoas.onrender.com';
 
-        console.log('🔗 رابط الخادم:', API_BASE_URL);
-
-        // ===== إدارة الشريط العلوي =====
-        function updateNavbar(user) {
-            const section = document.getElementById('userSection');
-            if (user) {
-                section.innerHTML = `
-                    <div class="balance-box">
-                        <i class="fas fa-coins"></i>
-                        <div>
-                            <div class="label">الرصيد</div>
-                            <div class="amount">${user.balance}</div>
-                        </div>
-                    </div>
-                    <div class="user-avatar" title="${user.username}">
-                        ${user.username.charAt(0).toUpperCase()}
-                    </div>
-                    <button class="auth-btn outline" id="logoutNavBtn">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>خروج</span>
-                    </button>
-                `;
-                document.getElementById('logoutNavBtn').addEventListener('click', logout);
-                document.getElementById('authContainer').style.display = 'none';
-                document.getElementById('heroSection').innerHTML = `
-                    <h1>مرحباً ${user.username}! 👋</h1>
-                    <p>أهلاً بك في Game Wars. استعد للمعركة!</p>
-                    <div class="status-badge">
-                        <i class="fas fa-circle" style="color: #34d399; font-size: 0.6rem; margin-left: 8px;"></i>
-                        مسجل الدخول
-                    </div>
-                `;
-            } else {
-                section.innerHTML = `
-                    <button class="auth-btn" id="showLoginBtn">
-                        <i class="fas fa-sign-in-alt"></i>
-                        <span>دخول</span>
-                    </button>
-                `;
-                document.getElementById('showLoginBtn').addEventListener('click', () => {
-                    document.getElementById('authContainer').scrollIntoView({ behavior: 'smooth' });
-                });
-                document.getElementById('authContainer').style.display = 'block';
-                document.getElementById('heroSection').innerHTML = `
-                    <h1>مرحباً بك في Game Wars</h1>
-                    <p>منصة الألعاب المتطورة. انضم إلى المعركة وابدأ رحلتك الآن!</p>
-                    <div class="status-badge">
-                        <i class="fas fa-circle" style="color: #34d399; font-size: 0.6rem; margin-left: 8px;"></i>
-                        النظام جاهز
-                    </div>
-                `;
-            }
-        }
-
-        // ===== دوال المصادقة =====
         function showMsg(el, text, type = 'error') {
             el.textContent = text;
-            el.className = `message ${type}`;
+            el.className = `msg ${type}`;
         }
 
         function setLoading(btn, loading) {
             btn.disabled = loading;
-            btn.innerHTML = loading ? '<i class="fas fa-spinner fa-spin"></i> جاري...' : btn.dataset.original;
+            btn.textContent = loading ? 'جاري...' : btn.dataset.original;
         }
 
-        document.querySelectorAll('.submit-btn').forEach(btn => {
-            btn.dataset.original = btn.innerHTML;
-        });
+        document.querySelectorAll('.submit-btn').forEach(b => b.dataset.original = b.textContent);
 
-        function logout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            updateNavbar(null);
-            document.querySelectorAll('.message').forEach(m => { m.className = 'message'; m.textContent = ''; });
+        // ===== تحديث الشريط =====
+        function updateNavbar(user) {
+            const nav = document.getElementById('navActions');
+            if (user) {
+                nav.innerHTML = `
+                    <div class="avatar">${user.username.charAt(0)}</div>
+                    <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>خروج</span></button>
+                `;
+                document.getElementById('logoutBtn').onclick = () => { localStorage.clear(); location.reload(); };
+                document.getElementById('authBox').style.display = 'none';
+                document.getElementById('emptyState').innerHTML = `
+                    <i class="fas fa-gamepad"></i>
+                    <h2>مرحباً ${user.username}</h2>
+                    <p style="color:rgba(255,255,255,0.06);">أنت مسجل الدخول</p>
+                `;
+            } else {
+                nav.innerHTML = `<button class="btn btn-primary" id="showLogin"><i class="fas fa-sign-in-alt"></i> <span>دخول</span></button>`;
+                document.getElementById('showLogin').onclick = () => {
+                    document.getElementById('authBox').scrollIntoView({ behavior: 'smooth' });
+                };
+                document.getElementById('authBox').style.display = 'block';
+                document.getElementById('emptyState').innerHTML = `
+                    <i class="fas fa-gamepad"></i>
+                    <h2>Game Wars</h2>
+                    <p style="color:rgba(255,255,255,0.06);">سجل الدخول لبدء التجربة</p>
+                `;
+            }
         }
 
         // ===== تسجيل الدخول =====
-        document.getElementById('loginBtn').addEventListener('click', async () => {
+        document.getElementById('loginBtn').onclick = async () => {
             const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
-            const msg = document.getElementById('loginMessage');
+            const msg = document.getElementById('loginMsg');
             const btn = document.getElementById('loginBtn');
 
-            if (!username || !password) return showMsg(msg, '❌ يرجى ملء جميع الحقول');
+            if (!username || !password) return showMsg(msg, 'املأ جميع الحقول');
 
             setLoading(btn, true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/login`, {
+                const res = await fetch(`${API}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'فشل تسجيل الدخول');
+                if (!res.ok) throw new Error(data.error);
 
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
-                showMsg(msg, '✅ تم تسجيل الدخول بنجاح', 'success');
-                setTimeout(() => {
-                    updateNavbar(data.user);
-                }, 400);
+                showMsg(msg, '✅ تم الدخول', 'success');
+                setTimeout(() => updateNavbar(data.user), 300);
             } catch (e) {
                 showMsg(msg, '❌ ' + e.message);
             } finally {
                 setLoading(btn, false);
             }
-        });
+        };
 
         // ===== إنشاء حساب =====
-        document.getElementById('registerBtn').addEventListener('click', async () => {
+        document.getElementById('registerBtn').onclick = async () => {
             const username = document.getElementById('registerUsername').value.trim();
             const password = document.getElementById('registerPassword').value.trim();
-            const msg = document.getElementById('registerMessage');
+            const msg = document.getElementById('registerMsg');
             const btn = document.getElementById('registerBtn');
 
-            if (!username || !password) return showMsg(msg, '❌ يرجى ملء جميع الحقول');
-            if (username.length < 3) return showMsg(msg, '❌ اسم المستخدم يجب أن يكون 3 أحرف على الأقل');
-            if (password.length < 6) return showMsg(msg, '❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+            if (!username || !password) return showMsg(msg, 'املأ جميع الحقول');
+            if (username.length < 3) return showMsg(msg, 'اسم المستخدم 3 أحرف على الأقل');
+            if (password.length < 8) return showMsg(msg, 'كلمة المرور 8 أحرف على الأقل');
 
             setLoading(btn, true);
             try {
-                const res = await fetch(`${API_BASE_URL}/api/register`, {
+                const res = await fetch(`${API}/api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'فشل إنشاء الحساب');
+                if (!res.ok) throw new Error(data.error);
 
-                showMsg(msg, '✅ تم إنشاء الحساب! يمكنك تسجيل الدخول الآن', 'success');
+                showMsg(msg, '✅ تم إنشاء الحساب', 'success');
                 document.getElementById('registerUsername').value = '';
                 document.getElementById('registerPassword').value = '';
-                setTimeout(() => {
-                    document.querySelector('[data-tab="login"]').click();
-                }, 1200);
+                setTimeout(() => document.querySelector('[data-tab="login"]').click(), 500);
             } catch (e) {
                 showMsg(msg, '❌ ' + e.message);
             } finally {
                 setLoading(btn, false);
             }
-        });
+        };
 
         // ===== التبويبات =====
-        const tabs = document.querySelectorAll('.tab-btn');
-        const forms = { login: document.getElementById('loginForm'), register: document.getElementById('registerForm') };
-        tabs.forEach(btn => {
-            btn.addEventListener('click', () => {
-                tabs.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                const key = btn.dataset.tab;
-                Object.keys(forms).forEach(k => { forms[k].classList.toggle('active', k === key); });
-                document.querySelectorAll('.message').forEach(m => { m.className = 'message'; m.textContent = ''; });
-            });
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
+                document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
+                document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
+            };
         });
 
         // ===== Enter =====
@@ -737,21 +497,18 @@
                 if (e.key === 'Enter') {
                     const form = inp.closest('.form');
                     if (form.id === 'loginForm') document.getElementById('loginBtn').click();
-                    else if (form.id === 'registerForm') document.getElementById('registerBtn').click();
+                    else document.getElementById('registerBtn').click();
                 }
             });
         });
 
-        // ===== التحقق من الجلسة =====
+        // ===== استعادة الجلسة =====
         (function() {
-            const token = localStorage.getItem('token');
             const userData = localStorage.getItem('user');
-            if (token && userData) {
+            if (userData) {
                 try {
                     const user = JSON.parse(userData);
-                    if (user.username && user.balance !== undefined) {
-                        updateNavbar(user);
-                    }
+                    if (user.username) updateNavbar(user);
                 } catch (_) { localStorage.clear(); }
             } else {
                 updateNavbar(null);
