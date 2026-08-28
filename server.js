@@ -16,6 +16,7 @@ function createPool() {
     if (dbUrl) {
         try {
             const parsed = new URL(dbUrl);
+            console.log('🔗 استخدام رابط قاعدة البيانات من البيئة');
             return new Pool({
                 host: parsed.hostname,
                 port: parseInt(parsed.port) || 5432,
@@ -27,9 +28,11 @@ function createPool() {
                 max: 20
             });
         } catch (e) {
-            console.error('❌ خطأ في رابط قاعدة البيانات:', e.message);
+            console.error('❌ خطأ في تحليل رابط قاعدة البيانات:', e.message);
+            console.error('📝 الرابط المستخدم:', dbUrl);
         }
     }
+    console.log('📝 استخدام إعدادات قاعدة البيانات اليدوية');
     return new Pool({
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT) || 5432,
@@ -48,6 +51,7 @@ const pool = createPool();
 async function initDB() {
     const client = await pool.connect();
     try {
+        console.log('🔄 جاري تهيئة قاعدة البيانات...');
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -70,6 +74,7 @@ async function initDB() {
         }
     } catch (e) {
         console.error('❌ خطأ في تهيئة قاعدة البيانات:', e.message);
+        console.error('📝 تفاصيل الخطأ:', e.stack);
     } finally {
         client.release();
     }
@@ -78,22 +83,42 @@ async function initDB() {
 // ===== دوال المساعدة =====
 const db = {
     findUser: async (username) => {
-        const res = await pool.query('SELECT * FROM users WHERE username = $1', [username.toLowerCase().trim()]);
-        return res.rows[0] || null;
+        try {
+            const res = await pool.query('SELECT * FROM users WHERE username = $1', [username.toLowerCase().trim()]);
+            return res.rows[0] || null;
+        } catch (e) {
+            console.error('❌ خطأ في البحث عن المستخدم:', e.message);
+            throw e;
+        }
     },
     createUser: async (username, passwordHash) => {
-        const res = await pool.query(
-            'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, balance',
-            [username.toLowerCase().trim(), passwordHash]
-        );
-        return res.rows[0];
+        try {
+            const res = await pool.query(
+                'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING id, username, balance',
+                [username.toLowerCase().trim(), passwordHash]
+            );
+            return res.rows[0];
+        } catch (e) {
+            console.error('❌ خطأ في إنشاء المستخدم:', e.message);
+            throw e;
+        }
     },
     updateLogin: async (username) => {
-        await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE username = $1', [username.toLowerCase().trim()]);
+        try {
+            await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE username = $1', [username.toLowerCase().trim()]);
+        } catch (e) {
+            console.error('❌ خطأ في تحديث آخر تسجيل دخول:', e.message);
+            throw e;
+        }
     },
     getUser: async (username) => {
-        const res = await pool.query('SELECT username, balance FROM users WHERE username = $1', [username.toLowerCase().trim()]);
-        return res.rows[0] || null;
+        try {
+            const res = await pool.query('SELECT username, balance FROM users WHERE username = $1', [username.toLowerCase().trim()]);
+            return res.rows[0] || null;
+        } catch (e) {
+            console.error('❌ خطأ في جلب بيانات المستخدم:', e.message);
+            throw e;
+        }
     }
 };
 
@@ -107,35 +132,60 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// ===== API: إنشاء حساب =====
+// ===== API: إنشاء حساب (مع طباعة أخطاء تفصيلية) =====
 app.post('/api/register', async (req, res) => {
+    console.log('\n📝 [طلب إنشاء حساب]');
+    console.log('📦 البيانات المستلمة:', req.body);
+    
     try {
         const { username, password } = req.body;
         
-        // التحقق
+        // التحقق من صحة الإدخال
         if (!username || !password) {
-            return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
-        }
-        if (username.length < 3) {
-            return res.status(400).json({ error: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' });
-        }
-        if (password.length < 6) {
-            return res.status(400).json({ error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+            console.log('❌ فشل: حقول فارغة');
+            return res.status(400).json({ 
+                error: 'يرجى ملء جميع الحقول',
+                details: { username: !!username, password: !!password }
+            });
         }
         
-        // التحقق من التكرار
+        if (username.length < 3) {
+            console.log(`❌ فشل: اسم المستخدم قصير جداً (${username.length} أحرف)`);
+            return res.status(400).json({ 
+                error: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل',
+                details: { usernameLength: username.length }
+            });
+        }
+        
+        if (password.length < 6) {
+            console.log(`❌ فشل: كلمة المرور قصيرة جداً (${password.length} أحرف)`);
+            return res.status(400).json({ 
+                error: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل',
+                details: { passwordLength: password.length }
+            });
+        }
+        
+        // التحقق من وجود المستخدم
+        console.log(`🔍 البحث عن المستخدم: ${username}`);
         const existing = await db.findUser(username);
         if (existing) {
-            return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
+            console.log(`❌ فشل: المستخدم ${username} موجود بالفعل`);
+            return res.status(409).json({ 
+                error: 'اسم المستخدم موجود مسبقاً',
+                details: { username }
+            });
         }
         
         // تشفير كلمة المرور
+        console.log('🔐 تشفير كلمة المرور...');
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
         
         // إنشاء المستخدم
+        console.log(`💾 إنشاء المستخدم: ${username}`);
         const newUser = await db.createUser(username, hashedPassword);
         
+        console.log(`✅ تم إنشاء المستخدم بنجاح: ${username} (ID: ${newUser.id})`);
         res.status(201).json({
             message: 'تم إنشاء الحساب بنجاح',
             user: {
@@ -144,30 +194,47 @@ app.post('/api/register', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ خطأ في التسجيل:', error);
-        res.status(500).json({ error: 'حدث خطأ في الخادم' });
+        console.error('❌ خطأ غير متوقع في التسجيل:');
+        console.error('📝 الرسالة:', error.message);
+        console.error('📝 التفاصيل:', error.stack);
+        res.status(500).json({ 
+            error: 'حدث خطأ في الخادم',
+            details: {
+                message: error.message,
+                stack: error.stack
+            }
+        });
     }
 });
 
 // ===== API: تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
+    console.log('\n📝 [طلب تسجيل دخول]');
+    console.log('📦 البيانات المستلمة:', req.body);
+    
     try {
         const { username, password } = req.body;
         
         if (!username || !password) {
+            console.log('❌ فشل: حقول فارغة');
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
         
+        console.log(`🔍 البحث عن المستخدم: ${username}`);
         const user = await db.findUser(username);
         if (!user) {
+            console.log(`❌ فشل: المستخدم ${username} غير موجود`);
             return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         }
         
+        console.log(`🔐 التحقق من كلمة المرور للمستخدم: ${username}`);
         const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
+            console.log(`❌ فشل: كلمة مرور غير صحيحة للمستخدم ${username}`);
             return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
         }
         
+        console.log(`✅ تسجيل دخول ناجح: ${username}`);
         await db.updateLogin(username);
         
         const token = jwt.sign(
@@ -184,8 +251,13 @@ app.post('/api/login', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ خطأ في تسجيل الدخول:', error);
-        res.status(500).json({ error: 'حدث خطأ في الخادم' });
+        console.error('❌ خطأ غير متوقع في تسجيل الدخول:');
+        console.error('📝 الرسالة:', error.message);
+        console.error('📝 التفاصيل:', error.stack);
+        res.status(500).json({ 
+            error: 'حدث خطأ في الخادم',
+            details: error.message
+        });
     }
 });
 
@@ -209,6 +281,7 @@ app.post('/api/verify', async (req, res) => {
             balance: parseFloat(user.balance)
         });
     } catch (error) {
+        console.error('❌ خطأ في التحقق:', error.message);
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
             return res.status(401).json({ error: 'توكن غير صالح' });
         }
@@ -218,6 +291,7 @@ app.post('/api/verify', async (req, res) => {
 
 // ===== معالجة المسارات غير الموجودة =====
 app.use((req, res) => {
+    console.log(`⚠️ مسار غير موجود: ${req.method} ${req.url}`);
     res.status(404).json({ error: 'المسار غير موجود' });
 });
 
@@ -227,6 +301,7 @@ async function start() {
     app.listen(PORT, () => {
         console.log(`\n🚀 الخادم يعمل على http://localhost:${PORT}`);
         console.log(`🌍 البيئة: ${process.env.NODE_ENV || 'development'}\n`);
+        console.log('📝 [ملاحظة] سيتم طباعة جميع طلبات إنشاء الحساب في وحدة التحكم مع تفاصيل الأخطاء\n');
     });
 }
 
