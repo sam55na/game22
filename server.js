@@ -27,7 +27,7 @@ const pool = new Pool({
 });
 
 // =============================================
-// ===== MIDDLEWARE (ترتيب صحيح) =====
+// ===== MIDDLEWARE =====
 // =============================================
 
 // 1. الأمان والضغط
@@ -51,7 +51,7 @@ app.use(cors({
     optionsSuccessStatus: 200
 }));
 
-// 3. JSON Parser (مهم جداً)
+// 3. JSON Parser
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -75,12 +75,14 @@ async function initDatabase() {
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
+        // مسح الجداول القديمة
         await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
         await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
         await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
         await client.query('DROP TABLE IF EXISTS users CASCADE;');
         console.log('✅ تم مسح الجداول القديمة');
 
+        // إنشاء الجداول الجديدة
         await client.query(`
             CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
@@ -96,6 +98,7 @@ async function initDatabase() {
             );
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
 
         await client.query(`
             CREATE TABLE activity_logs (
@@ -110,6 +113,7 @@ async function initDatabase() {
             );
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
 
         await client.query(`
             CREATE TABLE site_settings (
@@ -129,6 +133,7 @@ async function initDatabase() {
             );
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
@@ -178,7 +183,9 @@ async function initDatabase() {
     }
 }
 
+// =============================================
 // ===== دوال قاعدة البيانات =====
+// =============================================
 const db = {
     findUser: async (username) => {
         const res = await pool.query(
@@ -298,24 +305,30 @@ const db = {
             [newBalance, username.toLowerCase().trim()]
         );
         return res.rows[0]?.balance || null;
+    },
+    
+    clearSessions: async (userId) => {
+        await pool.query('DELETE FROM sessions WHERE user_id = $1', [userId]);
     }
 };
 
 // =============================================
-// ===== API ROUTES (يجب أن تكون قبل static) =====
+// ===== API ROUTES =====
 // =============================================
 
-// التحقق من صحة الخادم
+// ===== التحقق من صحة الخادم =====
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// جلب إعدادات الموقع
+// ===== جلب إعدادات الموقع (عام) =====
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
+        // إزالة الإعدادات الحساسة إذا لزم الأمر
         res.json(settings);
     } catch (error) {
+        console.error('❌ خطأ في جلب الإعدادات:', error);
         res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
     }
 });
@@ -329,6 +342,7 @@ app.post('/api/register', async (req, res) => {
 
         console.log('📝 محاولة تسجيل:', { username, ip });
 
+        // التحقق من صحة الإدخال
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
@@ -339,16 +353,19 @@ app.post('/api/register', async (req, res) => {
             return res.status(400).json({ error: 'كلمة المرور 8 أحرف على الأقل' });
         }
 
+        // التحقق من وجود المستخدم
         const existing = await db.findUser(username);
         if (existing) {
             return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
 
+        // التحقق من تفعيل التسجيل
         const settings = await db.getSettings();
         if (settings.registration_enabled === 'false') {
             return res.status(403).json({ error: 'التسجيل مغلق حالياً' });
         }
 
+        // حساب المكافأة
         let bonusAmount = 0;
         if (settings.bonus_enabled === 'true') {
             const now = new Date();
@@ -361,9 +378,11 @@ app.post('/api/register', async (req, res) => {
             }
         }
 
+        // تشفير كلمة المرور
         const hash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, hash, ip, userAgent, bonusAmount);
 
+        // تسجيل نشاط المكافأة
         if (bonusAmount > 0) {
             await pool.query(
                 `INSERT INTO activity_logs (user_id, username, action, details) 
@@ -422,11 +441,16 @@ app.post('/api/login', async (req, res) => {
 
         const updatedUser = await db.login(username, ip, userAgent);
         if (!updatedUser) {
-            return res.status(500).json({ error: 'حدث خطأ' });
+            return res.status(500).json({ error: 'حدث خطأ في تحديث الجلسة' });
         }
 
         const token = jwt.sign(
-            { id: user.id, username: user.username, role: user.role, balance: parseFloat(user.balance) },
+            { 
+                id: user.id, 
+                username: user.username, 
+                role: user.role, 
+                balance: parseFloat(user.balance) 
+            },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -458,9 +482,12 @@ app.post('/api/login', async (req, res) => {
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'غير مصرح' });
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
 
         const decoded = jwt.verify(token, JWT_SECRET);
+        
         const sessionCheck = await pool.query(
             'SELECT * FROM sessions WHERE token = $1 AND expires_at > NOW()',
             [token]
@@ -485,7 +512,42 @@ app.post('/api/verify', async (req, res) => {
         if (error.name === 'JsonWebTokenError') {
             return res.status(401).json({ error: 'توكن غير صالح' });
         }
+        console.error('❌ خطأ في التحقق:', error);
         res.status(500).json({ error: 'حدث خطأ في الخادم' });
+    }
+});
+
+// ===== جلب رصيد المستخدم =====
+app.get('/api/balance', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const user = await db.findUser(decoded.username);
+        
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+
+        res.json({ balance: parseFloat(user.balance) });
+    } catch (error) {
+        res.status(401).json({ error: 'توكن غير صالح' });
+    }
+});
+
+// ===== تسجيل الخروج =====
+app.post('/api/logout', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (token) {
+            await pool.query('DELETE FROM sessions WHERE token = $1', [token]);
+        }
+        res.json({ message: 'تم تسجيل الخروج' });
+    } catch (error) {
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
@@ -496,7 +558,9 @@ app.post('/api/verify', async (req, res) => {
 const verifyAdmin = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'غير مصرح' });
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
 
         const decoded = jwt.verify(token, JWT_SECRET);
         if (decoded.role !== 'admin') {
@@ -510,40 +574,53 @@ const verifyAdmin = async (req, res, next) => {
     }
 };
 
+// ===== جلب الإحصائيات =====
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
         res.json(stats);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في جلب الإحصائيات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإحصائيات' });
     }
 });
 
+// ===== جلب المستخدمين =====
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     try {
         const users = await db.getUsers();
         res.json(users);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في جلب المستخدمين:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب المستخدمين' });
     }
 });
 
+// ===== تحديث رصيد المستخدم =====
 app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     try {
         const { username, amount, action } = req.body;
-        const user = await db.findUser(username);
         
+        if (!username || amount === undefined || !action) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+
+        const user = await db.findUser(username);
         if (!user) {
             return res.status(404).json({ error: 'المستخدم غير موجود' });
         }
 
         let newBalance = parseFloat(user.balance);
+        const amountNum = parseFloat(amount);
+        
         if (action === 'add') {
-            newBalance += parseFloat(amount);
+            newBalance += amountNum;
         } else if (action === 'subtract') {
-            newBalance -= parseFloat(amount);
+            newBalance -= amountNum;
         } else if (action === 'set') {
-            newBalance = parseFloat(amount);
+            newBalance = amountNum;
+        } else {
+            return res.status(400).json({ error: 'إجراء غير صحيح' });
         }
 
         await db.updateBalance(username, newBalance);
@@ -555,95 +632,148 @@ app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
              `${action} ${amount} إلى رصيد ${username} (الرصيد الجديد: ${newBalance})`]
         );
 
-        res.json({ message: 'تم تحديث الرصيد', balance: newBalance });
+        res.json({ 
+            message: 'تم تحديث الرصيد', 
+            balance: newBalance,
+            user: { username, balance: newBalance }
+        });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في تحديث الرصيد:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الرصيد' });
     }
 });
 
+// ===== تعطيل/تفعيل المستخدم =====
 app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     try {
         const { username, active } = req.body;
+        
+        if (!username || active === undefined) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+
+        if (username === 'noor2613857noor') {
+            return res.status(403).json({ error: 'لا يمكن تعطيل الأدمن الرئيسي' });
+        }
+
         await db.toggleUser(username, active);
+        
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, details) 
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'user_toggle',
              `${active ? 'تفعيل' : 'تعطيل'} المستخدم ${username}`]
         );
-        res.json({ message: `تم ${active ? 'تفعيل' : 'تعطيل'} المستخدم` });
+
+        res.json({ 
+            message: `تم ${active ? 'تفعيل' : 'تعطيل'} المستخدم`,
+            user: { username, is_active: active }
+        });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في تحديث حالة المستخدم:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث حالة المستخدم' });
     }
 });
 
+// ===== حذف مستخدم =====
 app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     try {
         const { username } = req.body;
+        
+        if (!username) {
+            return res.status(400).json({ error: 'اسم المستخدم مطلوب' });
+        }
+
         if (username === 'noor2613857noor') {
             return res.status(403).json({ error: 'لا يمكن حذف الأدمن الرئيسي' });
         }
+
+        const user = await db.findUser(username);
+        if (!user) {
+            return res.status(404).json({ error: 'المستخدم غير موجود' });
+        }
+
         await db.deleteUser(username);
+
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, details) 
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'delete_user', `حذف المستخدم ${username}`]
         );
-        res.json({ message: 'تم حذف المستخدم' });
+
+        res.json({ message: `تم حذف المستخدم ${username}` });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في حذف المستخدم:', error);
+        res.status(500).json({ error: 'حدث خطأ في حذف المستخدم' });
     }
 });
 
+// ===== جلب سجل النشاطات =====
 app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
         const logs = await db.getLogs(limit);
         res.json(logs);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في جلب السجلات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب السجلات' });
     }
 });
 
+// ===== جلب إعدادات الموقع (للأدمن) =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const settings = await db.getSettings();
         res.json(settings);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في جلب الإعدادات:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
     }
 });
 
+// ===== تحديث إعدادات الموقع =====
 app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const { key, value } = req.body;
+        
+        if (!key) {
+            return res.status(400).json({ error: 'مفتاح الإعداد مطلوب' });
+        }
+
         await db.updateSetting(key, value);
+        
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, details) 
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'settings_update', `تحديث: ${key} = ${value}`]
         );
+
         const settings = await db.getSettings();
-        res.json({ message: 'تم تحديث الإعداد', settings: settings });
+        
+        res.json({ 
+            message: 'تم تحديث الإعداد', 
+            settings: settings,
+            updated: { key, value }
+        });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ' });
+        console.error('❌ خطأ في تحديث الإعدادات:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
     }
 });
 
 // =============================================
-// ===== STATIC FILES (بعد API Routes) =====
+// ===== STATIC FILES =====
 // =============================================
 
-// تقديم الملفات الثابتة من مجلد public
+// تقديم الملفات الثابتة
 app.use(express.static(path.join(__dirname, 'public')));
 
 // =============================================
-// ===== FALLBACK (في النهاية) =====
+// ===== FALLBACK =====
 // =============================================
 
-// أي طلب غير معالج (غير API) يذهب إلى index.html
 app.get('*', (req, res) => {
-    // إذا كان الطلب يبدأ بـ /api، نرسل خطأ 404 بدلاً من HTML
+    // إذا كان الطلب يبدأ بـ /api، نرسل خطأ 404
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API غير موجود' });
     }
@@ -670,6 +800,22 @@ async function startServer() {
             console.log(`\n🚀 Game Wars يعمل على http://localhost:${PORT}`);
             console.log(`👑 الأدمن: noor2613857noor / admin123`);
             console.log(`📊 لوحة التحكم: http://localhost:${PORT}/admin\n`);
+            console.log('📋 جميع نقاط النهاية:');
+            console.log('   POST /api/register - تسجيل مستخدم جديد');
+            console.log('   POST /api/login - تسجيل الدخول');
+            console.log('   POST /api/verify - التحقق من التوكن');
+            console.log('   GET  /api/balance - جلب الرصيد');
+            console.log('   POST /api/logout - تسجيل الخروج');
+            console.log('   GET  /api/settings - جلب الإعدادات');
+            console.log('   --- ADMIN ---');
+            console.log('   GET  /api/admin/stats - الإحصائيات');
+            console.log('   GET  /api/admin/users - قائمة المستخدمين');
+            console.log('   POST /api/admin/update-balance - تحديث الرصيد');
+            console.log('   POST /api/admin/toggle-user - تعطيل/تفعيل');
+            console.log('   DELETE /api/admin/delete-user - حذف مستخدم');
+            console.log('   GET  /api/admin/logs - سجل النشاطات');
+            console.log('   GET  /api/admin/settings - جلب الإعدادات');
+            console.log('   POST /api/admin/settings - تحديث الإعدادات\n');
         });
     } catch (error) {
         console.error('❌ فشل تشغيل الخادم:', error.message);
@@ -677,7 +823,16 @@ async function startServer() {
     }
 }
 
-process.on('SIGTERM', async () => { await pool.end(); process.exit(0); });
-process.on('SIGINT', async () => { await pool.end(); process.exit(0); });
+process.on('SIGTERM', async () => { 
+    console.log('🛑 إيقاف الخادم...');
+    await pool.end(); 
+    process.exit(0); 
+});
+
+process.on('SIGINT', async () => { 
+    console.log('🛑 إيقاف الخادم...');
+    await pool.end(); 
+    process.exit(0); 
+});
 
 startServer();
