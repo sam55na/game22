@@ -431,6 +431,18 @@
             color: #fbbf24;
             border: 1px solid rgba(251, 191, 36, 0.04);
         }
+        .msg.loading {
+            display: block;
+            background: rgba(99, 102, 241, 0.06);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.04);
+        }
+        .msg.timeout {
+            display: block;
+            background: rgba(251, 191, 36, 0.06);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.04);
+        }
 
         /* ===== الواجهة الرئيسية ===== */
         .dashboard {
@@ -631,13 +643,6 @@
             font-weight: 500;
             color: rgba(255, 255, 255, 0.3);
         }
-        .setting-item .color-preview {
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            flex-shrink: 0;
-        }
         .setting-item input,
         .setting-item select {
             background: rgba(255, 255, 255, 0.03);
@@ -736,208 +741,100 @@
             font-weight: 500;
         }
 
+        /* ===== مؤشر الاتصال ===== */
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            padding: 8px 20px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: none;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        .connection-status.show {
+            display: block;
+        }
+        .connection-status.connecting {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+        }
+        .connection-status.error {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.08);
+        }
+        .connection-status.success {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.08);
+        }
+
         /* ===== استجابة ===== */
         @media (max-width: 768px) {
-            .navbar {
-                padding: 8px 16px;
-                height: 56px;
-            }
-            .brand {
-                font-size: 1.2rem;
-                gap: 8px;
-            }
-            .brand .letters span {
-                font-size: 1.2rem;
-            }
-            .brand i {
-                font-size: 1.3rem;
-            }
-            .main {
-                padding: 16px;
-                margin-top: 64px;
-            }
-            .auth-box {
-                padding: 24px 18px;
-                max-width: 100%;
-                margin: 16px 0;
-            }
-            .auth-box h2 {
-                font-size: 1.3rem;
-            }
-            .btn span {
-                display: none;
-            }
-            .btn {
-                padding: 6px 14px;
-                font-size: 0.8rem;
-                min-height: 36px;
-            }
-            .avatar {
-                width: 34px;
-                height: 34px;
-                font-size: 0.85rem;
-            }
-            .balance-badge {
-                font-size: 0.75rem;
-                padding: 4px 10px;
-            }
-            .hero h1 {
-                font-size: 1.5rem;
-            }
-            .hero i {
-                font-size: 3rem;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .admin-sidebar {
-                padding: 6px;
-                gap: 4px;
-            }
-            .admin-tab {
-                font-size: 0.75rem;
-                padding: 6px 12px;
-                min-height: 36px;
-            }
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-            .input-wrap input {
-                padding: 10px 38px 10px 12px;
-                min-height: 42px;
-                font-size: 0.95rem;
-            }
-            .submit-btn {
-                padding: 10px;
-                min-height: 42px;
-                font-size: 0.95rem;
-            }
+            .navbar { padding: 8px 16px; height: 56px; }
+            .brand { font-size: 1.2rem; gap: 8px; }
+            .brand .letters span { font-size: 1.2rem; }
+            .brand i { font-size: 1.3rem; }
+            .main { padding: 16px; margin-top: 64px; }
+            .auth-box { padding: 24px 18px; max-width: 100%; margin: 16px 0; }
+            .auth-box h2 { font-size: 1.3rem; }
+            .btn span { display: none; }
+            .btn { padding: 6px 14px; font-size: 0.8rem; min-height: 36px; }
+            .avatar { width: 34px; height: 34px; font-size: 0.85rem; }
+            .balance-badge { font-size: 0.75rem; padding: 4px 10px; }
+            .hero h1 { font-size: 1.5rem; }
+            .hero i { font-size: 3rem; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .admin-sidebar { padding: 6px; gap: 4px; }
+            .admin-tab { font-size: 0.75rem; padding: 6px 12px; min-height: 36px; }
+            .settings-grid { grid-template-columns: 1fr; }
+            .input-wrap input { padding: 10px 38px 10px 12px; min-height: 42px; font-size: 0.95rem; }
+            .submit-btn { padding: 10px; min-height: 42px; font-size: 0.95rem; }
+            .connection-status { bottom: 12px; padding: 6px 14px; font-size: 0.65rem; }
         }
 
         @media (max-width: 420px) {
-            .navbar {
-                padding: 6px 12px;
-                height: 48px;
-            }
-            .brand {
-                font-size: 1rem;
-                gap: 6px;
-            }
-            .brand .letters span {
-                font-size: 1rem;
-            }
-            .brand i {
-                font-size: 1.1rem;
-            }
-            .main {
-                padding: 12px;
-                margin-top: 56px;
-            }
-            .auth-box {
-                padding: 16px 14px;
-                border-radius: 12px;
-            }
-            .auth-box h2 {
-                font-size: 1.1rem;
-            }
-            .auth-box .logo-icon {
-                font-size: 2.2rem;
-            }
-            .hero {
-                padding: 30px 16px;
-            }
-            .hero h1 {
-                font-size: 1.2rem;
-            }
-            .hero i {
-                font-size: 2.2rem;
-            }
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            .btn {
-                padding: 4px 10px;
-                font-size: 0.7rem;
-                min-height: 30px;
-            }
-            .avatar {
-                width: 28px;
-                height: 28px;
-                font-size: 0.7rem;
-            }
-            .balance-badge {
-                font-size: 0.65rem;
-                padding: 3px 8px;
-            }
-            .admin-tab {
-                font-size: 0.65rem;
-                padding: 4px 10px;
-                min-height: 30px;
-            }
-            .input-wrap input {
-                padding: 8px 32px 8px 10px;
-                min-height: 36px;
-                font-size: 0.85rem;
-            }
-            .submit-btn {
-                padding: 8px;
-                min-height: 36px;
-                font-size: 0.85rem;
-            }
-            .tab-btn {
-                font-size: 0.75rem;
-                padding: 6px;
-            }
-            .stat-card .value {
-                font-size: 1.3rem;
-            }
-            .setting-item {
-                padding: 8px 12px;
-            }
-            .setting-item input {
-                min-width: 60px;
-                font-size: 0.75rem;
-            }
-            .log-entry {
-                font-size: 0.7rem;
-                padding: 6px 10px;
-            }
+            .navbar { padding: 6px 12px; height: 48px; }
+            .brand { font-size: 1rem; gap: 6px; }
+            .brand .letters span { font-size: 1rem; }
+            .brand i { font-size: 1.1rem; }
+            .main { padding: 12px; margin-top: 56px; }
+            .auth-box { padding: 16px 14px; border-radius: 12px; }
+            .auth-box h2 { font-size: 1.1rem; }
+            .auth-box .logo-icon { font-size: 2.2rem; }
+            .hero { padding: 30px 16px; }
+            .hero h1 { font-size: 1.2rem; }
+            .hero i { font-size: 2.2rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .btn { padding: 4px 10px; font-size: 0.7rem; min-height: 30px; }
+            .avatar { width: 28px; height: 28px; font-size: 0.7rem; }
+            .balance-badge { font-size: 0.65rem; padding: 3px 8px; }
+            .admin-tab { font-size: 0.65rem; padding: 4px 10px; min-height: 30px; }
+            .input-wrap input { padding: 8px 32px 8px 10px; min-height: 36px; font-size: 0.85rem; }
+            .submit-btn { padding: 8px; min-height: 36px; font-size: 0.85rem; }
+            .tab-btn { font-size: 0.75rem; padding: 6px; }
+            .stat-card .value { font-size: 1.3rem; }
+            .setting-item { padding: 8px 12px; }
+            .setting-item input { min-width: 60px; font-size: 0.75rem; }
+            .log-entry { font-size: 0.7rem; padding: 6px 10px; }
+            .connection-status { bottom: 8px; padding: 4px 10px; font-size: 0.55rem; }
         }
 
         @media (max-width: 360px) {
-            .brand .letters span {
-                font-size: 0.8rem;
-            }
-            .brand i {
-                font-size: 0.9rem;
-            }
-            .btn {
-                font-size: 0.6rem;
-                padding: 3px 8px;
-                min-height: 26px;
-            }
-            .avatar {
-                width: 24px;
-                height: 24px;
-                font-size: 0.6rem;
-            }
-            .balance-badge {
-                font-size: 0.55rem;
-                padding: 2px 6px;
-            }
-            .auth-box {
-                padding: 12px 10px;
-            }
-            .input-wrap input {
-                padding: 6px 28px 6px 8px;
-                min-height: 32px;
-                font-size: 0.8rem;
-            }
-            .submit-btn {
-                padding: 6px;
-                min-height: 32px;
-                font-size: 0.8rem;
-            }
+            .brand .letters span { font-size: 0.8rem; }
+            .brand i { font-size: 0.9rem; }
+            .btn { font-size: 0.6rem; padding: 3px 8px; min-height: 26px; }
+            .avatar { width: 24px; height: 24px; font-size: 0.6rem; }
+            .balance-badge { font-size: 0.55rem; padding: 2px 6px; }
+            .auth-box { padding: 12px 10px; }
+            .input-wrap input { padding: 6px 28px 6px 8px; min-height: 32px; font-size: 0.8rem; }
+            .submit-btn { padding: 6px; min-height: 32px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -946,6 +843,9 @@
     <div class="bg-orb orb1"></div>
     <div class="bg-orb orb2"></div>
     <div class="bg-orb orb3"></div>
+
+    <!-- ===== مؤشر الاتصال ===== -->
+    <div class="connection-status" id="connectionStatus"></div>
 
     <!-- ===== الشريط العلوي ===== -->
     <nav class="navbar">
@@ -1079,9 +979,54 @@
         // ===== الإعدادات =====
         // =============================================
         const API = window.location.hostname === 'localhost' ? 'http://localhost:3000' : window.location.origin;
+        const REQUEST_TIMEOUT = 60000; // 60 ثانية مهلة
         let token = localStorage.getItem('token');
         let currentUser = null;
         let currentSettings = {};
+
+        // =============================================
+        // ===== دوال الاتصال مع مهلة =====
+        // =============================================
+        function showConnectionStatus(message, type = 'connecting') {
+            const el = document.getElementById('connectionStatus');
+            el.textContent = message;
+            el.className = `connection-status show ${type}`;
+            clearTimeout(el._timeout);
+            if (type !== 'connecting') {
+                el._timeout = setTimeout(() => {
+                    el.classList.remove('show');
+                }, 5000);
+            }
+        }
+
+        function hideConnectionStatus() {
+            const el = document.getElementById('connectionStatus');
+            el.classList.remove('show');
+        }
+
+        async function fetchWithTimeout(url, options = {}, timeout = REQUEST_TIMEOUT) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            try {
+                showConnectionStatus('⏳ جاري الاتصال بالخادم...', 'connecting');
+                const response = await fetch(url, {
+                    ...options,
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
+                hideConnectionStatus();
+                return response;
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    showConnectionStatus('⏰ انتهت مهلة الانتظار (60 ثانية)، يرجى المحاولة مرة أخرى', 'error');
+                    throw new Error('انتهت مهلة الانتظار، يرجى المحاولة مرة أخرى');
+                }
+                showConnectionStatus('❌ لا يمكن الاتصال بالخادم، يرجى التحقق من الاتصال', 'error');
+                throw error;
+            }
+        }
 
         // =============================================
         // ===== تطبيق الألوان العالمية =====
@@ -1123,7 +1068,7 @@
         // =============================================
         async function loadGlobalSettings() {
             try {
-                const res = await fetch(`${API}/api/settings`);
+                const res = await fetchWithTimeout(`${API}/api/settings`);
                 const settings = await res.json();
                 if (res.ok) {
                     applyGlobalColors(settings);
@@ -1143,18 +1088,22 @@
 
         function setLoading(btn, loading) {
             btn.disabled = loading;
-            btn.textContent = loading ? 'جاري...' : btn.dataset.original;
+            btn.textContent = loading ? '⏳ جاري...' : btn.dataset.original;
         }
 
         document.querySelectorAll('.submit-btn').forEach(b => b.dataset.original = b.textContent);
 
         // =============================================
-        // ===== دوال API =====
+        // ===== دوال API مع مهلة =====
         // =============================================
         async function apiFetch(endpoint, options = {}) {
-            const res = await fetch(`${API}${endpoint}`, {
+            const res = await fetchWithTimeout(`${API}${endpoint}`, {
                 ...options,
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, ...options.headers }
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'خطأ');
@@ -1199,6 +1148,7 @@
             updateNavbar(null);
             document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
                 m.textContent = ''; });
+            hideConnectionStatus();
         }
 
         // ===== تسجيل الدخول =====
@@ -1211,14 +1161,17 @@
             if (!username || !password) return showMsg(msg, 'املأ جميع الحقول');
 
             setLoading(btn, true);
+            showMsg(msg, '⏳ جاري الاتصال بالخادم...', 'loading');
+
             try {
-                const res = await fetch(`${API}/api/login`, {
+                const res = await fetchWithTimeout(`${API}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
+
+                if (!res.ok) throw new Error(data.error || 'بيانات غير صحيحة');
 
                 token = data.token;
                 currentUser = data.user;
@@ -1229,7 +1182,7 @@
                     applyGlobalColors(data.settings);
                 }
 
-                showMsg(msg, '✅ تم الدخول', 'success');
+                showMsg(msg, '✅ تم الدخول بنجاح', 'success');
                 setTimeout(() => {
                     document.getElementById('authPage').style.display = 'none';
                     document.getElementById('dashboardPage').classList.add('active');
@@ -1245,9 +1198,11 @@
                         document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
                         document.getElementById('admin-dashboard')?.classList.add('active');
                     }
+                    hideConnectionStatus();
                 }, 400);
             } catch (e) {
                 showMsg(msg, '❌ ' + e.message);
+                hideConnectionStatus();
             } finally {
                 setLoading(btn, false);
             }
@@ -1265,16 +1220,19 @@
             if (password.length < 8) return showMsg(msg, 'كلمة المرور 8 أحرف على الأقل');
 
             setLoading(btn, true);
+            showMsg(msg, '⏳ جاري إنشاء الحساب...', 'loading');
+
             try {
-                const res = await fetch(`${API}/api/register`, {
+                const res = await fetchWithTimeout(`${API}/api/register`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
 
-                let msgText = '✅ تم إنشاء الحساب';
+                if (!res.ok) throw new Error(data.error || 'فشل إنشاء الحساب');
+
+                let msgText = '✅ تم إنشاء الحساب بنجاح';
                 let msgType = 'success';
                 if (data.bonus) {
                     msgText = `✅ تم إنشاء الحساب 🎉 ${data.bonus.message}`;
@@ -1289,6 +1247,7 @@
                 showMsg(msg, '❌ ' + e.message);
             } finally {
                 setLoading(btn, false);
+                hideConnectionStatus();
             }
         };
 
@@ -1296,12 +1255,16 @@
         // ===== دوال الإدارة =====
         // =============================================
         async function loadAdminData() {
-            await loadStats();
-            await loadUsers();
-            await loadSettings();
-            await loadBonusSettings();
-            await loadLogs();
-            await loadRecent();
+            try {
+                await loadStats();
+                await loadUsers();
+                await loadSettings();
+                await loadBonusSettings();
+                await loadLogs();
+                await loadRecent();
+            } catch (e) {
+                console.error('خطأ في تحميل بيانات الإدارة:', e);
+            }
         }
 
         async function loadStats() {
@@ -1311,7 +1274,9 @@
                 document.getElementById('statBalance').textContent = stats.totalBalance.toFixed(0);
                 document.getElementById('statToday').textContent = stats.todayRegistrations;
                 document.getElementById('statLogins').textContent = stats.todayLogins;
-            } catch (e) {}
+            } catch (e) {
+                console.error('خطأ في تحميل الإحصائيات:', e);
+            }
         }
 
         async function loadUsers() {
@@ -1334,7 +1299,9 @@
                         </td>
                     </tr>
                 `).join('');
-            } catch (e) {}
+            } catch (e) {
+                console.error('خطأ في تحميل المستخدمين:', e);
+            }
         }
 
         async function loadSettings() {
@@ -1354,7 +1321,7 @@
                     registration_enabled: 'تفعيل التسجيل'
                 };
 
-                grid.innerHTML = Object.entries(settings).filter(([k]) => 
+                grid.innerHTML = Object.entries(settings).filter(([k]) =>
                     !['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date', 'maintenance_mode'].includes(k)
                 ).map(([k, v]) => {
                     let input = '';
@@ -1378,14 +1345,16 @@
                     }
                     return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
                 }).join('');
-            } catch (e) {}
+            } catch (e) {
+                console.error('خطأ في تحميل الإعدادات:', e);
+            }
         }
 
         async function loadBonusSettings() {
             try {
                 const settings = await apiFetch('/api/admin/settings');
                 const container = document.getElementById('bonusSettings');
-                
+
                 const labels = {
                     bonus_enabled: 'تفعيل المكافأة',
                     bonus_amount: 'قيمة المكافأة',
@@ -1393,7 +1362,7 @@
                     bonus_end_date: 'تاريخ النهاية'
                 };
 
-                container.innerHTML = Object.entries(settings).filter(([k]) => 
+                container.innerHTML = Object.entries(settings).filter(([k]) =>
                     ['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date'].includes(k)
                 ).map(([k, v]) => {
                     let input = '';
@@ -1425,7 +1394,9 @@
                     }
                     return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
                 }).join('');
-            } catch (e) {}
+            } catch (e) {
+                console.error('خطأ في تحميل إعدادات المكافأة:', e);
+            }
         }
 
         // ===== حفظ إعداد اللون =====
@@ -1500,7 +1471,7 @@
         async function toggleSetting(key, element) {
             const isActive = element.classList.contains('active');
             const newValue = isActive ? 'false' : 'true';
-            
+
             try {
                 const result = await apiFetch('/api/admin/settings', {
                     method: 'POST',
@@ -1508,7 +1479,7 @@
                 });
 
                 element.classList.toggle('active');
-                
+
                 if (result.settings) {
                     applyGlobalColors(result.settings);
                 }
@@ -1527,7 +1498,9 @@
                         <span>${log.action} ${log.details || ''}</span>
                     </div>
                 `).join('') || '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.7rem;">لا توجد سجلات</div>';
-            } catch (e) {}
+            } catch (e) {
+                console.error('خطأ في تحميل السجلات:', e);
+            }
         }
 
         async function loadRecent() {
@@ -1540,7 +1513,9 @@
                         <span style="color:rgba(255,255,255,0.08);">${log.action}</span>
                     </div>
                 `).join('') || '<div style="text-align:center;padding:10px;color:rgba(255,255,255,0.04);font-size:0.7rem;">لا توجد سجلات حديثة</div>';
-            } catch (e) {}
+            } catch (e) {
+                console.error('خطأ في تحميل السجلات الحديثة:', e);
+            }
         }
 
         async function toggleUser(username, active) {
@@ -1551,7 +1526,7 @@
                     body: JSON.stringify({ username, active })
                 });
                 loadUsers();
-            } catch (e) { alert('❌ خطأ'); }
+            } catch (e) { alert('❌ خطأ: ' + e.message); }
         }
 
         async function deleteUser(username) {
@@ -1563,7 +1538,7 @@
                 });
                 loadUsers();
                 loadStats();
-            } catch (e) { alert('❌ خطأ'); }
+            } catch (e) { alert('❌ خطأ: ' + e.message); }
         }
 
         // =============================================
@@ -1626,8 +1601,10 @@
         // ===== التهيئة =====
         // =============================================
         async function init() {
+            // تحميل الإعدادات العالمية
             await loadGlobalSettings();
 
+            // استعادة الجلسة
             const userData = localStorage.getItem('user');
             if (userData) {
                 try {
@@ -1638,7 +1615,8 @@
                         document.getElementById('dashboardPage').classList.add('active');
                         updateNavbar(currentUser);
                         document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
-                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' : 'مستخدم';
+                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' :
+                            'مستخدم';
 
                         if (currentUser.role === 'admin') {
                             document.getElementById('adminPanel').classList.add('active');
@@ -1648,6 +1626,14 @@
                         }
                     }
                 } catch (_) { localStorage.clear(); }
+            }
+
+            // التحقق من صحة الخادم
+            try {
+                await fetchWithTimeout(`${API}/api/health`);
+                showConnectionStatus('✅ الخادم متصل', 'success');
+            } catch (e) {
+                showConnectionStatus('⚠️ لا يمكن الاتصال بالخادم', 'error');
             }
         }
 
