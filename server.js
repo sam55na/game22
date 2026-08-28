@@ -76,6 +76,7 @@ async function initDatabase() {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
         // مسح الجداول القديمة
+        console.log('🗑️ جاري مسح الجداول القديمة...');
         await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
         await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
         await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
@@ -83,6 +84,9 @@ async function initDatabase() {
         console.log('✅ تم مسح الجداول القديمة');
 
         // إنشاء الجداول الجديدة
+        console.log('📦 جاري إنشاء الجداول الجديدة...');
+
+        // جدول المستخدمين
         await client.query(`
             CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
@@ -100,6 +104,7 @@ async function initDatabase() {
         await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
         await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
 
+        // جدول النشاطات
         await client.query(`
             CREATE TABLE activity_logs (
                 id BIGSERIAL PRIMARY KEY,
@@ -115,6 +120,7 @@ async function initDatabase() {
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
 
+        // جدول الإعدادات
         await client.query(`
             CREATE TABLE site_settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -123,6 +129,7 @@ async function initDatabase() {
             );
         `);
 
+        // جدول الجلسات
         await client.query(`
             CREATE TABLE sessions (
                 id BIGSERIAL PRIMARY KEY,
@@ -137,7 +144,7 @@ async function initDatabase() {
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
-        // حساب الأدمن
+        // ===== إنشاء حساب الأدمن =====
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
         const hash = await bcrypt.hash(adminPassword, 10);
@@ -147,7 +154,7 @@ async function initDatabase() {
         );
         console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
-        // الإعدادات الافتراضية
+        // ===== الإعدادات الافتراضية =====
         const defaultSettings = [
             ['site_name', 'Game Wars'],
             ['primary_color', '#6366f1'],
@@ -325,7 +332,6 @@ app.get('/api/health', (req, res) => {
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
-        // إزالة الإعدادات الحساسة إذا لزم الأمر
         res.json(settings);
     } catch (error) {
         console.error('❌ خطأ في جلب الإعدادات:', error);
