@@ -38,7 +38,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
             fontSrc: ["'self'", "https://cdnjs.cloudflare.com"],
             imgSrc: ["'self'", "data:"],
-            connectSrc: ["'self'", "https://apisyria.com"]
+            connectSrc: ["'self'", "https://apisyria.com", "https://api.coinex.com"]
         }
     }
 }));
@@ -68,6 +68,7 @@ async function initDatabase() {
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
+        // حذف الجداول القديمة
         await client.query('DROP TABLE IF EXISTS crypto_payments CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_addresses CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_currencies CASCADE;');
@@ -81,6 +82,7 @@ async function initDatabase() {
 
         console.log('📦 جاري إنشاء الجداول الجديدة...');
 
+        // جدول المستخدمين
         await client.query(`
             CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
@@ -97,6 +99,7 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
 
+        // جدول النشاطات
         await client.query(`
             CREATE TABLE activity_logs (
                 id BIGSERIAL PRIMARY KEY,
@@ -111,6 +114,7 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
 
+        // جدول الإعدادات
         await client.query(`
             CREATE TABLE site_settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -119,6 +123,7 @@ async function initDatabase() {
             );
         `);
 
+        // جدول الجلسات
         await client.query(`
             CREATE TABLE sessions (
                 id BIGSERIAL PRIMARY KEY,
@@ -130,6 +135,7 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
 
+        // جدول المعاملات
         await client.query(`
             CREATE TABLE transactions (
                 id BIGSERIAL PRIMARY KEY,
@@ -154,6 +160,7 @@ async function initDatabase() {
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
+        // ===== إنشاء حساب الأدمن =====
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
         const hash = await bcrypt.hash(adminPassword, 10);
@@ -163,6 +170,7 @@ async function initDatabase() {
         );
         console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
+        // ===== الإعدادات الافتراضية =====
         const defaultSettings = [
             ['site_name', 'Game Wars'],
             ['primary_color', '#6366f1'],
@@ -179,6 +187,7 @@ async function initDatabase() {
             ['bonus_amount', '100'],
             ['bonus_start_date', ''],
             ['bonus_end_date', ''],
+            // شام كاش دولار
             ['payment_shamcash_usd_enabled', 'false'],
             ['payment_shamcash_usd_min_amount', '10'],
             ['payment_shamcash_usd_max_amount', '10000'],
@@ -187,6 +196,7 @@ async function initDatabase() {
             ['payment_shamcash_usd_bonus_percent', '0'],
             ['payment_shamcash_usd_api_key', ''],
             ['payment_shamcash_usd_account_address', ''],
+            // شام كاش ليرة
             ['payment_shamcash_syp_enabled', 'false'],
             ['payment_shamcash_syp_min_amount', '1000'],
             ['payment_shamcash_syp_max_amount', '1000000'],
@@ -195,6 +205,7 @@ async function initDatabase() {
             ['payment_shamcash_syp_bonus_percent', '0'],
             ['payment_shamcash_syp_api_key', ''],
             ['payment_shamcash_syp_account_address', ''],
+            // سيرياتيل كاش
             ['payment_syriatel_enabled', 'false'],
             ['payment_syriatel_min_amount', '1000'],
             ['payment_syriatel_max_amount', '1000000'],
@@ -444,6 +455,11 @@ async function loadPaymentSettings() {
             }
         }
         
+        // تحديث الكائن الأصلي
+        for (const [method, data] of Object.entries(result)) {
+            PAYMENT_SETTINGS[method] = { ...PAYMENT_SETTINGS[method], ...data };
+        }
+        
         return result;
     } catch (error) {
         console.error('❌ خطأ في تحميل إعدادات الدفع:', error);
@@ -460,10 +476,11 @@ async function savePaymentSetting(method, key, value) {
          ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = CURRENT_TIMESTAMP`,
         [settingKey, stringValue]
     );
+    PAYMENT_SETTINGS[method][key] = value;
 }
 
 // =============================================
-// ===== دوال التحقق من المعاملات الحقيقية =====
+// ===== دوال التحقق من المعاملات (إنتاجية) =====
 // =============================================
 
 async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency = 'SYP') {
@@ -487,8 +504,7 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
             headers: {
                 'Content-Type': 'application/json',
                 'User-Agent': 'GameWars/1.0'
-            },
-            timeout: 30000
+            }
         });
 
         if (!response.ok) {
@@ -589,8 +605,7 @@ async function verifySyriatelTransaction(txid, expectedAmount) {
                 headers: {
                     'Content-Type': 'application/json',
                     'User-Agent': 'GameWars/1.0'
-                },
-                timeout: 30000
+                }
             });
 
             if (!response.ok) {
@@ -802,10 +817,12 @@ async function processPayment(userId, method, txid, amount) {
 // ===== API ROUTES =====
 // =============================================
 
+// ===== الصحة =====
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// ===== الإعدادات العامة =====
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -816,6 +833,7 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
+// ===== التسجيل =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -882,6 +900,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// ===== تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -942,6 +961,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// ===== التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -980,6 +1000,7 @@ app.post('/api/verify', async (req, res) => {
     }
 });
 
+// ===== جلب الرصيد =====
 app.get('/api/balance', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1000,6 +1021,7 @@ app.get('/api/balance', async (req, res) => {
     }
 });
 
+// ===== تسجيل الخروج =====
 app.post('/api/logout', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1016,6 +1038,7 @@ app.post('/api/logout', async (req, res) => {
 // ===== API Routes للدفع =====
 // =============================================
 
+// ===== جلب إعدادات الدفع =====
 app.get('/api/payment/settings', async (req, res) => {
     try {
         console.log('📥 جلب إعدادات الدفع...');
@@ -1031,7 +1054,10 @@ app.get('/api/payment/settings', async (req, res) => {
                 max_amount: value.max_amount || 0,
                 exchange_rate: value.exchange_rate || 1,
                 currency: value.currency || 'SYP',
-                bonus_percent: value.bonus_percent || 0
+                bonus_percent: value.bonus_percent || 0,
+                api_key: value.api_key || '',
+                account_address: value.account_address || '',
+                gsm_numbers: value.gsm_numbers || []
             };
         }
         res.json(safeSettings);
@@ -1044,6 +1070,7 @@ app.get('/api/payment/settings', async (req, res) => {
     }
 });
 
+// ===== تحديث إعدادات الدفع (للمشرفين) =====
 app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
     try {
         const { method, key, value } = req.body;
@@ -1057,8 +1084,6 @@ app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
         }
         
         await savePaymentSetting(method, key, value);
-        PAYMENT_SETTINGS[method][key] = value;
-        
         const settings = await loadPaymentSettings();
         
         res.json({
@@ -1072,6 +1097,7 @@ app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== تقديم طلب إيداع =====
 app.post('/api/payment/deposit', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1104,6 +1130,7 @@ app.post('/api/payment/deposit', async (req, res) => {
     }
 });
 
+// ===== التحقق من حالة معاملة =====
 app.get('/api/payment/status/:txid', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1163,6 +1190,7 @@ const verifyAdmin = async (req, res, next) => {
     }
 };
 
+// ===== الإحصائيات =====
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
@@ -1184,6 +1212,7 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== المستخدمين =====
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     try {
         const users = await db.getUsers();
@@ -1194,6 +1223,7 @@ app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== تحديث الرصيد =====
 app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     try {
         const { username, amount, action } = req.body;
@@ -1240,6 +1270,7 @@ app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== تعطيل/تفعيل المستخدم =====
 app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     try {
         const { username, active } = req.body;
@@ -1271,6 +1302,7 @@ app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== حذف مستخدم =====
 app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     try {
         const { username } = req.body;
@@ -1303,6 +1335,7 @@ app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== سجل النشاطات =====
 app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
@@ -1314,6 +1347,7 @@ app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== المعاملات =====
 app.get('/api/admin/transactions', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
@@ -1328,6 +1362,7 @@ app.get('/api/admin/transactions', verifyAdmin, async (req, res) => {
     }
 });
 
+// ===== إعدادات الموقع =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -1373,12 +1408,20 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// =============================================
+// ===== FALLBACK =====
+// =============================================
+
 app.get('*', (req, res) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ error: 'API غير موجود' });
     }
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// =============================================
+// ===== معالجة الأخطاء =====
+// =============================================
 
 app.use((err, req, res, next) => {
     console.error('❌ خطأ غير متوقع:', err);
@@ -1399,6 +1442,7 @@ async function startServer() {
             console.log(`👑 الأدمن: noor2613857noor / admin123`);
             console.log(`📊 لوحة التحكم: http://localhost:${PORT}/admin\n`);
             console.log('📋 جميع نقاط النهاية جاهزة للعمل');
+            console.log('✅ نظام الدفع متكامل (شام كاش - سيرياتيل كاش)');
         });
     } catch (error) {
         console.error('❌ فشل تشغيل الخادم:', error.message);
