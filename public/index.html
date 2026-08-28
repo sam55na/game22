@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-        /* ===== متغيرات الألوان (سيتم تحديثها بواسطة JavaScript) ===== */
+        /* ===== متغيرات الألوان ===== */
         :root {
             --primary: #6366f1;
             --secondary: #0891b2;
@@ -228,6 +228,21 @@
             flex-shrink: 0;
             transition: background 0.3s ease;
         }
+        .balance-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.06);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #fbbf24;
+        }
+        .balance-badge i {
+            font-size: 0.9rem;
+        }
 
         /* ===== المحتوى ===== */
         .main {
@@ -410,6 +425,12 @@
             color: #34d399;
             border: 1px solid rgba(52, 211, 153, 0.04);
         }
+        .msg.bonus {
+            display: block;
+            background: rgba(251, 191, 36, 0.06);
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.04);
+        }
 
         /* ===== الواجهة الرئيسية ===== */
         .dashboard {
@@ -587,7 +608,7 @@
             background: rgba(52, 211, 153, 0.12);
         }
 
-        /* ===== إعدادات الألوان ===== */
+        /* ===== إعدادات الموقع ===== */
         .settings-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -658,6 +679,41 @@
             background: rgba(52, 211, 153, 0.08);
             color: #34d399;
         }
+        .setting-item .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .setting-item .toggle-switch.active {
+            background: var(--primary);
+        }
+        .setting-item .toggle-switch .slider {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .setting-item .toggle-switch.active .slider {
+            right: 25px;
+        }
+        .setting-item .bonus-date-input {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .setting-item .bonus-date-input input {
+            min-width: 120px;
+        }
 
         /* ===== سجلات ===== */
         .log-entry {
@@ -720,6 +776,10 @@
                 width: 34px;
                 height: 34px;
                 font-size: 0.85rem;
+            }
+            .balance-badge {
+                font-size: 0.75rem;
+                padding: 4px 10px;
             }
             .hero h1 {
                 font-size: 1.5rem;
@@ -805,6 +865,10 @@
                 height: 28px;
                 font-size: 0.7rem;
             }
+            .balance-badge {
+                font-size: 0.65rem;
+                padding: 3px 8px;
+            }
             .admin-tab {
                 font-size: 0.65rem;
                 padding: 4px 10px;
@@ -856,6 +920,10 @@
                 width: 24px;
                 height: 24px;
                 font-size: 0.6rem;
+            }
+            .balance-badge {
+                font-size: 0.55rem;
+                padding: 2px 6px;
             }
             .auth-box {
                 padding: 12px 10px;
@@ -958,6 +1026,7 @@
                 <div class="admin-sidebar" id="adminSidebar">
                     <button class="admin-tab active" data-tab="dashboard"><i class="fas fa-chart-pie"></i> لوحة</button>
                     <button class="admin-tab" data-tab="users"><i class="fas fa-users"></i> المستخدمين</button>
+                    <button class="admin-tab" data-tab="bonus"><i class="fas fa-gift"></i> مكافأة</button>
                     <button class="admin-tab" data-tab="settings"><i class="fas fa-sliders-h"></i> إعدادات</button>
                     <button class="admin-tab" data-tab="logs"><i class="fas fa-history"></i> سجلات</button>
                 </div>
@@ -966,6 +1035,7 @@
                 <div class="admin-content active" id="admin-dashboard">
                     <div class="stats-grid" id="statsGrid">
                         <div class="stat-card"><div class="label">المستخدمين</div><div class="value" id="statUsers">0</div></div>
+                        <div class="stat-card"><div class="label">إجمالي الرصيد</div><div class="value" id="statBalance">0</div></div>
                         <div class="stat-card"><div class="label">تسجيلات اليوم</div><div class="value" id="statToday">0</div></div>
                         <div class="stat-card"><div class="label">دخول اليوم</div><div class="value" id="statLogins">0</div></div>
                     </div>
@@ -980,10 +1050,15 @@
                     </div>
                     <div class="table-wrap">
                         <table>
-                            <thead><tr><th>المستخدم</th><th>الدور</th><th>الحالة</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr></thead>
+                            <thead><tr><th>المستخدم</th><th>الرصيد</th><th>الدور</th><th>الحالة</th><th>تاريخ التسجيل</th><th>الإجراءات</th></tr></thead>
                             <tbody id="usersTable"></tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- مكافأة -->
+                <div class="admin-content" id="admin-bonus">
+                    <div class="settings-grid" id="bonusSettings"></div>
                 </div>
 
                 <!-- إعدادات -->
@@ -1029,12 +1104,10 @@
                 }
             }
 
-            // تحديث خلفية الجسم
             if (settings.bg_color) {
                 document.body.style.background = settings.bg_color;
             }
 
-            // تحديث الكرات الخلفية
             const orbs = document.querySelectorAll('.bg-orb');
             if (orbs.length >= 3) {
                 if (settings.primary_color) orbs[0].style.background = settings.primary_color;
@@ -1096,6 +1169,7 @@
             if (user) {
                 const isAdmin = user.role === 'admin';
                 nav.innerHTML = `
+                    <div class="balance-badge"><i class="fas fa-coins"></i> ${user.balance || 0}</div>
                     ${isAdmin ? `<button class="btn btn-outline" onclick="toggleAdminPanel()" id="adminToggle"><i class="fas fa-crown"></i> <span>لوحة</span></button>` : ''}
                     <div class="avatar">${user.username.charAt(0)}</div>
                     <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> <span>خروج</span></button>
@@ -1120,6 +1194,8 @@
             document.getElementById('authPage').style.display = 'block';
             document.getElementById('adminPanel').classList.remove('active');
             document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('[data-tab="dashboard"]')?.classList.add('active');
             updateNavbar(null);
             document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
                 m.textContent = ''; });
@@ -1149,7 +1225,6 @@
                 localStorage.setItem('token', token);
                 localStorage.setItem('user', JSON.stringify(currentUser));
 
-                // تطبيق الألوان من الخادم
                 if (data.settings) {
                     applyGlobalColors(data.settings);
                 }
@@ -1165,6 +1240,10 @@
                     if (currentUser.role === 'admin') {
                         document.getElementById('adminPanel').classList.add('active');
                         loadAdminData();
+                        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+                        document.querySelector('[data-tab="dashboard"]')?.classList.add('active');
+                        document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
+                        document.getElementById('admin-dashboard')?.classList.add('active');
                     }
                 }, 400);
             } catch (e) {
@@ -1195,10 +1274,17 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error);
 
-                showMsg(msg, '✅ تم إنشاء الحساب', 'success');
+                let msgText = '✅ تم إنشاء الحساب';
+                let msgType = 'success';
+                if (data.bonus) {
+                    msgText = `✅ تم إنشاء الحساب 🎉 ${data.bonus.message}`;
+                    msgType = 'bonus';
+                }
+
+                showMsg(msg, msgText, msgType);
                 document.getElementById('registerUsername').value = '';
                 document.getElementById('registerPassword').value = '';
-                setTimeout(() => document.querySelector('[data-tab="login"]').click(), 500);
+                setTimeout(() => document.querySelector('[data-tab="login"]').click(), 1000);
             } catch (e) {
                 showMsg(msg, '❌ ' + e.message);
             } finally {
@@ -1213,6 +1299,7 @@
             await loadStats();
             await loadUsers();
             await loadSettings();
+            await loadBonusSettings();
             await loadLogs();
             await loadRecent();
         }
@@ -1221,6 +1308,7 @@
             try {
                 const stats = await apiFetch('/api/admin/stats');
                 document.getElementById('statUsers').textContent = stats.totalUsers;
+                document.getElementById('statBalance').textContent = stats.totalBalance.toFixed(0);
                 document.getElementById('statToday').textContent = stats.todayRegistrations;
                 document.getElementById('statLogins').textContent = stats.todayLogins;
             } catch (e) {}
@@ -1232,6 +1320,7 @@
                 document.getElementById('usersTable').innerHTML = users.map(u => `
                     <tr>
                         <td><strong style="color:rgba(255,255,255,0.5);font-size:0.75rem;">${u.username}</strong></td>
+                        <td style="font-size:0.75rem;color:#fbbf24;">${u.balance}</td>
                         <td style="font-size:0.65rem;">${u.role}</td>
                         <td><span style="color:${u.is_active ? '#34d399' : '#f87171'};font-size:0.65rem;">${u.is_active ? 'نشط' : 'معطل'}</span></td>
                         <td style="font-size:0.55rem;color:rgba(255,255,255,0.08);">${new Date(u.created_at).toLocaleDateString('ar')}</td>
@@ -1261,29 +1350,27 @@
                     text_color: 'لون النص',
                     card_bg: 'خلفية البطاقات',
                     border_color: 'لون الحواف',
-                    glow_color: 'لون التوهج'
+                    glow_color: 'لون التوهج',
+                    registration_enabled: 'تفعيل التسجيل'
                 };
 
-                grid.innerHTML = Object.entries(settings).map(([k, v]) => {
+                grid.innerHTML = Object.entries(settings).filter(([k]) => 
+                    !['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date', 'maintenance_mode'].includes(k)
+                ).map(([k, v]) => {
                     let input = '';
                     if (k.includes('color')) {
-                        const cssVar = {
-                            'primary_color': '--primary',
-                            'secondary_color': '--secondary',
-                            'accent_color': '--accent',
-                            'bg_color': '--bg',
-                            'text_color': '--text',
-                            'card_bg': '--card-bg',
-                            'border_color': '--border',
-                            'glow_color': '--glow'
-                        } [k] || '';
-
                         input = `
                             <div style="display:flex;align-items:center;gap:8px;">
                                 <input type="color" value="${v}" id="color_${k}" />
                                 <button class="save-color-btn" onclick="saveColorSetting('${k}', document.getElementById('color_${k}').value)">
                                     <i class="fas fa-check"></i> حفظ
                                 </button>
+                            </div>
+                        `;
+                    } else if (k === 'registration_enabled') {
+                        input = `
+                            <div class="toggle-switch ${v === 'true' ? 'active' : ''}" onclick="toggleSetting('${k}', this)">
+                                <div class="slider"></div>
                             </div>
                         `;
                     } else {
@@ -1294,7 +1381,54 @@
             } catch (e) {}
         }
 
-        // ===== حفظ إعداد اللون بشكل منفصل =====
+        async function loadBonusSettings() {
+            try {
+                const settings = await apiFetch('/api/admin/settings');
+                const container = document.getElementById('bonusSettings');
+                
+                const labels = {
+                    bonus_enabled: 'تفعيل المكافأة',
+                    bonus_amount: 'قيمة المكافأة',
+                    bonus_start_date: 'تاريخ البداية',
+                    bonus_end_date: 'تاريخ النهاية'
+                };
+
+                container.innerHTML = Object.entries(settings).filter(([k]) => 
+                    ['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date'].includes(k)
+                ).map(([k, v]) => {
+                    let input = '';
+                    if (k === 'bonus_enabled') {
+                        input = `
+                            <div class="toggle-switch ${v === 'true' ? 'active' : ''}" onclick="toggleSetting('${k}', this)">
+                                <div class="slider"></div>
+                            </div>
+                        `;
+                    } else if (k === 'bonus_amount') {
+                        input = `
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="number" value="${v}" id="bonus_${k}" style="min-width:80px;" />
+                                <button class="save-color-btn" onclick="saveBonusSetting('${k}', document.getElementById('bonus_${k}').value)">
+                                    <i class="fas fa-check"></i> حفظ
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        const dateVal = v ? v.split('T')[0] : '';
+                        input = `
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <input type="datetime-local" value="${dateVal}" id="bonus_${k}" style="min-width:140px;" />
+                                <button class="save-color-btn" onclick="saveBonusSetting('${k}', document.getElementById('bonus_${k}').value)">
+                                    <i class="fas fa-check"></i> حفظ
+                                </button>
+                            </div>
+                        `;
+                    }
+                    return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
+                }).join('');
+            } catch (e) {}
+        }
+
+        // ===== حفظ إعداد اللون =====
         async function saveColorSetting(key, value) {
             const btn = event.target.closest('.save-color-btn');
             const originalText = btn.innerHTML;
@@ -1308,7 +1442,6 @@
                     body: JSON.stringify({ key, value })
                 });
 
-                // تطبيق اللون فوراً
                 if (result.settings) {
                     applyGlobalColors(result.settings);
                 }
@@ -1321,9 +1454,6 @@
                     btn.disabled = false;
                 }, 2000);
 
-                // تحديث الإحصائيات
-                loadStats();
-
             } catch (e) {
                 btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
                 setTimeout(() => {
@@ -1331,6 +1461,59 @@
                     btn.disabled = false;
                 }, 2000);
                 alert('❌ خطأ في حفظ اللون: ' + e.message);
+            }
+        }
+
+        // ===== حفظ إعداد المكافأة =====
+        async function saveBonusSetting(key, value) {
+            const btn = event.target.closest('.save-color-btn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+
+                const result = await apiFetch('/api/admin/settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ key, value })
+                });
+
+                btn.innerHTML = '<i class="fas fa-check"></i> تم';
+                btn.classList.add('saved');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('saved');
+                    btn.disabled = false;
+                }, 2000);
+
+            } catch (e) {
+                btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+                alert('❌ خطأ في حفظ الإعداد: ' + e.message);
+            }
+        }
+
+        // ===== تبديل الإعدادات =====
+        async function toggleSetting(key, element) {
+            const isActive = element.classList.contains('active');
+            const newValue = isActive ? 'false' : 'true';
+            
+            try {
+                const result = await apiFetch('/api/admin/settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ key, value: newValue })
+                });
+
+                element.classList.toggle('active');
+                
+                if (result.settings) {
+                    applyGlobalColors(result.settings);
+                }
+            } catch (e) {
+                alert('❌ خطأ في تغيير الإعداد: ' + e.message);
             }
         }
 
@@ -1386,7 +1569,6 @@
         // =============================================
         // ===== التبويبات =====
         // =============================================
-        // تبويبات تسجيل الدخول
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.onclick = () => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1399,7 +1581,6 @@
             };
         });
 
-        // تبويبات الإدارة
         document.querySelectorAll('.admin-tab').forEach(tab => {
             tab.onclick = () => {
                 document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
@@ -1445,10 +1626,8 @@
         // ===== التهيئة =====
         // =============================================
         async function init() {
-            // تحميل الإعدادات العالمية أولاً
             await loadGlobalSettings();
 
-            // استعادة الجلسة
             const userData = localStorage.getItem('user');
             if (userData) {
                 try {
@@ -1459,8 +1638,7 @@
                         document.getElementById('dashboardPage').classList.add('active');
                         updateNavbar(currentUser);
                         document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
-                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' :
-                            'مستخدم';
+                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' : 'مستخدم';
 
                         if (currentUser.role === 'admin') {
                             document.getElementById('adminPanel').classList.add('active');
