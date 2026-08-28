@@ -979,7 +979,7 @@
         // ===== الإعدادات =====
         // =============================================
         const API = 'https://game22-hoas.onrender.com';
-        const REQUEST_TIMEOUT = 60000; // 60 ثانية مهلة
+        const REQUEST_TIMEOUT = 60000;
         let token = localStorage.getItem('token');
         let currentUser = null;
         let currentSettings = {};
@@ -1058,6 +1058,11 @@
                 if (settings.primary_color) orbs[0].style.background = settings.primary_color;
                 if (settings.secondary_color) orbs[1].style.background = settings.secondary_color;
                 if (settings.accent_color) orbs[2].style.background = settings.accent_color;
+            }
+
+            // تحديث اسم الموقع في عنوان الصفحة
+            if (settings.site_name) {
+                document.title = settings.site_name;
             }
 
             currentSettings = settings;
@@ -1304,6 +1309,7 @@
             }
         }
 
+        // ===== تحميل الإعدادات مع زر حفظ للحقول النصية =====
         async function loadSettings() {
             try {
                 const settings = await apiFetch('/api/admin/settings');
@@ -1341,12 +1347,58 @@
                             </div>
                         `;
                     } else {
-                        input = `<input type="text" value="${v}" data-key="${k}" />`;
+                        // زر حفظ للحقول النصية (بما فيها اسم الموقع)
+                        input = `
+                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                                <input type="text" value="${v}" id="text_${k}" style="min-width:120px;" />
+                                <button class="save-color-btn" onclick="saveTextSetting('${k}', document.getElementById('text_${k}').value)">
+                                    <i class="fas fa-check"></i> حفظ
+                                </button>
+                            </div>
+                        `;
                     }
                     return `<div class="setting-item"><span class="label">${labels[k] || k}</span>${input}</div>`;
                 }).join('');
             } catch (e) {
                 console.error('خطأ في تحميل الإعدادات:', e);
+            }
+        }
+
+        // ===== حفظ الإعدادات النصية (بما فيها اسم الموقع) =====
+        async function saveTextSetting(key, value) {
+            const btn = event.target.closest('.save-color-btn');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                btn.disabled = true;
+
+                const result = await apiFetch('/api/admin/settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ key, value })
+                });
+
+                // تحديث اسم الموقع في عنوان الصفحة
+                if (key === 'site_name' && result.settings) {
+                    document.title = result.settings.site_name || 'Game Wars';
+                    showConnectionStatus(`✅ تم تحديث اسم الموقع إلى: ${result.settings.site_name}`, 'success');
+                }
+
+                btn.innerHTML = '<i class="fas fa-check"></i> تم';
+                btn.classList.add('saved');
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('saved');
+                    btn.disabled = false;
+                }, 2000);
+
+            } catch (e) {
+                btn.innerHTML = '<i class="fas fa-times"></i> خطأ';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+                alert('❌ خطأ في حفظ الإعداد: ' + e.message);
             }
         }
 
@@ -1601,10 +1653,8 @@
         // ===== التهيئة =====
         // =============================================
         async function init() {
-            // تحميل الإعدادات العالمية
             await loadGlobalSettings();
 
-            // استعادة الجلسة
             const userData = localStorage.getItem('user');
             if (userData) {
                 try {
@@ -1628,7 +1678,6 @@
                 } catch (_) { localStorage.clear(); }
             }
 
-            // التحقق من صحة الخادم
             try {
                 await fetchWithTimeout(`${API}/api/health`);
                 showConnectionStatus('✅ الخادم متصل', 'success');
