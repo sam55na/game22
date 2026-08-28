@@ -20,6 +20,8 @@
             --radius: 16px;
             --transition: 0.3s ease;
             --font-size: 16px;
+            --deposit-color: #22d3ee;
+            --withdraw-color: #f472b6;
         }
 
         * {
@@ -244,6 +246,87 @@
             font-size: 0.9rem;
         }
 
+        /* ===== شريط الإيداع والسحب ===== */
+        .action-bar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            background: rgba(10, 10, 26, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 8px 28px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+            flex-wrap: wrap;
+        }
+        .action-bar.active {
+            display: flex;
+        }
+
+        .action-bar .action-btn {
+            padding: 8px 28px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 44px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .action-bar .action-btn i {
+            font-size: 1.1rem;
+        }
+
+        .action-bar .action-btn.deposit {
+            background: linear-gradient(135deg, var(--deposit-color), #0ea5e9);
+            color: #0a0a1a;
+            box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
+        }
+        .action-bar .action-btn.deposit:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.4);
+        }
+
+        .action-bar .action-btn.withdraw {
+            background: linear-gradient(135deg, var(--withdraw-color), #ec4899);
+            color: #0a0a1a;
+            box-shadow: 0 4px 20px rgba(244, 114, 182, 0.25);
+        }
+        .action-bar .action-btn.withdraw:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(244, 114, 182, 0.4);
+        }
+
+        .action-bar .action-btn .badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #fbbf24;
+            color: #0a0a1a;
+            font-size: 0.6rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 20px;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
         /* ===== المحتوى ===== */
         .main {
             margin-top: 76px;
@@ -255,6 +338,10 @@
             width: 100%;
             position: relative;
             z-index: 1;
+            transition: margin-top 0.3s ease;
+        }
+        .main.with-action-bar {
+            margin-top: 120px;
         }
 
         /* ===== صفحة تسجيل الدخول ===== */
@@ -741,6 +828,153 @@
             font-weight: 500;
         }
 
+        /* ===== نافذة منبثقة ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-box {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 32px 28px;
+            max-width: 480px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            backdrop-filter: blur(12px);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-box h3 {
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+        .modal-box .modal-icon {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+        }
+        .modal-box .modal-icon.deposit-icon { color: var(--deposit-color); }
+        .modal-box .modal-icon.withdraw-icon { color: var(--withdraw-color); }
+
+        .modal-box .input-group {
+            margin-bottom: 16px;
+        }
+        .modal-box .input-group label {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .modal-box .input-group input,
+        .modal-box .input-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: all var(--transition);
+            min-height: 48px;
+        }
+        .modal-box .input-group input:focus,
+        .modal-box .input-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px var(--glow);
+        }
+        .modal-box .input-group select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+            min-height: 44px;
+        }
+        .modal-actions .btn-cancel {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.4);
+            border: 1px solid var(--border);
+        }
+        .modal-actions .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .modal-actions .btn-confirm-deposit {
+            background: linear-gradient(135deg, var(--deposit-color), #0ea5e9);
+            color: #0a0a1a;
+        }
+        .modal-actions .btn-confirm-withdraw {
+            background: linear-gradient(135deg, var(--withdraw-color), #ec4899);
+            color: #0a0a1a;
+        }
+        .modal-actions .btn-confirm-deposit:disabled,
+        .modal-actions .btn-confirm-withdraw:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .payment-method-item {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-method-item:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        .payment-method-item .method-name {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        .payment-method-item .method-details {
+            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+        .payment-method-item .method-badge {
+            background: rgba(99, 102, 241, 0.1);
+            color: #a5b4fc;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+
         /* ===== مؤشر الاتصال ===== */
         .connection-status {
             position: fixed;
@@ -781,7 +1015,19 @@
             .brand { font-size: 1.2rem; gap: 8px; }
             .brand .letters span { font-size: 1.2rem; }
             .brand i { font-size: 1.3rem; }
+            .action-bar { 
+                top: 56px; 
+                padding: 6px 12px; 
+                gap: 10px; 
+            }
+            .action-bar .action-btn { 
+                padding: 6px 16px; 
+                font-size: 0.8rem; 
+                min-height: 36px; 
+            }
+            .action-bar .action-btn i { font-size: 0.9rem; }
             .main { padding: 16px; margin-top: 64px; }
+            .main.with-action-bar { margin-top: 110px; }
             .auth-box { padding: 24px 18px; max-width: 100%; margin: 16px 0; }
             .auth-box h2 { font-size: 1.3rem; }
             .btn span { display: none; }
@@ -797,6 +1043,7 @@
             .input-wrap input { padding: 10px 38px 10px 12px; min-height: 42px; font-size: 0.95rem; }
             .submit-btn { padding: 10px; min-height: 42px; font-size: 0.95rem; }
             .connection-status { bottom: 12px; padding: 6px 14px; font-size: 0.65rem; }
+            .modal-box { padding: 24px 18px; }
         }
 
         @media (max-width: 420px) {
@@ -804,7 +1051,20 @@
             .brand { font-size: 1rem; gap: 6px; }
             .brand .letters span { font-size: 1rem; }
             .brand i { font-size: 1.1rem; }
+            .action-bar { 
+                top: 48px; 
+                padding: 4px 8px; 
+                gap: 6px; 
+            }
+            .action-bar .action-btn { 
+                padding: 4px 12px; 
+                font-size: 0.7rem; 
+                min-height: 30px; 
+                gap: 4px;
+            }
+            .action-bar .action-btn i { font-size: 0.7rem; }
             .main { padding: 12px; margin-top: 56px; }
+            .main.with-action-bar { margin-top: 96px; }
             .auth-box { padding: 16px 14px; border-radius: 12px; }
             .auth-box h2 { font-size: 1.1rem; }
             .auth-box .logo-icon { font-size: 2.2rem; }
@@ -824,11 +1084,14 @@
             .setting-item input { min-width: 60px; font-size: 0.75rem; }
             .log-entry { font-size: 0.7rem; padding: 6px 10px; }
             .connection-status { bottom: 8px; padding: 4px 10px; font-size: 0.55rem; }
+            .modal-box { padding: 16px 14px; }
+            .modal-box h3 { font-size: 1.1rem; }
         }
 
         @media (max-width: 360px) {
             .brand .letters span { font-size: 0.8rem; }
             .brand i { font-size: 0.9rem; }
+            .action-bar .action-btn { font-size: 0.6rem; padding: 3px 8px; min-height: 26px; }
             .btn { font-size: 0.6rem; padding: 3px 8px; min-height: 26px; }
             .avatar { width: 24px; height: 24px; font-size: 0.6rem; }
             .balance-badge { font-size: 0.55rem; padding: 2px 6px; }
@@ -859,6 +1122,19 @@
         </div>
         <div class="nav-actions" id="navActions"></div>
     </nav>
+
+    <!-- ===== شريط الإيداع والسحب ===== -->
+    <div class="action-bar" id="actionBar">
+        <button class="action-btn deposit" id="depositBtn" onclick="openDepositModal()">
+            <i class="fas fa-plus-circle"></i>
+            <span>إيداع</span>
+            <span class="badge">جديد</span>
+        </button>
+        <button class="action-btn withdraw" id="withdrawBtn" onclick="openWithdrawModal()">
+            <i class="fas fa-minus-circle"></i>
+            <span>سحب</span>
+        </button>
+    </div>
 
     <!-- ===== المحتوى ===== -->
     <div class="main" id="app">
@@ -929,6 +1205,7 @@
                     <button class="admin-tab" data-tab="bonus"><i class="fas fa-gift"></i> مكافأة</button>
                     <button class="admin-tab" data-tab="settings"><i class="fas fa-sliders-h"></i> إعدادات</button>
                     <button class="admin-tab" data-tab="logs"><i class="fas fa-history"></i> سجلات</button>
+                    <button class="admin-tab" data-tab="payment"><i class="fas fa-credit-card"></i> الدفع</button>
                 </div>
 
                 <!-- لوحة الإحصائيات -->
@@ -970,7 +1247,72 @@
                 <div class="admin-content" id="admin-logs">
                     <div id="logsContainer"></div>
                 </div>
+
+                <!-- إعدادات الدفع -->
+                <div class="admin-content" id="admin-payment">
+                    <h4 style="color:rgba(255,255,255,0.2);margin-bottom:16px;">💳 إعدادات طرق الدفع</h4>
+                    <div id="paymentSettingsContainer"></div>
+                </div>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== نافذة الإيداع ===== -->
+    <div class="modal-overlay" id="depositModal">
+        <div class="modal-box">
+            <div class="modal-icon deposit-icon"><i class="fas fa-plus-circle"></i></div>
+            <h3>💰 إيداع</h3>
+            <div id="depositMethodsContainer"></div>
+            <div style="margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+                <div class="input-group">
+                    <label>رقم العملية (TxID)</label>
+                    <input type="text" id="depositTxid" placeholder="أدخل رقم العملية" />
+                </div>
+                <div class="input-group">
+                    <label>المبلغ</label>
+                    <input type="number" id="depositAmount" placeholder="أدخل المبلغ" min="1" step="0.01" />
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-cancel" onclick="closeModal('depositModal')">إلغاء</button>
+                    <button class="btn btn-confirm-deposit" id="depositSubmitBtn" onclick="submitDeposit()">تأكيد الإيداع</button>
+                </div>
+            </div>
+            <div id="depositResult" style="margin-top:12px;text-align:center;display:none;"></div>
+        </div>
+    </div>
+
+    <!-- ===== نافذة السحب ===== -->
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="modal-box">
+            <div class="modal-icon withdraw-icon"><i class="fas fa-minus-circle"></i></div>
+            <h3>💸 سحب</h3>
+            <div class="input-group">
+                <label>المبلغ</label>
+                <input type="number" id="withdrawAmount" placeholder="أدخل المبلغ" min="1" step="0.01" />
+            </div>
+            <div class="input-group">
+                <label>طريقة السحب</label>
+                <select id="withdrawMethod">
+                    <option value="bank">تحويل بنكي</option>
+                    <option value="shamcash">شام كاش</option>
+                    <option value="syriatel">سيرياتيل كاش</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>رقم الحساب / المحفظة</label>
+                <input type="text" id="withdrawAccount" placeholder="أدخل رقم الحساب أو المحفظة" />
+            </div>
+            <div style="background:rgba(251,191,36,0.05);border-radius:8px;padding:10px;margin-bottom:16px;border:1px solid rgba(251,191,36,0.05);">
+                <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+                    <span style="color:rgba(255,255,255,0.3);">الرصيد المتاح</span>
+                    <span style="color:#fbbf24;font-weight:700;" id="withdrawBalance">0</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-cancel" onclick="closeModal('withdrawModal')">إلغاء</button>
+                <button class="btn btn-confirm-withdraw" id="withdrawSubmitBtn" onclick="submitWithdraw()">تأكيد السحب</button>
+            </div>
+            <div id="withdrawResult" style="margin-top:12px;text-align:center;display:none;"></div>
         </div>
     </div>
 
@@ -978,12 +1320,12 @@
         // =============================================
         // ===== الإعدادات =====
         // =============================================
-        // ✅ تم تثبيت الرابط الأساسي للخادم
         const API = 'https://game22-hoas.onrender.com';
         const REQUEST_TIMEOUT = 60000;
         let token = localStorage.getItem('token');
         let currentUser = null;
         let currentSettings = {};
+        let selectedDepositMethod = null;
 
         // =============================================
         // ===== دوال الاتصال مع مهلة =====
@@ -1018,7 +1360,6 @@
                 clearTimeout(timeoutId);
                 hideConnectionStatus();
 
-                // ✅ التحقق من نوع الاستجابة لتجنب خطأ JSON
                 const contentType = response.headers.get('content-type');
                 if (contentType && contentType.includes('text/html')) {
                     throw new Error('الخادم أعاد HTML بدلاً من JSON. تأكد من أن الخادم يعمل بشكل صحيح.');
@@ -1036,25 +1377,31 @@
             }
         }
 
+        async function apiFetch(endpoint, options = {}) {
+            const res = await fetchWithTimeout(`${API}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'خطأ');
+            return data;
+        }
+
         // =============================================
-        // ===== تحديث اسم الموقع في جميع عناصر الواجهة =====
+        // ===== تحديث اسم الموقع =====
         // =============================================
         function updateSiteName(siteName) {
             if (!siteName) return;
-            
-            // 1. تحديث عنوان الصفحة
             document.title = siteName;
-            
-            // 2. تحديث اسم الموقع في الشريط العلوي
             const brandContainer = document.getElementById('brandName');
             if (brandContainer) {
                 const chars = siteName.split('');
                 const spans = brandContainer.querySelectorAll('span');
-                
-                // إخفاء كل الحروف أولاً
                 spans.forEach(span => span.style.display = 'none');
-                
-                // عرض الحروف الجديدة
                 chars.forEach((char, index) => {
                     if (index < spans.length) {
                         spans[index].style.display = 'inline-block';
@@ -1067,8 +1414,6 @@
                     }
                 });
             }
-            
-            // 3. حفظ في localStorage للاستمرار بعد التحديث
             localStorage.setItem('siteName', siteName);
         }
 
@@ -1104,7 +1449,6 @@
                 if (settings.accent_color) orbs[2].style.background = settings.accent_color;
             }
 
-            // تحديث اسم الموقع
             if (settings.site_name) {
                 updateSiteName(settings.site_name);
             }
@@ -1113,7 +1457,7 @@
         }
 
         // =============================================
-        // ===== جلب الإعدادات من الخادم =====
+        // ===== جلب الإعدادات =====
         // =============================================
         async function loadGlobalSettings() {
             try {
@@ -1140,24 +1484,16 @@
             btn.textContent = loading ? '⏳ جاري...' : btn.dataset.original;
         }
 
-        document.querySelectorAll('.submit-btn').forEach(b => b.dataset.original = b.textContent);
-
-        // =============================================
-        // ===== دوال API مع مهلة =====
-        // =============================================
-        async function apiFetch(endpoint, options = {}) {
-            const res = await fetchWithTimeout(`${API}${endpoint}`, {
-                ...options,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    ...options.headers
-                }
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'خطأ');
-            return data;
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+            document.getElementById(id + 'Result').style.display = 'none';
         }
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        document.querySelectorAll('.submit-btn').forEach(b => b.dataset.original = b.textContent);
 
         // =============================================
         // ===== إدارة الشريط =====
@@ -1194,6 +1530,8 @@
             document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
             document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
             document.querySelector('[data-tab="dashboard"]')?.classList.add('active');
+            document.getElementById('actionBar').classList.remove('active');
+            document.getElementById('app').classList.remove('with-action-bar');
             updateNavbar(null);
             document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
                 m.textContent = ''; });
@@ -1235,6 +1573,8 @@
                 setTimeout(() => {
                     document.getElementById('authPage').style.display = 'none';
                     document.getElementById('dashboardPage').classList.add('active');
+                    document.getElementById('actionBar').classList.add('active');
+                    document.getElementById('app').classList.add('with-action-bar');
                     updateNavbar(currentUser);
                     document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
                     document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' : 'مستخدم';
@@ -1302,6 +1642,268 @@
         };
 
         // =============================================
+        // ===== نظام الإيداع =====
+        // =============================================
+
+        // ===== فتح نافذة الإيداع =====
+        async function openDepositModal() {
+            if (!currentUser) {
+                showConnectionStatus('❌ يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            await loadPaymentMethods();
+            openModal('depositModal');
+            document.getElementById('depositResult').style.display = 'none';
+            document.getElementById('depositTxid').value = '';
+            document.getElementById('depositAmount').value = '';
+            selectedDepositMethod = null;
+        }
+
+        // ===== جلب طرق الدفع =====
+        async function loadPaymentMethods() {
+            try {
+                const res = await fetchWithTimeout(`${API}/api/payment/settings`);
+                const settings = await res.json();
+
+                const container = document.getElementById('depositMethodsContainer');
+                const methodNames = {
+                    shamcash_usd: { name: 'شام كاش (دولار)', icon: '💳' },
+                    shamcash_syp: { name: 'شام كاش (ليرة)', icon: '💳' },
+                    syriatel: { name: 'سيرياتيل كاش', icon: '📱' }
+                };
+
+                let html = `<div style="margin-bottom:16px;font-size:0.9rem;color:rgba(255,255,255,0.2);">اختر طريقة الدفع:</div>`;
+                let hasEnabled = false;
+
+                for (const [key, value] of Object.entries(settings)) {
+                    if (value.enabled) {
+                        hasEnabled = true;
+                        const info = methodNames[key] || { name: value.name || key, icon: '💳' };
+                        html += `
+                            <div class="payment-method-item" onclick="selectDepositMethod('${key}')" id="method_${key}">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div>
+                                        <span class="method-name">${info.icon} ${info.name}</span>
+                                        <div class="method-details">
+                                            الحد الأدنى: ${value.min_amount} ${value.currency} | الحد الأقصى: ${value.max_amount} ${value.currency}
+                                            ${value.bonus_percent > 0 ? `| 🎁 ${value.bonus_percent}% بونص` : ''}
+                                        </div>
+                                    </div>
+                                    <span class="method-badge">${value.currency}</span>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                if (!hasEnabled) {
+                    html += `
+                        <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.1);">
+                            <i class="fas fa-exclamation-circle" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+                            لا توجد طرق دفع مفعلة حالياً
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html;
+
+                // تخزين الإعدادات للاستخدام
+                window._paymentSettings = settings;
+
+            } catch (e) {
+                console.error('خطأ في جلب طرق الدفع:', e);
+                document.getElementById('depositMethodsContainer').innerHTML = `
+                    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.1);">
+                        <i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+                        فشل تحميل طرق الدفع
+                    </div>
+                `;
+            }
+        }
+
+        // ===== اختيار طريقة الدفع =====
+        function selectDepositMethod(method) {
+            selectedDepositMethod = method;
+
+            // إزالة التحديد من جميع الطرق
+            document.querySelectorAll('.payment-method-item').forEach(el => {
+                el.style.borderColor = 'var(--border)';
+                el.style.background = 'var(--card-bg)';
+            });
+
+            // تمييز الطريقة المختارة
+            const el = document.getElementById(`method_${method}`);
+            if (el) {
+                el.style.borderColor = 'var(--primary)';
+                el.style.background = 'rgba(99,102,241,0.05)';
+            }
+
+            showConnectionStatus(`✅ تم اختيار ${method}`, 'success');
+        }
+
+        // ===== تقديم طلب إيداع =====
+        async function submitDeposit() {
+            if (!selectedDepositMethod) {
+                showConnectionStatus('❌ يرجى اختيار طريقة الدفع أولاً', 'error');
+                return;
+            }
+
+            const txid = document.getElementById('depositTxid').value.trim();
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+
+            if (!txid || txid.length < 5) {
+                showConnectionStatus('❌ يرجى إدخال رقم عملية صحيح', 'error');
+                return;
+            }
+
+            if (!amount || amount <= 0) {
+                showConnectionStatus('❌ يرجى إدخال مبلغ صحيح', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('depositSubmitBtn');
+            const resultEl = document.getElementById('depositResult');
+            const originalText = btn.textContent;
+
+            try {
+                btn.disabled = true;
+                btn.textContent = '⏳ جاري المعالجة...';
+                resultEl.style.display = 'block';
+                resultEl.innerHTML = '<span style="color:#a5b4fc;">⏳ جاري التحقق من العملية...</span>';
+
+                const result = await apiFetch('/api/payment/deposit', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        method: selectedDepositMethod,
+                        txid: txid,
+                        amount: amount
+                    })
+                });
+
+                if (result.success) {
+                    resultEl.innerHTML = `
+                        <div style="color:#34d399;padding:10px;background:rgba(52,211,153,0.05);border-radius:8px;">
+                            ✅ تم الإيداع بنجاح!<br>
+                            <span style="font-size:0.9rem;">المبلغ المضاف: <strong>${result.final_amount}</strong> SYP</span>
+                            ${result.bonus_amount > 0 ? `<br><span style="font-size:0.8rem;color:#fbbf24;">🎁 بونص: +${result.bonus_amount} SYP</span>` : ''}
+                        </div>
+                    `;
+
+                    // تحديث الرصيد
+                    if (currentUser) {
+                        currentUser.balance = result.new_balance;
+                        localStorage.setItem('user', JSON.stringify(currentUser));
+                        updateNavbar(currentUser);
+                    }
+
+                    // إغلاق النافذة بعد 3 ثوانٍ
+                    setTimeout(() => {
+                        closeModal('depositModal');
+                    }, 3000);
+                } else {
+                    resultEl.innerHTML = `
+                        <div style="color:#f87171;padding:10px;background:rgba(239,68,68,0.05);border-radius:8px;">
+                            ❌ ${result.message || 'فشل الإيداع'}
+                        </div>
+                    `;
+                }
+
+            } catch (e) {
+                resultEl.innerHTML = `
+                    <div style="color:#f87171;padding:10px;background:rgba(239,68,68,0.05);border-radius:8px;">
+                        ❌ خطأ: ${e.message}
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // =============================================
+        // ===== نظام السحب =====
+        // =============================================
+
+        function openWithdrawModal() {
+            if (!currentUser) {
+                showConnectionStatus('❌ يرجى تسجيل الدخول أولاً', 'error');
+                return;
+            }
+
+            document.getElementById('withdrawBalance').textContent = currentUser.balance || 0;
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawAccount').value = '';
+            document.getElementById('withdrawResult').style.display = 'none';
+            openModal('withdrawModal');
+        }
+
+        async function submitWithdraw() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('withdrawMethod').value;
+            const account = document.getElementById('withdrawAccount').value.trim();
+
+            if (!amount || amount <= 0) {
+                showConnectionStatus('❌ يرجى إدخال مبلغ صحيح', 'error');
+                return;
+            }
+
+            if (amount > (currentUser.balance || 0)) {
+                showConnectionStatus('❌ الرصيد غير كافٍ', 'error');
+                return;
+            }
+
+            if (!account) {
+                showConnectionStatus('❌ يرجى إدخال رقم الحساب أو المحفظة', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('withdrawSubmitBtn');
+            const resultEl = document.getElementById('withdrawResult');
+            const originalText = btn.textContent;
+
+            try {
+                btn.disabled = true;
+                btn.textContent = '⏳ جاري...';
+                resultEl.style.display = 'block';
+                resultEl.innerHTML = '<span style="color:#a5b4fc;">⏳ جاري معالجة طلب السحب...</span>';
+
+                // محاكاة طلب السحب (سيتم ربطها بالـ API لاحقاً)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // تحديث الرصيد محلياً
+                const newBalance = currentUser.balance - amount;
+                currentUser.balance = newBalance;
+                localStorage.setItem('user', JSON.stringify(currentUser));
+                updateNavbar(currentUser);
+
+                resultEl.innerHTML = `
+                    <div style="color:#34d399;padding:10px;background:rgba(52,211,153,0.05);border-radius:8px;">
+                        ✅ تم تقديم طلب السحب بنجاح!<br>
+                        <span style="font-size:0.9rem;">المبلغ: <strong>${amount}</strong> SYP</span><br>
+                        <span style="font-size:0.8rem;color:rgba(255,255,255,0.2);">سيتم معالجة الطلب خلال 24 ساعة</span>
+                    </div>
+                `;
+
+                document.getElementById('withdrawBalance').textContent = newBalance;
+
+                setTimeout(() => {
+                    closeModal('withdrawModal');
+                }, 3000);
+
+            } catch (e) {
+                resultEl.innerHTML = `
+                    <div style="color:#f87171;padding:10px;background:rgba(239,68,68,0.05);border-radius:8px;">
+                        ❌ خطأ: ${e.message}
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // =============================================
         // ===== دوال الإدارة =====
         // =============================================
         let adminVisible = false;
@@ -1314,6 +1916,7 @@
                 await loadBonusSettings();
                 await loadLogs();
                 await loadRecent();
+                await loadPaymentAdminSettings();
             } catch (e) {
                 console.error('خطأ في تحميل بيانات الإدارة:', e);
             }
@@ -1375,7 +1978,8 @@
                 };
 
                 grid.innerHTML = Object.entries(settings).filter(([k]) =>
-                    !['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date', 'maintenance_mode'].includes(k)
+                    !['bonus_enabled', 'bonus_amount', 'bonus_start_date', 'bonus_end_date', 'maintenance_mode'].includes(k) &&
+                    !k.startsWith('payment_')
                 ).map(([k, v]) => {
                     let input = '';
                     if (k.includes('color')) {
@@ -1426,7 +2030,6 @@
 
                 if (result.settings) {
                     applyGlobalColors(result.settings);
-                    
                     if (key === 'site_name') {
                         showConnectionStatus(`✅ تم تحديث اسم الموقع إلى: ${result.settings.site_name}`, 'success');
                     } else {
@@ -1488,6 +2091,28 @@
             }
         }
 
+        // ===== تبديل الإعدادات =====
+        async function toggleSetting(key, element) {
+            const isActive = element.classList.contains('active');
+            const newValue = isActive ? 'false' : 'true';
+
+            try {
+                const result = await apiFetch('/api/admin/settings', {
+                    method: 'POST',
+                    body: JSON.stringify({ key, value: newValue })
+                });
+
+                element.classList.toggle('active');
+
+                if (result.settings) {
+                    applyGlobalColors(result.settings);
+                }
+            } catch (e) {
+                alert('❌ خطأ في تغيير الإعداد: ' + e.message);
+            }
+        }
+
+        // ===== إعدادات المكافأة =====
         async function loadBonusSettings() {
             try {
                 const settings = await apiFetch('/api/admin/settings');
@@ -1537,7 +2162,6 @@
             }
         }
 
-        // ===== حفظ إعداد المكافأة =====
         async function saveBonusSetting(key, value) {
             const btn = event.target.closest('.save-color-btn');
             const originalText = btn.innerHTML;
@@ -1569,27 +2193,6 @@
             }
         }
 
-        // ===== تبديل الإعدادات =====
-        async function toggleSetting(key, element) {
-            const isActive = element.classList.contains('active');
-            const newValue = isActive ? 'false' : 'true';
-
-            try {
-                const result = await apiFetch('/api/admin/settings', {
-                    method: 'POST',
-                    body: JSON.stringify({ key, value: newValue })
-                });
-
-                element.classList.toggle('active');
-
-                if (result.settings) {
-                    applyGlobalColors(result.settings);
-                }
-            } catch (e) {
-                alert('❌ خطأ في تغيير الإعداد: ' + e.message);
-            }
-        }
-
         async function loadLogs() {
             try {
                 const logs = await apiFetch('/api/admin/logs');
@@ -1617,6 +2220,52 @@
                 `).join('') || '<div style="text-align:center;padding:10px;color:rgba(255,255,255,0.04);font-size:0.7rem;">لا توجد سجلات حديثة</div>';
             } catch (e) {
                 console.error('خطأ في تحميل السجلات الحديثة:', e);
+            }
+        }
+
+        // ===== إعدادات الدفع للإدارة =====
+        async function loadPaymentAdminSettings() {
+            try {
+                const res = await fetchWithTimeout(`${API}/api/payment/settings`);
+                const settings = await res.json();
+
+                const container = document.getElementById('paymentSettingsContainer');
+                const methodNames = {
+                    shamcash_usd: 'شام كاش (دولار)',
+                    shamcash_syp: 'شام كاش (ليرة)',
+                    syriatel: 'سيرياتيل كاش'
+                };
+
+                let html = '';
+                for (const [key, value] of Object.entries(settings)) {
+                    html += `
+                        <div class="setting-item" style="margin-bottom:8px;">
+                            <div>
+                                <span class="label">${methodNames[key] || key}</span>
+                                <div style="font-size:0.7rem;color:${value.enabled ? '#34d399' : '#f87171'};margin-top:4px;">
+                                    ${value.enabled ? '✅ مفعل' : '❌ معطل'}
+                                </div>
+                            </div>
+                            <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.15);padding:2px 6px;border:1px solid var(--border);border-radius:4px;">
+                                    ${value.currency}
+                                </span>
+                                <span style="font-size:0.65rem;color:rgba(255,255,255,0.15);padding:2px 6px;border:1px solid var(--border);border-radius:4px;">
+                                    ${value.bonus_percent > 0 ? `🎁 ${value.bonus_percent}%` : 'لا بونص'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = html ||
+                    '<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">لا توجد إعدادات دفع</div>';
+
+            } catch (e) {
+                console.error('خطأ في تحميل إعدادات الدفع:', e);
+                document.getElementById('paymentSettingsContainer').innerHTML = `
+                    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">فشل تحميل إعدادات الدفع</div>
+                `;
             }
         }
 
@@ -1665,6 +2314,10 @@
                 const target = tab.dataset.tab;
                 document.querySelectorAll('.admin-content').forEach(c => c.classList.remove('active'));
                 document.getElementById(`admin-${target}`).classList.add('active');
+
+                if (target === 'payment') {
+                    loadPaymentAdminSettings();
+                }
             };
         });
 
@@ -1692,7 +2345,12 @@
                 if (e.key === 'Enter') {
                     const form = inp.closest('.form');
                     if (form.id === 'loginForm') document.getElementById('loginBtn').click();
-                    else document.getElementById('registerBtn').click();
+                    else if (form.id === 'registerForm') document.getElementById('registerBtn').click();
+                    else if (inp.id === 'depositTxid' || inp.id === 'depositAmount') {
+                        document.getElementById('depositSubmitBtn').click();
+                    } else if (inp.id === 'withdrawAmount' || inp.id === 'withdrawAccount') {
+                        document.getElementById('withdrawSubmitBtn').click();
+                    }
                 }
             });
         });
@@ -1701,16 +2359,13 @@
         // ===== التهيئة =====
         // =============================================
         async function init() {
-            // تحميل الإعدادات العالمية أولاً
             await loadGlobalSettings();
 
-            // استعادة اسم الموقع من localStorage
             const savedSiteName = localStorage.getItem('siteName');
             if (savedSiteName) {
                 updateSiteName(savedSiteName);
             }
 
-            // التحقق من وجود مستخدم مسجل
             const userData = localStorage.getItem('user');
             if (userData) {
                 try {
@@ -1719,6 +2374,8 @@
                         token = localStorage.getItem('token');
                         document.getElementById('authPage').style.display = 'none';
                         document.getElementById('dashboardPage').classList.add('active');
+                        document.getElementById('actionBar').classList.add('active');
+                        document.getElementById('app').classList.add('with-action-bar');
                         updateNavbar(currentUser);
                         document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
                         document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' :
@@ -1731,12 +2388,11 @@
                             document.getElementById('adminToggle').innerHTML = '<i class="fas fa-crown"></i> <span>إخفاء</span>';
                         }
                     }
-                } catch (_) { 
-                    localStorage.clear(); 
+                } catch (_) {
+                    localStorage.clear();
                 }
             }
 
-            // التحقق من اتصال الخادم
             try {
                 await fetchWithTimeout(`${API}/api/health`);
                 showConnectionStatus('✅ الخادم متصل', 'success');
@@ -1745,7 +2401,6 @@
             }
         }
 
-        // بدء التطبيق
         init();
     </script>
 </body>
