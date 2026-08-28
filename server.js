@@ -39,15 +39,31 @@ app.use(helmet({
     }
 }));
 app.use(compression());
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*', credentials: true }));
+
+// ===== إعداد CORS بشكل صحيح =====
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || '*',
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ===== حماية من هجمات القوة العمياء =====
+// ===== الحماية من هجمات القوة العمياء (مع إصلاح خطأ X-Forwarded-For) =====
+// تعطيل التحقق من X-Forwarded-For مؤقتاً لتجنب الأخطاء في Render
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    message: { error: 'تم تجاوز حد الطلبات، حاول مرة أخرى لاحقاً' }
+    windowMs: 15 * 60 * 1000, // 15 دقيقة
+    max: 100, // الحد الأقصى للطلبات
+    message: { error: 'تم تجاوز حد الطلبات، حاول مرة أخرى لاحقاً' },
+    standardHeaders: true,
+    legacyHeaders: false,
+    // إصلاح خطأ X-Forwarded-For
+    validate: { xForwardedForHeader: false },
+    // استخدام IP من request مباشرة
+    keyGenerator: (req) => {
+        return req.ip || req.connection.remoteAddress || 'unknown';
+    }
 });
 app.use('/api/', limiter);
 
@@ -85,8 +101,8 @@ async function initDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX idx_username ON users(username);');
-        await client.query('CREATE INDEX idx_role ON users(role);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
 
         // جدول النشاطات
         await client.query(`
@@ -101,8 +117,8 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX idx_logs_user ON activity_logs(user_id);');
-        await client.query('CREATE INDEX idx_logs_created ON activity_logs(created_at DESC);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
 
         // جدول الإعدادات
         await client.query(`
@@ -123,8 +139,8 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX idx_sessions_token ON sessions(token);');
-        await client.query('CREATE INDEX idx_sessions_expires ON sessions(expires_at);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
@@ -305,7 +321,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ===== جلب إعدادات الموقع (بما فيها الألوان والمكافأة) =====
+// ===== جلب إعدادات الموقع =====
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -315,11 +331,11 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// ===== تسجيل مستخدم جديد (مع دعم المكافأة) =====
+// ===== تسجيل مستخدم جديد =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
         const userAgent = req.headers['user-agent'];
 
         // التحقق
@@ -392,7 +408,7 @@ app.post('/api/register', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
         const userAgent = req.headers['user-agent'];
 
         if (!username || !password) {
@@ -426,7 +442,6 @@ app.post('/api/login', async (req, res) => {
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await db.saveSession(user.id, token, expiresAt);
 
-        // جلب الإعدادات مع التوكن
         const settings = await db.getSettings();
 
         res.json({
@@ -641,7 +656,6 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'settings_update', `تحديث: ${key} = ${value}`]
         );
-        // إرجاع الإعدادات المحدثة
         const settings = await db.getSettings();
         res.json({ message: 'تم تحديث الإعداد', settings: settings });
     } catch (error) {
