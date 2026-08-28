@@ -52,29 +52,26 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // =============================================
-// ===== تهيئة قاعدة البيانات (تلقائية) =====
+// ===== تهيئة قاعدة البيانات =====
 // =============================================
 async function initDatabase() {
     const client = await pool.connect();
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
-        // ===== 1. مسح الجداول القديمة (بدون صلاحيات SUPERUSER) =====
+        // مسح الجداول القديمة
         console.log('🗑️ جاري مسح الجداول القديمة...');
-        
-        // حذف الجداول بترتيب عكسي (حسب العلاقات)
         await client.query('DROP TABLE IF EXISTS sessions CASCADE;');
         await client.query('DROP TABLE IF EXISTS activity_logs CASCADE;');
         await client.query('DROP TABLE IF EXISTS site_settings CASCADE;');
         await client.query('DROP TABLE IF EXISTS users CASCADE;');
-        
         console.log('✅ تم مسح الجداول القديمة');
 
-        // ===== 2. إنشاء الجداول الجديدة =====
+        // إنشاء الجداول الجديدة
         console.log('📦 جاري إنشاء الجداول الجديدة...');
 
         await client.query(`
-            CREATE TABLE IF NOT EXISTS users (
+            CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
                 username VARCHAR(50) UNIQUE NOT NULL,
                 password_hash VARCHAR(255) NOT NULL,
@@ -86,12 +83,11 @@ async function initDatabase() {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_role ON users(role);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_created_at ON users(created_at DESC);');
+        await client.query('CREATE INDEX idx_username ON users(username);');
+        await client.query('CREATE INDEX idx_role ON users(role);');
 
         await client.query(`
-            CREATE TABLE IF NOT EXISTS activity_logs (
+            CREATE TABLE activity_logs (
                 id BIGSERIAL PRIMARY KEY,
                 user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
                 username VARCHAR(50),
@@ -102,12 +98,11 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_user ON activity_logs(user_id);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_logs_action ON activity_logs(action);');
+        await client.query('CREATE INDEX idx_logs_user ON activity_logs(user_id);');
+        await client.query('CREATE INDEX idx_logs_created ON activity_logs(created_at DESC);');
 
         await client.query(`
-            CREATE TABLE IF NOT EXISTS site_settings (
+            CREATE TABLE site_settings (
                 key VARCHAR(50) PRIMARY KEY,
                 value TEXT,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -115,7 +110,7 @@ async function initDatabase() {
         `);
 
         await client.query(`
-            CREATE TABLE IF NOT EXISTS sessions (
+            CREATE TABLE sessions (
                 id BIGSERIAL PRIMARY KEY,
                 user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
                 token VARCHAR(500) NOT NULL,
@@ -123,56 +118,47 @@ async function initDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);');
-        await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);');
+        await client.query('CREATE INDEX idx_sessions_token ON sessions(token);');
+        await client.query('CREATE INDEX idx_sessions_expires ON sessions(expires_at);');
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
-        // ===== 3. إنشاء حساب الأدمن =====
+        // إنشاء حساب الأدمن
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
-        
-        // التحقق من وجود الأدمن
-        const adminCheck = await client.query('SELECT id FROM users WHERE username = $1', [adminUsername]);
-        
-        if (adminCheck.rows.length === 0) {
-            const hash = await bcrypt.hash(adminPassword, 10);
-            await client.query(
-                `INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)`,
-                [adminUsername, hash, 'admin']
-            );
-            console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
-        } else {
-            console.log(`✅ حساب الأدمن موجود بالفعل`);
-        }
+        const hash = await bcrypt.hash(adminPassword, 10);
+        await client.query(
+            `INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)`,
+            [adminUsername, hash, 'admin']
+        );
+        console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
-        // ===== 4. الإعدادات الافتراضية =====
+        // الإعدادات الافتراضية
         const defaultSettings = [
             ['site_name', 'Game Wars'],
-            ['primary_color', '#4f46e5'],
+            ['primary_color', '#6366f1'],
             ['secondary_color', '#0891b2'],
-            ['accent_color', '#7c3aed'],
-            ['background_color', '#0b0b1e'],
+            ['accent_color', '#8b5cf6'],
+            ['bg_color', '#0a0a1a'],
             ['text_color', '#ffffff'],
+            ['card_bg', 'rgba(255,255,255,0.03)'],
+            ['border_color', 'rgba(255,255,255,0.05)'],
+            ['glow_color', 'rgba(99,102,241,0.15)'],
             ['maintenance_mode', 'false'],
             ['registration_enabled', 'true']
         ];
 
         for (const [key, value] of defaultSettings) {
             await client.query(
-                `INSERT INTO site_settings (key, value) VALUES ($1, $2) 
-                 ON CONFLICT (key) DO NOTHING`,
+                `INSERT INTO site_settings (key, value) VALUES ($1, $2)`,
                 [key, value]
             );
         }
         console.log('✅ تم إضافة الإعدادات الافتراضية');
-
-        console.log('✅ تهيئة قاعدة البيانات مكتملة بنجاح');
+        console.log('✅ تهيئة قاعدة البيانات مكتملة');
 
     } catch (error) {
         console.error('❌ خطأ في تهيئة قاعدة البيانات:', error.message);
-        console.error('📝 التفاصيل:', error.stack);
         throw error;
     } finally {
         client.release();
@@ -192,28 +178,23 @@ const db = {
     createUser: async (username, hash, ip = null, userAgent = null) => {
         const res = await pool.query(
             `INSERT INTO users (username, password_hash, last_ip) 
-             VALUES ($1, $2, $3) 
-             RETURNING id, username, role`,
+             VALUES ($1, $2, $3) RETURNING id, username, role`,
             [username.toLowerCase().trim(), hash, ip]
         );
-        
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, ip, user_agent) 
              VALUES ($1, $2, $3, $4, $5)`,
             [res.rows[0].id, username, 'register', ip, userAgent]
         );
-        
         return res.rows[0];
     },
     
     login: async (username, ip = null, userAgent = null) => {
         const res = await pool.query(
             `UPDATE users SET last_login = CURRENT_TIMESTAMP, last_ip = $1 
-             WHERE username = $2 
-             RETURNING id, username, role`,
+             WHERE username = $2 RETURNING id, username, role`,
             [ip, username.toLowerCase().trim()]
         );
-        
         if (res.rows.length > 0) {
             await pool.query(
                 `INSERT INTO activity_logs (user_id, username, action, ip, user_agent) 
@@ -221,7 +202,6 @@ const db = {
                 [res.rows[0].id, username, 'login', ip, userAgent]
             );
         }
-        
         return res.rows[0] || null;
     },
     
@@ -267,9 +247,7 @@ const db = {
     getLogs: async (limit = 100) => {
         const res = await pool.query(
             `SELECT username, action, details, ip, created_at 
-             FROM activity_logs 
-             ORDER BY created_at DESC 
-             LIMIT $1`,
+             FROM activity_logs ORDER BY created_at DESC LIMIT $1`,
             [limit]
         );
         return res.rows;
@@ -283,7 +261,6 @@ const db = {
         const todayLogins = await pool.query(
             "SELECT COUNT(*) FROM activity_logs WHERE action = 'login' AND DATE(created_at) = CURRENT_DATE"
         );
-        
         return {
             totalUsers: parseInt(totalUsers.rows[0].count),
             todayRegistrations: parseInt(todayRegs.rows[0].count),
@@ -300,31 +277,27 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ===== تسجيل مستخدم جديد =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const userAgent = req.headers['user-agent'];
 
-        // التحقق
         if (!username || !password) {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
         if (username.length < 3) {
-            return res.status(400).json({ error: 'اسم المستخدم يجب أن يكون 3 أحرف على الأقل' });
+            return res.status(400).json({ error: 'اسم المستخدم 3 أحرف على الأقل' });
         }
         if (password.length < 8) {
-            return res.status(400).json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' });
+            return res.status(400).json({ error: 'كلمة المرور 8 أحرف على الأقل' });
         }
 
-        // التحقق من التكرار
         const existing = await db.findUser(username);
         if (existing) {
             return res.status(409).json({ error: 'اسم المستخدم موجود مسبقاً' });
         }
 
-        // تشفير كلمة المرور
         const hash = await bcrypt.hash(password, 10);
         const user = await db.createUser(username, hash, ip, userAgent);
 
@@ -332,14 +305,12 @@ app.post('/api/register', async (req, res) => {
             message: 'تم إنشاء الحساب بنجاح',
             user: { username: user.username }
         });
-
     } catch (error) {
         console.error('❌ خطأ في التسجيل:', error);
         res.status(500).json({ error: 'حدث خطأ في الخادم' });
     }
 });
 
-// ===== تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -350,85 +321,58 @@ app.post('/api/login', async (req, res) => {
             return res.status(400).json({ error: 'يرجى ملء جميع الحقول' });
         }
 
-        // البحث عن المستخدم
         const user = await db.findUser(username);
         if (!user) {
-            return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+            return res.status(401).json({ error: 'بيانات غير صحيحة' });
         }
-
-        // التحقق من الحساب
         if (!user.is_active) {
-            return res.status(403).json({ error: 'الحساب معطل، يرجى التواصل مع الدعم' });
+            return res.status(403).json({ error: 'الحساب معطل' });
         }
 
-        // التحقق من كلمة المرور
         const isValid = await bcrypt.compare(password, user.password_hash);
         if (!isValid) {
-            return res.status(401).json({ error: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
+            return res.status(401).json({ error: 'بيانات غير صحيحة' });
         }
 
-        // تحديث آخر تسجيل دخول
         const updatedUser = await db.login(username, ip, userAgent);
         if (!updatedUser) {
-            return res.status(500).json({ error: 'حدث خطأ في تحديث الجلسة' });
+            return res.status(500).json({ error: 'حدث خطأ' });
         }
 
-        // إنشاء التوكن
         const token = jwt.sign(
-            { 
-                id: user.id,
-                username: user.username, 
-                role: user.role 
-            },
+            { id: user.id, username: user.username, role: user.role },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
 
-        // حفظ الجلسة في قاعدة البيانات
         const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         await db.saveSession(user.id, token, expiresAt);
 
         res.json({
             token,
-            user: {
-                id: user.id,
-                username: user.username,
-                role: user.role
-            }
+            user: { id: user.id, username: user.username, role: user.role }
         });
-
     } catch (error) {
         console.error('❌ خطأ في تسجيل الدخول:', error);
         res.status(500).json({ error: 'حدث خطأ في الخادم' });
     }
 });
 
-// ===== التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'غير مصرح' });
-        }
+        if (!token) return res.status(401).json({ error: 'غير مصرح' });
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        
-        // التحقق من وجود الجلسة في قاعدة البيانات
         const sessionCheck = await pool.query(
             'SELECT * FROM sessions WHERE token = $1 AND expires_at > NOW()',
             [token]
         );
-        
         if (sessionCheck.rows.length === 0) {
             return res.status(401).json({ error: 'جلسة غير صالحة' });
         }
 
-        res.json({
-            id: decoded.id,
-            username: decoded.username,
-            role: decoded.role
-        });
-
+        res.json({ id: decoded.id, username: decoded.username, role: decoded.role });
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             return res.status(401).json({ error: 'انتهت صلاحية التوكن' });
@@ -447,9 +391,7 @@ app.post('/api/verify', async (req, res) => {
 const verifyAdmin = async (req, res, next) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'غير مصرح' });
-        }
+        if (!token) return res.status(401).json({ error: 'غير مصرح' });
 
         const decoded = jwt.verify(token, JWT_SECRET);
         if (decoded.role !== 'admin') {
@@ -463,104 +405,89 @@ const verifyAdmin = async (req, res, next) => {
     }
 };
 
-// ===== جلب الإحصائيات =====
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
         res.json(stats);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في جلب الإحصائيات' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
-// ===== جلب المستخدمين =====
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     try {
         const users = await db.getUsers();
         res.json(users);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في جلب المستخدمين' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
-// ===== تعطيل/تفعيل المستخدم =====
 app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     try {
         const { username, active } = req.body;
         await db.toggleUser(username, active);
-        
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, details) 
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'user_toggle',
              `${active ? 'تفعيل' : 'تعطيل'} المستخدم ${username}`]
         );
-
         res.json({ message: `تم ${active ? 'تفعيل' : 'تعطيل'} المستخدم` });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في تحديث حالة المستخدم' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
-// ===== حذف مستخدم =====
 app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     try {
         const { username } = req.body;
-        
         if (username === 'noor2613857noor') {
-            return res.status(403).json({ error: 'لا يمكن حذف حساب الأدمن الرئيسي' });
+            return res.status(403).json({ error: 'لا يمكن حذف الأدمن الرئيسي' });
         }
-
         await db.deleteUser(username);
-
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, details) 
              VALUES ($1, $2, $3, $4)`,
             [req.user.id, req.user.username, 'delete_user', `حذف المستخدم ${username}`]
         );
-
         res.json({ message: 'تم حذف المستخدم' });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في حذف المستخدم' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
-// ===== جلب سجل النشاطات =====
 app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
         const logs = await db.getLogs(limit);
         res.json(logs);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في جلب السجلات' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
-// ===== جلب إعدادات الموقع =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const settings = await db.getSettings();
         res.json(settings);
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
-// ===== تحديث إعدادات الموقع =====
 app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const { key, value } = req.body;
         await db.updateSetting(key, value);
-
         await pool.query(
             `INSERT INTO activity_logs (user_id, username, action, details) 
              VALUES ($1, $2, $3, $4)`,
-            [req.user.id, req.user.username, 'settings_update', `تحديث الإعداد: ${key} = ${value}`]
+            [req.user.id, req.user.username, 'settings_update', `تحديث: ${key} = ${value}`]
         );
-
         res.json({ message: 'تم تحديث الإعداد' });
     } catch (error) {
-        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
+        res.status(500).json({ error: 'حدث خطأ' });
     }
 });
 
@@ -570,22 +497,8 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
 
 app.use(express.static('public'));
 
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
-
-app.get('/', (req, res) => {
+app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// ===== معالجة الأخطاء =====
-app.use((req, res) => {
-    res.status(404).json({ error: 'المسار غير موجود' });
-});
-
-app.use((err, req, res, next) => {
-    console.error('❌ خطأ غير متوقع:', err);
-    res.status(500).json({ error: 'حدث خطأ داخلي في الخادم' });
 });
 
 // =============================================
@@ -597,7 +510,6 @@ async function startServer() {
         await initDatabase();
         app.listen(PORT, () => {
             console.log(`\n🚀 Game Wars يعمل على http://localhost:${PORT}`);
-            console.log(`🌍 البيئة: ${process.env.NODE_ENV || 'development'}`);
             console.log(`👑 الأدمن: noor2613857noor / admin123`);
             console.log(`📊 لوحة التحكم: http://localhost:${PORT}/admin\n`);
         });
@@ -607,17 +519,7 @@ async function startServer() {
     }
 }
 
-// ===== إغلاق نظيف =====
-process.on('SIGTERM', async () => {
-    console.log('🛑 إيقاف الخادم...');
-    await pool.end();
-    process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-    console.log('🛑 إيقاف الخادم...');
-    await pool.end();
-    process.exit(0);
-});
+process.on('SIGTERM', async () => { await pool.end(); process.exit(0); });
+process.on('SIGINT', async () => { await pool.end(); process.exit(0); });
 
 startServer();
