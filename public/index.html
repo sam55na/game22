@@ -195,6 +195,14 @@
         .btn-danger:hover {
             background: rgba(239, 68, 68, 0.15);
         }
+        .btn-success {
+            background: rgba(52, 211, 153, 0.08);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.06);
+        }
+        .btn-success:hover {
+            background: rgba(52, 211, 153, 0.15);
+        }
         .avatar {
             width: 40px;
             height: 40px;
@@ -566,6 +574,8 @@
         .btn-sm.danger:hover { background: rgba(239, 68, 68, 0.12); }
         .btn-sm.success { background: rgba(52, 211, 153, 0.06); color: #34d399; }
         .btn-sm.success:hover { background: rgba(52, 211, 153, 0.12); }
+        .btn-sm.copy-btn { background: rgba(99, 102, 241, 0.08); color: #a5b4fc; cursor: pointer; }
+        .btn-sm.copy-btn:hover { background: rgba(99, 102, 241, 0.15); }
 
         /* ===== إعدادات الموقع ===== */
         .settings-grid {
@@ -753,9 +763,49 @@
             gap: 8px;
         }
         .payment-setting-card .header .title { font-weight: 700; font-size: 1.1rem; }
-        .payment-setting-card .header .status { font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; }
-        .payment-setting-card .header .status.active { background: rgba(52, 211, 153, 0.1); color: #34d399; }
-        .payment-setting-card .header .status.inactive { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+        .payment-setting-card .header .status-badge {
+            font-size: 0.7rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .payment-setting-card .header .status-badge.active {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+        }
+        .payment-setting-card .header .status-badge.inactive {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        .payment-setting-card .header .action-buttons {
+            display: flex;
+            gap: 6px;
+        }
+        .payment-setting-card .header .action-buttons .btn-toggle {
+            padding: 4px 14px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            min-height: 30px;
+        }
+        .payment-setting-card .header .action-buttons .btn-toggle.enable {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+        }
+        .payment-setting-card .header .action-buttons .btn-toggle.enable:hover {
+            background: rgba(52, 211, 153, 0.25);
+        }
+        .payment-setting-card .header .action-buttons .btn-toggle.disable {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        .payment-setting-card .header .action-buttons .btn-toggle.disable:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
         .payment-setting-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -779,6 +829,80 @@
         .payment-setting-grid .field input:focus { border-color: var(--primary); }
         .payment-setting-grid .field input[type="text"] { direction: ltr; }
         .payment-setting-grid .full-width { grid-column: 1 / -1; }
+
+        /* ===== طلبات السحب المحسنة ===== */
+        .withdraw-request-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        .withdraw-request-card:hover {
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+        .withdraw-request-card .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .withdraw-request-card .row .info-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .withdraw-request-card .row .info-group .label {
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+        }
+        .withdraw-request-card .row .info-group .value {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .withdraw-request-card .row .info-group .value.highlight {
+            color: #fbbf24;
+        }
+        .withdraw-request-card .row .info-group .account-number {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            direction: ltr;
+            font-family: monospace;
+        }
+        .withdraw-request-card .row .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .withdraw-request-card .row .actions .btn-sm {
+            min-height: 30px;
+            padding: 4px 12px;
+        }
+        .withdraw-request-card .status-pending {
+            color: #fbbf24;
+            font-weight: 700;
+        }
+        .withdraw-request-card .status-approved {
+            color: #34d399;
+            font-weight: 700;
+        }
+        .withdraw-request-card .status-rejected {
+            color: #f87171;
+            font-weight: 700;
+        }
+        .withdraw-request-card .meta {
+            color: rgba(255, 255, 255, 0.05);
+            font-size: 0.6rem;
+            margin-top: 6px;
+        }
 
         /* ===== مؤشر الاتصال ===== */
         .connection-status {
@@ -828,6 +952,8 @@
             .submit-btn { padding: 10px; min-height: 42px; font-size: 0.95rem; }
             .connection-status { bottom: 12px; padding: 6px 14px; font-size: 0.65rem; }
             .modal-box { padding: 24px 18px; }
+            .withdraw-request-card .row { flex-direction: column; align-items: stretch; }
+            .withdraw-request-card .row .info-group { flex-wrap: wrap; }
         }
 
         @media (max-width: 420px) {
@@ -862,6 +988,8 @@
             .modal-box { padding: 16px 14px; }
             .modal-box h3 { font-size: 1.1rem; }
             .payment-setting-grid { grid-template-columns: 1fr; }
+            .withdraw-request-card { padding: 10px 12px; }
+            .withdraw-request-card .row .info-group .value { font-size: 0.75rem; }
         }
 
         @media (max-width: 360px) {
@@ -1043,23 +1171,7 @@
                         </div>
                     </div>
                     <div id="withdrawStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;"></div>
-                    <div class="table-wrap">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>المستخدم</th>
-                                    <th>المبلغ</th>
-                                    <th>الطريقة</th>
-                                    <th>رقم الحساب</th>
-                                    <th>الحالة</th>
-                                    <th>التاريخ</th>
-                                    <th>الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="withdrawTable"></tbody>
-                        </table>
-                    </div>
+                    <div id="withdrawRequestsContainer"></div>
                 </div>
             </div>
         </div>
@@ -1301,6 +1413,34 @@
 
         function openModal(id) {
             document.getElementById(id).classList.add('active');
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showConnectionStatus('✅ تم نسخ رقم الحساب', 'success');
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.opacity = '0';
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showConnectionStatus('✅ تم نسخ رقم الحساب', 'success');
+            } catch (err) {
+                showConnectionStatus('❌ فشل نسخ رقم الحساب', 'error');
+            }
+            document.body.removeChild(textArea);
         }
 
         document.querySelectorAll('.submit-btn').forEach(b => b.dataset.original = b.textContent);
@@ -2052,13 +2192,13 @@
                             <div class="header">
                                 <div>
                                     <span class="title">${info.icon} ${info.name}</span>
-                                    <span class="status ${isEnabled ? 'active' : 'inactive'}">
+                                    <span class="status-badge ${isEnabled ? 'active' : 'inactive'}">
                                         ${isEnabled ? '✅ مفعل' : '❌ معطل'}
                                     </span>
                                 </div>
-                                <div class="toggle-switch ${isEnabled ? 'active' : ''}" 
-                                     onclick="togglePaymentMethod('${key}', this)">
-                                    <div class="slider"></div>
+                                <div class="action-buttons">
+                                    <button class="btn-toggle enable" onclick="togglePaymentMethod('${key}', true)">تفعيل</button>
+                                    <button class="btn-toggle disable" onclick="togglePaymentMethod('${key}', false)">تعطيل</button>
                                 </div>
                             </div>
                             
@@ -2140,9 +2280,8 @@
         }
 
         // ===== تبديل حالة طريقة الدفع =====
-        async function togglePaymentMethod(method, element) {
-            const isActive = element.classList.contains('active');
-            const newValue = isActive ? 'false' : 'true';
+        async function togglePaymentMethod(method, enable) {
+            const newValue = enable ? 'true' : 'false';
 
             try {
                 await apiFetch('/api/payment/settings', {
@@ -2150,10 +2289,10 @@
                     body: JSON.stringify({ method, key: 'enabled', value: newValue })
                 });
 
-                element.classList.toggle('active');
-                showConnectionStatus(`✅ تم ${newValue === 'true' ? 'تفعيل' : 'تعطيل'} ${method}`, 'success');
-
+                showConnectionStatus(`✅ تم ${enable ? 'تفعيل' : 'تعطيل'} ${method}`, 'success');
                 setTimeout(() => loadPaymentAdminSettings(), 500);
+                setTimeout(() => loadPaymentMethods(), 500);
+
             } catch (e) {
                 alert('❌ خطأ في تغيير حالة الطريقة: ' + e.message);
             }
@@ -2240,49 +2379,69 @@
                 const url = status === 'all' ? '/api/admin/withdraw/requests?limit=200' : `/api/admin/withdraw/requests?status=${status}&limit=200`;
                 const requests = await apiFetch(url);
                 
-                const table = document.getElementById('withdrawTable');
+                const container = document.getElementById('withdrawRequestsContainer');
                 if (requests.length === 0) {
-                    table.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:rgba(255,255,255,0.04);">لا توجد طلبات</td></tr>`;
+                    container.innerHTML = `
+                        <div style="text-align:center;padding:40px;color:rgba(255,255,255,0.04);">
+                            <i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+                            لا توجد طلبات
+                        </div>
+                    `;
                     return;
                 }
                 
-                table.innerHTML = requests.map(r => {
-                    const statusColors = {
-                        pending: '#fbbf24',
-                        approved: '#34d399',
-                        rejected: '#f87171'
-                    };
-                    const statusNames = {
-                        pending: '⏳ معلق',
-                        approved: '✅ موافق',
-                        rejected: '❌ مرفوض'
-                    };
+                container.innerHTML = requests.map(r => {
+                    const statusClass = r.status === 'pending' ? 'status-pending' : 
+                                       r.status === 'approved' ? 'status-approved' : 'status-rejected';
+                    const statusText = r.status === 'pending' ? '⏳ معلق' : 
+                                      r.status === 'approved' ? '✅ موافق' : '❌ مرفوض';
                     
                     let actions = '';
                     if (r.status === 'pending') {
                         actions = `
                             <button class="btn-sm success" onclick="approveWithdraw(${r.id})" title="موافقة">
-                                <i class="fas fa-check"></i>
+                                <i class="fas fa-check"></i> موافقة
                             </button>
                             <button class="btn-sm danger" onclick="rejectWithdraw(${r.id})" title="رفض">
-                                <i class="fas fa-times"></i>
+                                <i class="fas fa-times"></i> رفض
                             </button>
                         `;
                     } else {
-                        actions = `<span style="color:rgba(255,255,255,0.05);font-size:0.6rem;">${r.processed_by || 'تلقائي'}</span>`;
+                        actions = `<span style="color:rgba(255,255,255,0.05);font-size:0.6rem;">بواسطة ${r.processed_by || 'تلقائي'}</span>`;
                     }
                     
                     return `
-                        <tr>
-                            <td style="font-size:0.65rem;color:rgba(255,255,255,0.08);">${r.id}</td>
-                            <td><strong style="color:rgba(255,255,255,0.5);font-size:0.75rem;">${r.username}</strong></td>
-                            <td style="font-size:0.75rem;color:#fbbf24;">${r.amount}</td>
-                            <td style="font-size:0.65rem;">${r.method}</td>
-                            <td style="font-size:0.65rem;color:rgba(255,255,255,0.2);">${r.account_number}</td>
-                            <td><span style="color:${statusColors[r.status]};font-size:0.65rem;">${statusNames[r.status]}</span></td>
-                            <td style="font-size:0.55rem;color:rgba(255,255,255,0.08);">${new Date(r.created_at).toLocaleString('ar')}</td>
-                            <td>${actions}</td>
-                        </tr>
+                        <div class="withdraw-request-card">
+                            <div class="row">
+                                <div class="info-group">
+                                    <span class="label">رقم الطلب</span>
+                                    <span class="value">#${r.id}</span>
+                                    <span class="label">المستخدم</span>
+                                    <span class="value">${r.username}</span>
+                                    <span class="label">المبلغ</span>
+                                    <span class="value highlight">${r.amount} SYP</span>
+                                    <span class="label">الحالة</span>
+                                    <span class="${statusClass}">${statusText}</span>
+                                </div>
+                                <div class="actions">
+                                    ${actions}
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+                                <div class="info-group">
+                                    <span class="label">طريقة السحب</span>
+                                    <span class="value" style="font-size:0.75rem;">${r.method}</span>
+                                    <span class="label">رقم الحساب</span>
+                                    <span class="account-number">${r.account_number}</span>
+                                    <button class="btn-sm copy-btn" onclick="copyToClipboard('${r.account_number}')" title="نسخ رقم الحساب">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <span class="label">التاريخ</span>
+                                    <span class="value" style="font-size:0.65rem;color:rgba(255,255,255,0.08);">${new Date(r.created_at).toLocaleString('ar')}</span>
+                                </div>
+                                ${r.admin_notes ? `<div class="info-group"><span class="label">ملاحظات</span><span class="value" style="font-size:0.7rem;color:rgba(255,255,255,0.15);">${r.admin_notes}</span></div>` : ''}
+                            </div>
+                        </div>
                     `;
                 }).join('');
                 
@@ -2290,7 +2449,11 @@
                 
             } catch (e) {
                 console.error('خطأ في تحميل طلبات السحب:', e);
-                document.getElementById('withdrawTable').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:#f87171;">❌ فشل تحميل الطلبات</td></tr>`;
+                document.getElementById('withdrawRequestsContainer').innerHTML = `
+                    <div style="text-align:center;padding:20px;color:#f87171;border:1px solid rgba(239,68,68,0.1);border-radius:8px;">
+                        ❌ فشل تحميل الطلبات: ${e.message}
+                    </div>
+                `;
             }
         }
 
