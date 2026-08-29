@@ -31,9 +31,7 @@
             -webkit-text-size-adjust: 100%;
         }
 
-        html {
-            font-size: 16px;
-        }
+        html { font-size: 16px; }
 
         body {
             font-family: 'Inter', 'Segoe UI', sans-serif;
@@ -48,9 +46,7 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        input, select, textarea, button {
-            font-size: 16px !important;
-        }
+        input, select, textarea, button { font-size: 16px !important; }
 
         /* ===== خلفية متحركة ===== */
         .bg-orb {
@@ -63,34 +59,10 @@
             animation: orbFloat 25s ease-in-out infinite;
             transition: background 0.3s ease;
         }
-        .bg-orb.orb1 {
-            width: 500px;
-            height: 500px;
-            background: var(--primary);
-            top: -100px;
-            right: -100px;
-        }
-        .bg-orb.orb2 {
-            width: 400px;
-            height: 400px;
-            background: var(--secondary);
-            bottom: -50px;
-            left: -50px;
-            animation-delay: -8s;
-        }
-        .bg-orb.orb3 {
-            width: 300px;
-            height: 300px;
-            background: var(--accent);
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation-delay: -15s;
-        }
-        @keyframes orbFloat {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(-60px, 50px) scale(1.1); }
-        }
+        .bg-orb.orb1 { width: 500px; height: 500px; background: var(--primary); top: -100px; right: -100px; }
+        .bg-orb.orb2 { width: 400px; height: 400px; background: var(--secondary); bottom: -50px; left: -50px; animation-delay: -8s; }
+        .bg-orb.orb3 { width: 300px; height: 300px; background: var(--accent); top: 50%; left: 50%; transform: translate(-50%, -50%); animation-delay: -15s; }
+        @keyframes orbFloat { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-60px, 50px) scale(1.1); } }
 
         /* ===== الشريط العلوي ===== */
         .navbar {
@@ -117,16 +89,8 @@
             font-size: 1.4rem;
             font-weight: 800;
         }
-        .brand i {
-            font-size: 1.6rem;
-            color: var(--primary);
-            transition: color 0.3s ease;
-        }
-        .brand .letters {
-            display: flex;
-            gap: 0px;
-            direction: ltr;
-        }
+        .brand i { font-size: 1.6rem; color: var(--primary); transition: color 0.3s ease; }
+        .brand .letters { display: flex; gap: 0px; direction: ltr; }
         .brand .letters span {
             display: inline-block;
             animation: letterFall 4.5s ease-in-out infinite;
@@ -170,39 +134,14 @@
             white-space: nowrap;
             min-height: 40px;
         }
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: #fff;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px var(--glow);
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: rgba(255, 255, 255, 0.5);
-        }
-        .btn-outline:hover {
-            background: var(--card-bg);
-            color: #fff;
-        }
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.08);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.06);
-        }
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.15);
-        }
-        .btn-success {
-            background: rgba(52, 211, 153, 0.08);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.06);
-        }
-        .btn-success:hover {
-            background: rgba(52, 211, 153, 0.15);
-        }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: #fff; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px var(--glow); }
+        .btn-outline { background: transparent; border: 1px solid var(--border); color: rgba(255, 255, 255, 0.5); }
+        .btn-outline:hover { background: var(--card-bg); color: #fff; }
+        .btn-danger { background: rgba(239, 68, 68, 0.08); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.06); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.15); }
+        .btn-success { background: rgba(52, 211, 153, 0.08); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.06); }
+        .btn-success:hover { background: rgba(52, 211, 153, 0.15); }
         .avatar {
             width: 40px;
             height: 40px;
@@ -248,9 +187,7 @@
             transition: all 0.3s ease;
             flex-wrap: wrap;
         }
-        .action-bar.active {
-            display: flex;
-        }
+        .action-bar.active { display: flex; }
 
         .action-bar .action-btn {
             padding: 8px 28px;
@@ -268,29 +205,19 @@
             position: relative;
             overflow: hidden;
         }
-
         .action-bar .action-btn i { font-size: 1.1rem; }
-
         .action-bar .action-btn.deposit {
             background: linear-gradient(135deg, var(--deposit-color), #0ea5e9);
             color: #0a0a1a;
             box-shadow: 0 4px 20px rgba(34, 211, 238, 0.25);
         }
-        .action-bar .action-btn.deposit:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 30px rgba(34, 211, 238, 0.4);
-        }
-
+        .action-bar .action-btn.deposit:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 30px rgba(34, 211, 238, 0.4); }
         .action-bar .action-btn.withdraw {
             background: linear-gradient(135deg, var(--withdraw-color), #ec4899);
             color: #0a0a1a;
             box-shadow: 0 4px 20px rgba(244, 114, 182, 0.25);
         }
-        .action-bar .action-btn.withdraw:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 30px rgba(244, 114, 182, 0.4);
-        }
-
+        .action-bar .action-btn.withdraw:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 8px 30px rgba(244, 114, 182, 0.4); }
         .action-bar .action-btn .badge {
             position: absolute;
             top: -6px;
@@ -303,11 +230,7 @@
             border-radius: 20px;
             animation: pulse-badge 2s ease-in-out infinite;
         }
-
-        @keyframes pulse-badge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
+        @keyframes pulse-badge { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
         /* ===== المحتوى ===== */
         .main {
@@ -322,9 +245,7 @@
             z-index: 1;
             transition: margin-top 0.3s ease;
         }
-        .main.with-action-bar {
-            margin-top: 120px;
-        }
+        .main.with-action-bar { margin-top: 120px; }
 
         /* ===== صفحة تسجيل الدخول ===== */
         .auth-box {
@@ -337,20 +258,8 @@
             backdrop-filter: blur(8px);
             transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .auth-box .logo-icon {
-            text-align: center;
-            font-size: 3rem;
-            color: var(--primary);
-            margin-bottom: 16px;
-            transition: color 0.3s ease;
-        }
-        .auth-box h2 {
-            text-align: center;
-            font-size: 1.6rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
+        .auth-box .logo-icon { text-align: center; font-size: 3rem; color: var(--primary); margin-bottom: 16px; transition: color 0.3s ease; }
+        .auth-box h2 { text-align: center; font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; color: var(--text); }
 
         .tabs {
             display: flex;
@@ -377,40 +286,17 @@
             justify-content: center;
             gap: 6px;
         }
-        .tab-btn.active {
-            background: rgba(99, 102, 241, 0.12);
-            color: #a5b4fc;
-        }
-        .tab-btn:hover:not(.active) {
-            color: rgba(255, 255, 255, 0.5);
-        }
+        .tab-btn.active { background: rgba(99, 102, 241, 0.12); color: #a5b4fc; }
+        .tab-btn:hover:not(.active) { color: rgba(255, 255, 255, 0.5); }
 
         .form { display: none; }
         .form.active { display: block; animation: fadeUp 0.3s ease; }
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(6px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
         .input-group { margin-bottom: 14px; }
-        .input-group label {
-            display: block;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
+        .input-group label { display: block; color: rgba(255, 255, 255, 0.3); font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
         .input-wrap { position: relative; }
-        .input-wrap i {
-            position: absolute;
-            right: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: rgba(255, 255, 255, 0.08);
-            font-size: 0.9rem;
-        }
+        .input-wrap i { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.08); font-size: 0.9rem; }
         .input-wrap input {
             width: 100%;
             padding: 12px 44px 12px 14px;
@@ -424,11 +310,7 @@
             transition: all var(--transition);
             min-height: 48px;
         }
-        .input-wrap input:focus {
-            border-color: var(--primary);
-            background: rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 0 4px var(--glow);
-        }
+        .input-wrap input:focus { border-color: var(--primary); background: rgba(255, 255, 255, 0.05); box-shadow: 0 0 0 4px var(--glow); }
         .input-wrap input::placeholder { color: rgba(255, 255, 255, 0.06); }
 
         .submit-btn {
@@ -446,15 +328,8 @@
             margin-top: 4px;
             min-height: 48px;
         }
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px var(--glow);
-        }
-        .submit-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 30px var(--glow); }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
         .msg {
             margin-top: 14px;
@@ -518,17 +393,13 @@
             gap: 8px;
             min-height: 44px;
         }
-        .admin-tab.active {
-            background: rgba(99, 102, 241, 0.1);
-            color: #a5b4fc;
-        }
-        .admin-tab:hover:not(.active) {
-            color: rgba(255, 255, 255, 0.5);
-        }
+        .admin-tab.active { background: rgba(99, 102, 241, 0.1); color: #a5b4fc; }
+        .admin-tab:hover:not(.active) { color: rgba(255, 255, 255, 0.5); }
 
         .admin-content { display: none; }
         .admin-content.active { display: block; animation: fadeUp 0.3s ease; }
 
+        /* ===== بطاقات الإحصائيات ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -636,16 +507,7 @@
             flex-shrink: 0;
         }
         .setting-item .toggle-switch.active { background: var(--primary); }
-        .setting-item .toggle-switch .slider {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 20px;
-            height: 20px;
-            background: #fff;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
+        .setting-item .toggle-switch .slider { position: absolute; top: 3px; right: 3px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: all 0.3s ease; }
         .setting-item .toggle-switch.active .slider { right: 25px; }
 
         /* ===== سجلات ===== */
@@ -686,7 +548,7 @@
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 32px 28px;
-            max-width: 480px;
+            max-width: 520px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -715,10 +577,7 @@
             transition: all var(--transition);
             min-height: 48px;
         }
-        .modal-box .input-group input:focus, .modal-box .input-group select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px var(--glow);
-        }
+        .modal-box .input-group input:focus, .modal-box .input-group select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--glow); }
         .modal-box .input-group select option { background: #1a1a2e; color: #fff; }
 
         .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
@@ -729,20 +588,40 @@
         .modal-actions .btn-confirm-withdraw { background: linear-gradient(135deg, var(--withdraw-color), #ec4899); color: #0a0a1a; }
         .modal-actions .btn-confirm-deposit:disabled, .modal-actions .btn-confirm-withdraw:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .payment-method-item {
+        /* ===== بطاقات طرق الدفع ===== */
+        .payment-method-card {
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 14px 16px;
+            padding: 16px;
             margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .payment-method-item:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
-        .payment-method-item.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.08); }
-        .payment-method-item .method-name { font-weight: 600; font-size: 1rem; }
-        .payment-method-item .method-details { color: rgba(255, 255, 255, 0.2); font-size: 0.8rem; margin-top: 4px; }
-        .payment-method-item .method-badge { background: rgba(99, 102, 241, 0.1); color: #a5b4fc; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; }
+        .payment-method-card:hover { border-color: rgba(255, 255, 255, 0.15); background: rgba(255, 255, 255, 0.02); }
+        .payment-method-card.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+        .payment-method-card .method-header { display: flex; justify-content: space-between; align-items: center; }
+        .payment-method-card .method-name { font-weight: 600; font-size: 1rem; }
+        .payment-method-card .method-details { color: rgba(255, 255, 255, 0.2); font-size: 0.8rem; margin-top: 4px; }
+        .payment-method-card .method-badge { background: rgba(99, 102, 241, 0.1); color: #a5b4fc; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; }
+        .payment-method-card .address-box {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            direction: ltr;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #a5b4fc;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+        .payment-method-card .address-box .copy-btn { background: rgba(99, 102, 241, 0.08); border: none; color: #a5b4fc; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; transition: all 0.3s ease; }
+        .payment-method-card .address-box .copy-btn:hover { background: rgba(99, 102, 241, 0.15); }
 
         /* ===== إعدادات الدفع في لوحة الإدارة ===== */
         .payment-setting-card {
@@ -763,24 +642,10 @@
             gap: 8px;
         }
         .payment-setting-card .header .title { font-weight: 700; font-size: 1.1rem; }
-        .payment-setting-card .header .status-badge {
-            font-size: 0.7rem;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .payment-setting-card .header .status-badge.active {
-            background: rgba(52, 211, 153, 0.15);
-            color: #34d399;
-        }
-        .payment-setting-card .header .status-badge.inactive {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-        }
-        .payment-setting-card .header .action-buttons {
-            display: flex;
-            gap: 6px;
-        }
+        .payment-setting-card .header .status-badge { font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+        .payment-setting-card .header .status-badge.active { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+        .payment-setting-card .header .status-badge.inactive { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .payment-setting-card .header .action-buttons { display: flex; gap: 6px; }
         .payment-setting-card .header .action-buttons .btn-toggle {
             padding: 4px 14px;
             border: none;
@@ -792,20 +657,28 @@
             font-family: inherit;
             min-height: 30px;
         }
-        .payment-setting-card .header .action-buttons .btn-toggle.enable {
-            background: rgba(52, 211, 153, 0.15);
-            color: #34d399;
+        .payment-setting-card .header .action-buttons .btn-toggle.enable { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+        .payment-setting-card .header .action-buttons .btn-toggle.enable:hover { background: rgba(52, 211, 153, 0.25); }
+        .payment-setting-card .header .action-buttons .btn-toggle.disable { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+        .payment-setting-card .header .action-buttons .btn-toggle.disable:hover { background: rgba(239, 68, 68, 0.25); }
+        .payment-setting-card .address-display {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin: 8px 0;
+            border: 1px solid var(--border);
+            direction: ltr;
+            font-family: monospace;
+            font-size: 0.75rem;
+            color: #a5b4fc;
+            word-break: break-all;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
         }
-        .payment-setting-card .header .action-buttons .btn-toggle.enable:hover {
-            background: rgba(52, 211, 153, 0.25);
-        }
-        .payment-setting-card .header .action-buttons .btn-toggle.disable {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-        }
-        .payment-setting-card .header .action-buttons .btn-toggle.disable:hover {
-            background: rgba(239, 68, 68, 0.25);
-        }
+        .payment-setting-card .address-display .copy-btn { background: rgba(99, 102, 241, 0.08); border: none; color: #a5b4fc; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 0.7rem; transition: all 0.3s ease; }
+        .payment-setting-card .address-display .copy-btn:hover { background: rgba(99, 102, 241, 0.15); }
         .payment-setting-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -835,13 +708,11 @@
             background: var(--card-bg);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
             transition: all 0.3s ease;
         }
-        .withdraw-request-card:hover {
-            border-color: rgba(255, 255, 255, 0.1);
-        }
+        .withdraw-request-card:hover { border-color: rgba(255, 255, 255, 0.15); }
         .withdraw-request-card .row {
             display: flex;
             justify-content: space-between;
@@ -849,26 +720,25 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-        .withdraw-request-card .row .info-group {
+        .withdraw-request-card .info-group {
             display: flex;
             align-items: center;
             gap: 12px;
             flex-wrap: wrap;
         }
-        .withdraw-request-card .row .info-group .label {
+        .withdraw-request-card .info-group .label {
             color: rgba(255, 255, 255, 0.15);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
+            letter-spacing: 0.3px;
         }
-        .withdraw-request-card .row .info-group .value {
+        .withdraw-request-card .info-group .value {
             color: rgba(255, 255, 255, 0.7);
             font-size: 0.85rem;
             font-weight: 600;
         }
-        .withdraw-request-card .row .info-group .value.highlight {
-            color: #fbbf24;
-        }
-        .withdraw-request-card .row .info-group .account-number {
+        .withdraw-request-card .info-group .value.highlight { color: #fbbf24; }
+        .withdraw-request-card .info-group .account-number {
             background: rgba(255, 255, 255, 0.03);
             padding: 2px 10px;
             border-radius: 6px;
@@ -877,31 +747,14 @@
             direction: ltr;
             font-family: monospace;
         }
-        .withdraw-request-card .row .actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .withdraw-request-card .row .actions .btn-sm {
-            min-height: 30px;
-            padding: 4px 12px;
-        }
-        .withdraw-request-card .status-pending {
-            color: #fbbf24;
-            font-weight: 700;
-        }
-        .withdraw-request-card .status-approved {
-            color: #34d399;
-            font-weight: 700;
-        }
-        .withdraw-request-card .status-rejected {
-            color: #f87171;
-            font-weight: 700;
-        }
-        .withdraw-request-card .meta {
-            color: rgba(255, 255, 255, 0.05);
-            font-size: 0.6rem;
-            margin-top: 6px;
+        .withdraw-request-card .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .withdraw-request-card .status-pending { color: #fbbf24; font-weight: 700; }
+        .withdraw-request-card .status-approved { color: #34d399; font-weight: 700; }
+        .withdraw-request-card .status-rejected { color: #f87171; font-weight: 700; }
+        .withdraw-request-card .meta { color: rgba(255, 255, 255, 0.05); font-size: 0.6rem; margin-top: 6px; }
+        .withdraw-request-card .balance-change {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.1);
         }
 
         /* ===== مؤشر الاتصال ===== */
@@ -953,7 +806,8 @@
             .connection-status { bottom: 12px; padding: 6px 14px; font-size: 0.65rem; }
             .modal-box { padding: 24px 18px; }
             .withdraw-request-card .row { flex-direction: column; align-items: stretch; }
-            .withdraw-request-card .row .info-group { flex-wrap: wrap; }
+            .withdraw-request-card .info-group { flex-wrap: wrap; }
+            .payment-method-card .address-box { flex-wrap: wrap; }
         }
 
         @media (max-width: 420px) {
@@ -988,8 +842,9 @@
             .modal-box { padding: 16px 14px; }
             .modal-box h3 { font-size: 1.1rem; }
             .payment-setting-grid { grid-template-columns: 1fr; }
-            .withdraw-request-card { padding: 10px 12px; }
-            .withdraw-request-card .row .info-group .value { font-size: 0.75rem; }
+            .withdraw-request-card { padding: 12px; }
+            .withdraw-request-card .info-group .value { font-size: 0.75rem; }
+            .payment-method-card .address-box { font-size: 0.6rem; }
         }
 
         @media (max-width: 360px) {
@@ -1627,17 +1482,24 @@
                     if (value.enabled) {
                         hasEnabled = true;
                         const info = methodNames[key] || { name: value.name || key, icon: '💳' };
+                        const address = value.account_address || 'لم يتم تعيين عنوان';
                         html += `
-                            <div class="payment-method-item" onclick="selectDepositMethod('${key}')" id="method_${key}">
-                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <div class="payment-method-card" onclick="selectDepositMethod('${key}')" id="method_${key}">
+                                <div class="method-header">
                                     <div>
                                         <span class="method-name">${info.icon} ${info.name}</span>
-                                        <div class="method-details">
-                                            الحد الأدنى: ${value.min_amount} ${value.currency} | الحد الأقصى: ${value.max_amount} ${value.currency}
-                                            ${value.bonus_percent > 0 ? `| 🎁 ${value.bonus_percent}% بونص` : ''}
-                                        </div>
+                                        <span class="method-badge">${value.currency}</span>
                                     </div>
-                                    <span class="method-badge">${value.currency}</span>
+                                    <span style="color:rgba(255,255,255,0.05);font-size:0.7rem;">${value.bonus_percent > 0 ? `🎁 ${value.bonus_percent}%` : ''}</span>
+                                </div>
+                                <div class="method-details">
+                                    الحد الأدنى: ${value.min_amount} ${value.currency} | الحد الأقصى: ${value.max_amount} ${value.currency}
+                                </div>
+                                <div class="address-box">
+                                    <span>🏦 ${address}</span>
+                                    <button class="copy-btn" onclick="event.stopPropagation(); copyToClipboard('${address}')">
+                                        <i class="fas fa-copy"></i> نسخ
+                                    </button>
                                 </div>
                             </div>
                         `;
@@ -1669,7 +1531,7 @@
 
         function selectDepositMethod(method) {
             selectedDepositMethod = method;
-            document.querySelectorAll('.payment-method-item').forEach(el => {
+            document.querySelectorAll('.payment-method-card').forEach(el => {
                 el.classList.remove('selected');
             });
             const el = document.getElementById(`method_${method}`);
@@ -2186,6 +2048,7 @@
                 for (const [key, value] of Object.entries(settings)) {
                     const info = methodNames[key] || { name: key, icon: '💳' };
                     const isEnabled = value.enabled || false;
+                    const address = value.account_address || 'لم يتم تعيين عنوان';
 
                     html += `
                         <div class="payment-setting-card">
@@ -2201,6 +2064,15 @@
                                     <button class="btn-toggle disable" onclick="togglePaymentMethod('${key}', false)">تعطيل</button>
                                 </div>
                             </div>
+                            
+                            ${isEnabled ? `
+                            <div class="address-display">
+                                <span>🏦 ${address}</span>
+                                <button class="copy-btn" onclick="copyToClipboard('${address}')">
+                                    <i class="fas fa-copy"></i> نسخ
+                                </button>
+                            </div>
+                            ` : ''}
                             
                             <div class="payment-setting-grid">
                                 <div class="field">
@@ -2441,6 +2313,18 @@
                                 </div>
                                 ${r.admin_notes ? `<div class="info-group"><span class="label">ملاحظات</span><span class="value" style="font-size:0.7rem;color:rgba(255,255,255,0.15);">${r.admin_notes}</span></div>` : ''}
                             </div>
+                            ${r.status === 'approved' ? `
+                            <div class="row" style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,0.02);">
+                                <div class="info-group">
+                                    <span class="label">الرصيد قبل</span>
+                                    <span class="value" style="font-size:0.7rem;color:rgba(255,255,255,0.1);">${r.old_balance || 'غير محدد'}</span>
+                                    <span class="label">الرصيد بعد</span>
+                                    <span class="value" style="font-size:0.7rem;color:rgba(255,255,255,0.1);">${r.new_balance || 'غير محدد'}</span>
+                                    <span class="label">تمت الموافقة</span>
+                                    <span class="value" style="font-size:0.65rem;color:rgba(255,255,255,0.08);">${r.processed_at ? new Date(r.processed_at).toLocaleString('ar') : 'غير محدد'}</span>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
                     `;
                 }).join('');
