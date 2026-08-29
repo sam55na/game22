@@ -67,6 +67,8 @@ async function initDatabase() {
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
+        // حذف الجداول القديمة
+        await client.query('DROP TABLE IF EXISTS withdraw_requests CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_payments CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_addresses CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_currencies CASCADE;');
@@ -80,6 +82,7 @@ async function initDatabase() {
 
         console.log('📦 جاري إنشاء الجداول الجديدة...');
 
+        // جدول المستخدمين
         await client.query(`
             CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
@@ -96,6 +99,7 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
 
+        // جدول النشاطات
         await client.query(`
             CREATE TABLE activity_logs (
                 id BIGSERIAL PRIMARY KEY,
@@ -110,6 +114,7 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
 
+        // جدول الإعدادات
         await client.query(`
             CREATE TABLE site_settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -118,6 +123,7 @@ async function initDatabase() {
             );
         `);
 
+        // جدول الجلسات
         await client.query(`
             CREATE TABLE sessions (
                 id BIGSERIAL PRIMARY KEY,
@@ -129,6 +135,7 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
 
+        // جدول المعاملات
         await client.query(`
             CREATE TABLE transactions (
                 id BIGSERIAL PRIMARY KEY,
@@ -151,8 +158,31 @@ async function initDatabase() {
         await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_user ON transactions(user_id);');
         await client.query('CREATE INDEX IF NOT EXISTS idx_transactions_txid ON transactions(txid);');
 
+        // جدول طلبات السحب
+        await client.query(`
+            CREATE TABLE withdraw_requests (
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+                username VARCHAR(50) NOT NULL,
+                amount DECIMAL(15,2) NOT NULL,
+                method VARCHAR(50) NOT NULL,
+                account_number VARCHAR(100) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
+                admin_notes TEXT,
+                old_balance DECIMAL(15,2),
+                new_balance DECIMAL(15,2),
+                processed_by VARCHAR(50),
+                processed_at TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await client.query('CREATE INDEX IF NOT EXISTS idx_withdraw_user ON withdraw_requests(user_id);');
+        await client.query('CREATE INDEX IF NOT EXISTS idx_withdraw_status ON withdraw_requests(status);');
+
         console.log('✅ تم إنشاء الجداول الجديدة');
 
+        // ===== إنشاء حساب الأدمن =====
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
         const hash = await bcrypt.hash(adminPassword, 10);
@@ -162,6 +192,7 @@ async function initDatabase() {
         );
         console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
+        // ===== الإعدادات الافتراضية =====
         const defaultSettings = [
             ['site_name', 'Game Wars'],
             ['primary_color', '#6366f1'],
@@ -178,6 +209,7 @@ async function initDatabase() {
             ['bonus_amount', '100'],
             ['bonus_start_date', ''],
             ['bonus_end_date', ''],
+            // شام كاش دولار
             ['payment_shamcash_usd_enabled', 'false'],
             ['payment_shamcash_usd_min_amount', '10'],
             ['payment_shamcash_usd_max_amount', '10000'],
@@ -186,6 +218,7 @@ async function initDatabase() {
             ['payment_shamcash_usd_bonus_percent', '0'],
             ['payment_shamcash_usd_api_key', ''],
             ['payment_shamcash_usd_account_address', ''],
+            // شام كاش ليرة
             ['payment_shamcash_syp_enabled', 'false'],
             ['payment_shamcash_syp_min_amount', '1000'],
             ['payment_shamcash_syp_max_amount', '1000000'],
@@ -194,6 +227,7 @@ async function initDatabase() {
             ['payment_shamcash_syp_bonus_percent', '0'],
             ['payment_shamcash_syp_api_key', ''],
             ['payment_shamcash_syp_account_address', ''],
+            // سيرياتيل كاش
             ['payment_syriatel_enabled', 'false'],
             ['payment_syriatel_min_amount', '1000'],
             ['payment_syriatel_max_amount', '1000000'],
@@ -799,6 +833,171 @@ async function processPayment(userId, method, txid, amount) {
 }
 
 // =============================================
+// ===== معالجة طلبات السحب =====
+// =============================================
+
+async function processWithdrawRequest(userId, amount, method, accountNumber) {
+    console.log(`💰 [Withdraw] طلب سحب: user=${userId}, amount=${amount}, method=${method}`);
+    
+    const user = await db.findUserById(userId);
+    if (!user) {
+        return { success: false, message: 'المستخدم غير موجود' };
+    }
+    
+    if (amount > parseFloat(user.balance)) {
+        return { success: false, message: 'الرصيد غير كافٍ' };
+    }
+    
+    // التحقق من وجود طلبات معلقة
+    const pendingCheck = await pool.query(
+        `SELECT COUNT(*) FROM withdraw_requests WHERE user_id = $1 AND status = 'pending'`,
+        [userId]
+    );
+    if (parseInt(pendingCheck.rows[0].count) > 0) {
+        return { success: false, message: 'لديك طلب سحب معلق بالفعل' };
+    }
+    
+    // إنشاء طلب السحب
+    const result = await pool.query(
+        `INSERT INTO withdraw_requests (user_id, username, amount, method, account_number, old_balance, status)
+         VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+         RETURNING id, created_at`,
+        [userId, user.username, amount, method, accountNumber, user.balance]
+    );
+    
+    // تسجيل النشاط
+    await pool.query(
+        `INSERT INTO activity_logs (user_id, username, action, details) 
+         VALUES ($1, $2, $3, $4)`,
+        [userId, user.username, 'withdraw_request', 
+         `طلب سحب: ${amount} عبر ${method} - رقم الحساب: ${accountNumber}`]
+    );
+    
+    return {
+        success: true,
+        message: 'تم تقديم طلب السحب بنجاح',
+        request_id: result.rows[0].id,
+        created_at: result.rows[0].created_at
+    };
+}
+
+async function approveWithdrawRequest(requestId, adminUsername, notes = '') {
+    const requestResult = await pool.query(
+        `SELECT * FROM withdraw_requests WHERE id = $1`,
+        [requestId]
+    );
+    
+    if (requestResult.rows.length === 0) {
+        return { success: false, message: 'الطلب غير موجود' };
+    }
+    
+    const request = requestResult.rows[0];
+    
+    if (request.status !== 'pending') {
+        return { success: false, message: `الطلب ${request.status} بالفعل` };
+    }
+    
+    const user = await db.findUserById(request.user_id);
+    if (!user) {
+        return { success: false, message: 'المستخدم غير موجود' };
+    }
+    
+    if (parseFloat(user.balance) < parseFloat(request.amount)) {
+        return { success: false, message: 'الرصيد غير كافٍ للموافقة على الطلب' };
+    }
+    
+    // خصم المبلغ
+    const newBalance = parseFloat(user.balance) - parseFloat(request.amount);
+    await db.updateBalanceById(request.user_id, newBalance);
+    
+    // تحديث حالة الطلب
+    await pool.query(
+        `UPDATE withdraw_requests SET 
+            status = 'approved',
+            admin_notes = $1,
+            new_balance = $2,
+            processed_by = $3,
+            processed_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+         WHERE id = $4`,
+        [notes || 'تمت الموافقة على الطلب', newBalance, adminUsername, requestId]
+    );
+    
+    // تسجيل النشاط
+    await pool.query(
+        `INSERT INTO activity_logs (user_id, username, action, details) 
+         VALUES ($1, $2, $3, $4)`,
+        [request.user_id, request.username, 'withdraw_approved', 
+         `تمت الموافقة على طلب سحب: ${request.amount} - رقم الطلب: ${requestId}`]
+    );
+    
+    // تسجيل المعاملة
+    await pool.query(
+        `INSERT INTO transactions (user_id, username, type, amount, method, old_balance, new_balance, status, details)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+            request.user_id,
+            request.username,
+            'withdraw',
+            request.amount,
+            request.method,
+            user.balance,
+            newBalance,
+            'completed',
+            `سحب - رقم الطلب: ${requestId}`
+        ]
+    );
+    
+    return {
+        success: true,
+        message: 'تمت الموافقة على الطلب بنجاح',
+        new_balance: newBalance
+    };
+}
+
+async function rejectWithdrawRequest(requestId, adminUsername, notes = '') {
+    const requestResult = await pool.query(
+        `SELECT * FROM withdraw_requests WHERE id = $1`,
+        [requestId]
+    );
+    
+    if (requestResult.rows.length === 0) {
+        return { success: false, message: 'الطلب غير موجود' };
+    }
+    
+    const request = requestResult.rows[0];
+    
+    if (request.status !== 'pending') {
+        return { success: false, message: `الطلب ${request.status} بالفعل` };
+    }
+    
+    // تحديث حالة الطلب (لا يتم خصم الرصيد)
+    await pool.query(
+        `UPDATE withdraw_requests SET 
+            status = 'rejected',
+            admin_notes = $1,
+            processed_by = $2,
+            processed_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+         WHERE id = $3`,
+        [notes || 'تم رفض الطلب', adminUsername, requestId]
+    );
+    
+    // تسجيل النشاط
+    await pool.query(
+        `INSERT INTO activity_logs (user_id, username, action, details) 
+         VALUES ($1, $2, $3, $4)`,
+        [request.user_id, request.username, 'withdraw_rejected', 
+         `تم رفض طلب سحب: ${request.amount} - رقم الطلب: ${requestId}`]
+    );
+    
+    return {
+        success: true,
+        message: 'تم رفض الطلب بنجاح'
+    };
+}
+
+// =============================================
 // ===== API ROUTES الأساسية =====
 // =============================================
 
@@ -1241,9 +1440,99 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
     }
 });
 
-// =============================================
+// ===== مسارات طلبات السحب =====
+
+app.get('/api/admin/withdraw/stats', verifyAdmin, async (req, res) => {
+    try {
+        const stats = await pool.query(`
+            SELECT 
+                COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending,
+                COUNT(CASE WHEN status = 'approved' THEN 1 END) as approved,
+                COUNT(CASE WHEN status = 'rejected' THEN 1 END) as rejected,
+                COALESCE(SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END), 0) as pending_amount,
+                COALESCE(SUM(CASE WHEN status = 'approved' THEN amount ELSE 0 END), 0) as approved_amount
+            FROM withdraw_requests
+        `);
+        
+        res.json(stats.rows[0]);
+    } catch (error) {
+        console.error('❌ خطأ في جلب إحصائيات السحب:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإحصائيات' });
+    }
+});
+
+app.get('/api/admin/withdraw/requests', verifyAdmin, async (req, res) => {
+    try {
+        const { status, limit = 100 } = req.query;
+        let query = `
+            SELECT w.*, u.username, u.balance as current_balance
+            FROM withdraw_requests w
+            JOIN users u ON w.user_id = u.id
+        `;
+        const params = [];
+        
+        if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+            query += ` WHERE w.status = $1`;
+            params.push(status);
+        }
+        
+        query += ` ORDER BY w.created_at DESC LIMIT $${params.length + 1}`;
+        params.push(parseInt(limit) || 100);
+        
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+        
+    } catch (error) {
+        console.error('❌ خطأ في جلب طلبات السحب:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الطلبات' });
+    }
+});
+
+app.post('/api/admin/withdraw/approve', verifyAdmin, async (req, res) => {
+    try {
+        const { request_id, notes } = req.body;
+        
+        if (!request_id) {
+            return res.status(400).json({ error: 'رقم الطلب مطلوب' });
+        }
+        
+        const result = await approveWithdrawRequest(request_id, req.user.username, notes || 'تمت الموافقة');
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في الموافقة على طلب السحب:', error);
+        res.status(500).json({ error: 'حدث خطأ في معالجة الطلب' });
+    }
+});
+
+app.post('/api/admin/withdraw/reject', verifyAdmin, async (req, res) => {
+    try {
+        const { request_id, notes } = req.body;
+        
+        if (!request_id) {
+            return res.status(400).json({ error: 'رقم الطلب مطلوب' });
+        }
+        
+        const result = await rejectWithdrawRequest(request_id, req.user.username, notes || 'تم الرفض');
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في رفض طلب السحب:', error);
+        res.status(500).json({ error: 'حدث خطأ في معالجة الطلب' });
+    }
+});
+
 // ===== مسارات الدفع (بعد تعريف verifyAdmin) =====
-// =============================================
 
 app.get('/api/payment/settings', async (req, res) => {
     try {
@@ -1364,6 +1653,39 @@ app.get('/api/payment/status/:txid', async (req, res) => {
     }
 });
 
+// ===== طلب سحب من المستخدم =====
+app.post('/api/withdraw/request', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { amount, method, account_number } = req.body;
+        
+        if (!amount || !method || !account_number) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        if (amount <= 0) {
+            return res.status(400).json({ error: 'المبلغ يجب أن يكون أكبر من صفر' });
+        }
+        
+        const result = await processWithdrawRequest(decoded.id, amount, method, account_number);
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في تقديم طلب السحب:', error);
+        res.status(500).json({ error: 'حدث خطأ في تقديم الطلب' });
+    }
+});
+
 // =============================================
 // ===== STATIC FILES =====
 // =============================================
@@ -1405,6 +1727,7 @@ async function startServer() {
             console.log(`📊 لوحة التحكم: http://localhost:${PORT}/admin\n`);
             console.log('📋 جميع نقاط النهاية جاهزة للعمل');
             console.log('✅ نظام الدفع متكامل (شام كاش - سيرياتيل كاش)');
+            console.log('✅ نظام طلبات السحب جاهز');
         });
     } catch (error) {
         console.error('❌ فشل تشغيل الخادم:', error.message);

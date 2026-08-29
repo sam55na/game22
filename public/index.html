@@ -982,6 +982,7 @@
                     <button class="admin-tab" data-tab="settings"><i class="fas fa-sliders-h"></i> إعدادات</button>
                     <button class="admin-tab" data-tab="logs"><i class="fas fa-history"></i> سجلات</button>
                     <button class="admin-tab" data-tab="payment"><i class="fas fa-credit-card"></i> الدفع</button>
+                    <button class="admin-tab" data-tab="withdraw"><i class="fas fa-hand-holding-usd"></i> السحب</button>
                 </div>
 
                 <!-- لوحة الإحصائيات -->
@@ -1028,6 +1029,37 @@
                 <div class="admin-content" id="admin-payment">
                     <h4 style="color:rgba(255,255,255,0.2);margin-bottom:16px;">💳 إعدادات طرق الدفع</h4>
                     <div id="paymentSettingsContainer"></div>
+                </div>
+
+                <!-- طلبات السحب -->
+                <div class="admin-content" id="admin-withdraw">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+                        <span style="color:rgba(255,255,255,0.12);font-size:0.8rem;"><i class="fas fa-hand-holding-usd"></i> طلبات السحب</span>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn-sm primary" onclick="loadWithdrawRequests('pending')">⏳ معلقة</button>
+                            <button class="btn-sm success" onclick="loadWithdrawRequests('approved')">✅ موافق عليها</button>
+                            <button class="btn-sm danger" onclick="loadWithdrawRequests('rejected')">❌ مرفوضة</button>
+                            <button class="btn-sm primary" onclick="loadWithdrawRequests('all')">📋 الكل</button>
+                        </div>
+                    </div>
+                    <div id="withdrawStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px;"></div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>المستخدم</th>
+                                    <th>المبلغ</th>
+                                    <th>الطريقة</th>
+                                    <th>رقم الحساب</th>
+                                    <th>الحالة</th>
+                                    <th>التاريخ</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawTable"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1102,6 +1134,7 @@
         let currentUser = null;
         let currentSettings = {};
         let selectedDepositMethod = null;
+        let currentWithdrawFilter = 'pending';
 
         // =============================================
         // ===== دوال الاتصال مع مهلة =====
@@ -1625,28 +1658,40 @@
                 btn.disabled = true;
                 btn.textContent = '⏳ جاري...';
                 resultEl.style.display = 'block';
-                resultEl.innerHTML = '<span style="color:#a5b4fc;">⏳ جاري معالجة طلب السحب...</span>';
+                resultEl.innerHTML = '<span style="color:#a5b4fc;">⏳ جاري تقديم طلب السحب...</span>';
 
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                const result = await apiFetch('/api/withdraw/request', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        amount: amount,
+                        method: method,
+                        account_number: account
+                    })
+                });
 
-                const newBalance = currentUser.balance - amount;
-                currentUser.balance = newBalance;
-                localStorage.setItem('user', JSON.stringify(currentUser));
-                updateNavbar(currentUser);
+                if (result.success) {
+                    resultEl.innerHTML = `
+                        <div style="color:#34d399;padding:10px;background:rgba(52,211,153,0.05);border-radius:8px;">
+                            ✅ ${result.message}<br>
+                            <span style="font-size:0.8rem;color:rgba(255,255,255,0.2);">رقم الطلب: ${result.request_id}</span>
+                        </div>
+                    `;
 
-                resultEl.innerHTML = `
-                    <div style="color:#34d399;padding:10px;background:rgba(52,211,153,0.05);border-radius:8px;">
-                        ✅ تم تقديم طلب السحب بنجاح!<br>
-                        <span style="font-size:0.9rem;">المبلغ: <strong>${amount}</strong> SYP</span><br>
-                        <span style="font-size:0.8rem;color:rgba(255,255,255,0.2);">سيتم معالجة الطلب خلال 24 ساعة</span>
-                    </div>
-                `;
+                    document.getElementById('withdrawAmount').value = '';
+                    document.getElementById('withdrawAccount').value = '';
 
-                document.getElementById('withdrawBalance').textContent = newBalance;
+                    setTimeout(() => {
+                        closeModal('withdrawModal');
+                        showConnectionStatus('📋 تم تقديم الطلب بنجاح', 'success');
+                    }, 3000);
 
-                setTimeout(() => {
-                    closeModal('withdrawModal');
-                }, 3000);
+                } else {
+                    resultEl.innerHTML = `
+                        <div style="color:#f87171;padding:10px;background:rgba(239,68,68,0.05);border-radius:8px;">
+                            ❌ ${result.message || 'فشل تقديم الطلب'}
+                        </div>
+                    `;
+                }
 
             } catch (e) {
                 resultEl.innerHTML = `
@@ -1674,6 +1719,7 @@
                 await loadLogs();
                 await loadRecent();
                 await loadPaymentAdminSettings();
+                await loadWithdrawRequests('pending');
             } catch (e) {
                 console.error('خطأ في تحميل بيانات الإدارة:', e);
             }
@@ -2184,6 +2230,128 @@
             }
         }
 
+        // =============================================
+        // ===== دوال طلبات السحب =====
+        // =============================================
+
+        async function loadWithdrawRequests(status = 'pending') {
+            currentWithdrawFilter = status;
+            try {
+                const url = status === 'all' ? '/api/admin/withdraw/requests?limit=200' : `/api/admin/withdraw/requests?status=${status}&limit=200`;
+                const requests = await apiFetch(url);
+                
+                const table = document.getElementById('withdrawTable');
+                if (requests.length === 0) {
+                    table.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:30px;color:rgba(255,255,255,0.04);">لا توجد طلبات</td></tr>`;
+                    return;
+                }
+                
+                table.innerHTML = requests.map(r => {
+                    const statusColors = {
+                        pending: '#fbbf24',
+                        approved: '#34d399',
+                        rejected: '#f87171'
+                    };
+                    const statusNames = {
+                        pending: '⏳ معلق',
+                        approved: '✅ موافق',
+                        rejected: '❌ مرفوض'
+                    };
+                    
+                    let actions = '';
+                    if (r.status === 'pending') {
+                        actions = `
+                            <button class="btn-sm success" onclick="approveWithdraw(${r.id})" title="موافقة">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-sm danger" onclick="rejectWithdraw(${r.id})" title="رفض">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        `;
+                    } else {
+                        actions = `<span style="color:rgba(255,255,255,0.05);font-size:0.6rem;">${r.processed_by || 'تلقائي'}</span>`;
+                    }
+                    
+                    return `
+                        <tr>
+                            <td style="font-size:0.65rem;color:rgba(255,255,255,0.08);">${r.id}</td>
+                            <td><strong style="color:rgba(255,255,255,0.5);font-size:0.75rem;">${r.username}</strong></td>
+                            <td style="font-size:0.75rem;color:#fbbf24;">${r.amount}</td>
+                            <td style="font-size:0.65rem;">${r.method}</td>
+                            <td style="font-size:0.65rem;color:rgba(255,255,255,0.2);">${r.account_number}</td>
+                            <td><span style="color:${statusColors[r.status]};font-size:0.65rem;">${statusNames[r.status]}</span></td>
+                            <td style="font-size:0.55rem;color:rgba(255,255,255,0.08);">${new Date(r.created_at).toLocaleString('ar')}</td>
+                            <td>${actions}</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+                await loadWithdrawStats();
+                
+            } catch (e) {
+                console.error('خطأ في تحميل طلبات السحب:', e);
+                document.getElementById('withdrawTable').innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px;color:#f87171;">❌ فشل تحميل الطلبات</td></tr>`;
+            }
+        }
+
+        async function loadWithdrawStats() {
+            try {
+                const stats = await apiFetch('/api/admin/withdraw/stats');
+                const container = document.getElementById('withdrawStats');
+                container.innerHTML = `
+                    <div class="stat-card"><div class="label">⏳ معلقة</div><div class="value" style="color:#fbbf24;">${stats.pending || 0}</div></div>
+                    <div class="stat-card"><div class="label">✅ موافق عليها</div><div class="value" style="color:#34d399;">${stats.approved || 0}</div></div>
+                    <div class="stat-card"><div class="label">❌ مرفوضة</div><div class="value" style="color:#f87171;">${stats.rejected || 0}</div></div>
+                    <div class="stat-card"><div class="label">💰 مبلغ معلق</div><div class="value" style="color:#fbbf24;">${(stats.pending_amount || 0).toFixed(0)}</div></div>
+                `;
+            } catch (e) {
+                console.error('خطأ في تحميل إحصائيات السحب:', e);
+            }
+        }
+
+        async function approveWithdraw(requestId) {
+            const notes = prompt('ملاحظات (اختياري):');
+            if (notes === null) return;
+            
+            if (!confirm('تأكيد الموافقة على طلب السحب؟')) return;
+            
+            try {
+                const result = await apiFetch('/api/admin/withdraw/approve', {
+                    method: 'POST',
+                    body: JSON.stringify({ request_id: requestId, notes: notes || 'تمت الموافقة' })
+                });
+                
+                if (result.success) {
+                    showConnectionStatus(`✅ تمت الموافقة على الطلب #${requestId}`, 'success');
+                    loadWithdrawRequests(currentWithdrawFilter);
+                    loadStats();
+                }
+            } catch (e) {
+                alert('❌ خطأ: ' + e.message);
+            }
+        }
+
+        async function rejectWithdraw(requestId) {
+            const notes = prompt('سبب الرفض:');
+            if (notes === null) return;
+            
+            if (!confirm('تأكيد رفض طلب السحب؟')) return;
+            
+            try {
+                const result = await apiFetch('/api/admin/withdraw/reject', {
+                    method: 'POST',
+                    body: JSON.stringify({ request_id: requestId, notes: notes || 'تم الرفض' })
+                });
+                
+                if (result.success) {
+                    showConnectionStatus(`✅ تم رفض الطلب #${requestId}`, 'success');
+                    loadWithdrawRequests(currentWithdrawFilter);
+                }
+            } catch (e) {
+                alert('❌ خطأ: ' + e.message);
+            }
+        }
+
         async function toggleUser(username, active) {
             if (!confirm(`تأكيد ${active ? 'تفعيل' : 'تعطيل'} المستخدم ${username}؟`)) return;
             try {
@@ -2231,6 +2399,9 @@
 
                 if (target === 'payment') {
                     loadPaymentAdminSettings();
+                }
+                if (target === 'withdraw') {
+                    loadWithdrawRequests('pending');
                 }
             };
         });
