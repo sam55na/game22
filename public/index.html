@@ -48,10 +48,7 @@
             transition: background 0.3s ease, color 0.3s ease;
         }
 
-        input,
-        select,
-        textarea,
-        button {
+        input, select, textarea, button {
             font-size: 16px !important;
         }
 
@@ -91,13 +88,8 @@
             animation-delay: -15s;
         }
         @keyframes orbFloat {
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-            50% {
-                transform: translate(-60px, 50px) scale(1.1);
-            }
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-60px, 50px) scale(1.1); }
         }
 
         /* ===== الشريط العلوي ===== */
@@ -143,22 +135,10 @@
             font-size: 1.4rem;
         }
         @keyframes letterFall {
-            0% {
-                transform: translateY(-50px) rotate(160deg);
-                opacity: 0;
-            }
-            12% {
-                transform: translateY(0) rotate(0);
-                opacity: 1;
-            }
-            82% {
-                transform: translateY(0) rotate(0);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(30px) rotate(-12deg);
-                opacity: 0;
-            }
+            0% { transform: translateY(-50px) rotate(160deg); opacity: 0; }
+            12% { transform: translateY(0) rotate(0); opacity: 1; }
+            82% { transform: translateY(0) rotate(0); opacity: 1; }
+            100% { transform: translateY(30px) rotate(-12deg); opacity: 0; }
         }
         .brand .letters span:nth-child(1) { --i: 0; }
         .brand .letters span:nth-child(2) { --i: 1; }
@@ -241,9 +221,6 @@
             font-size: 0.85rem;
             color: #fbbf24;
         }
-        .balance-badge i {
-            font-size: 0.9rem;
-        }
 
         /* ===== شريط الإيداع والسحب ===== */
         .action-bar {
@@ -284,9 +261,7 @@
             overflow: hidden;
         }
 
-        .action-bar .action-btn i {
-            font-size: 1.1rem;
-        }
+        .action-bar .action-btn i { font-size: 1.1rem; }
 
         .action-bar .action-btn.deposit {
             background: linear-gradient(135deg, var(--deposit-color), #0ea5e9);
@@ -402,27 +377,14 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        .form {
-            display: none;
-        }
-        .form.active {
-            display: block;
-            animation: fadeUp 0.3s ease;
-        }
+        .form { display: none; }
+        .form.active { display: block; animation: fadeUp 0.3s ease; }
         @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .input-group {
-            margin-bottom: 14px;
-        }
+        .input-group { margin-bottom: 14px; }
         .input-group label {
             display: block;
             color: rgba(255, 255, 255, 0.3);
@@ -432,9 +394,7 @@
             letter-spacing: 0.5px;
             margin-bottom: 4px;
         }
-        .input-wrap {
-            position: relative;
-        }
+        .input-wrap { position: relative; }
         .input-wrap i {
             position: absolute;
             right: 14px;
@@ -461,9 +421,7 @@
             background: rgba(255, 255, 255, 0.05);
             box-shadow: 0 0 0 4px var(--glow);
         }
-        .input-wrap input::placeholder {
-            color: rgba(255, 255, 255, 0.06);
-        }
+        .input-wrap input::placeholder { color: rgba(255, 255, 255, 0.06); }
 
         .submit-btn {
             width: 100%;
@@ -499,45 +457,15 @@
             display: none;
             text-align: center;
         }
-        .msg.error {
-            display: block;
-            background: rgba(239, 68, 68, 0.06);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.04);
-        }
-        .msg.success {
-            display: block;
-            background: rgba(52, 211, 153, 0.06);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.04);
-        }
-        .msg.bonus {
-            display: block;
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.04);
-        }
-        .msg.loading {
-            display: block;
-            background: rgba(99, 102, 241, 0.06);
-            color: #a5b4fc;
-            border: 1px solid rgba(99, 102, 241, 0.04);
-        }
-        .msg.timeout {
-            display: block;
-            background: rgba(251, 191, 36, 0.06);
-            color: #fbbf24;
-            border: 1px solid rgba(251, 191, 36, 0.04);
-        }
+        .msg.error { display: block; background: rgba(239, 68, 68, 0.06); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.04); }
+        .msg.success { display: block; background: rgba(52, 211, 153, 0.06); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.04); }
+        .msg.bonus { display: block; background: rgba(251, 191, 36, 0.06); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.04); }
+        .msg.loading { display: block; background: rgba(99, 102, 241, 0.06); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.04); }
+        .msg.timeout { display: block; background: rgba(251, 191, 36, 0.06); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.04); }
 
         /* ===== الواجهة الرئيسية ===== */
-        .dashboard {
-            display: none;
-        }
-        .dashboard.active {
-            display: block;
-            animation: fadeUp 0.4s ease;
-        }
+        .dashboard { display: none; }
+        .dashboard.active { display: block; animation: fadeUp 0.4s ease; }
 
         .hero {
             text-align: center;
@@ -547,31 +475,13 @@
             border: 1px solid var(--border);
             transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .hero i {
-            font-size: 4rem;
-            color: var(--primary);
-            margin-bottom: 16px;
-            transition: color 0.3s ease;
-        }
-        .hero h1 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 6px;
-        }
-        .hero p {
-            color: rgba(255, 255, 255, 0.25);
-            font-size: 1rem;
-        }
+        .hero i { font-size: 4rem; color: var(--primary); margin-bottom: 16px; transition: color 0.3s ease; }
+        .hero h1 { font-size: 2rem; font-weight: 800; margin-bottom: 6px; }
+        .hero p { color: rgba(255, 255, 255, 0.25); font-size: 1rem; }
 
         /* ===== لوحة الإدارة ===== */
-        .admin-panel {
-            display: none;
-            margin-top: 24px;
-        }
-        .admin-panel.active {
-            display: block;
-            animation: fadeUp 0.3s ease;
-        }
+        .admin-panel { display: none; margin-top: 24px; }
+        .admin-panel.active { display: block; animation: fadeUp 0.3s ease; }
 
         .admin-sidebar {
             display: flex;
@@ -608,15 +518,9 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
-        .admin-content {
-            display: none;
-        }
-        .admin-content.active {
-            display: block;
-            animation: fadeUp 0.3s ease;
-        }
+        .admin-content { display: none; }
+        .admin-content.active { display: block; animation: fadeUp 0.3s ease; }
 
-        /* ===== بطاقات الإحصائيات ===== */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -630,20 +534,9 @@
             padding: 16px 18px;
             transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .stat-card .label {
-            color: rgba(255, 255, 255, 0.15);
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-        .stat-card .value {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-top: 4px;
-        }
+        .stat-card .label { color: rgba(255, 255, 255, 0.15); font-size: 0.75rem; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 800; margin-top: 4px; }
 
-        /* ===== جداول ===== */
         .table-wrap {
             overflow-x: auto;
             background: var(--card-bg);
@@ -652,26 +545,9 @@
             padding: 4px;
             transition: background 0.3s ease, border-color 0.3s ease;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        th {
-            text-align: right;
-            padding: 12px 16px;
-            color: rgba(255, 255, 255, 0.15);
-            font-weight: 600;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            border-bottom: 1px solid var(--border);
-        }
-        td {
-            padding: 10px 16px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            color: rgba(255, 255, 255, 0.5);
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { text-align: right; padding: 12px 16px; color: rgba(255, 255, 255, 0.15); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border); }
+        td { padding: 10px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: rgba(255, 255, 255, 0.5); }
 
         .btn-sm {
             padding: 4px 12px;
@@ -684,27 +560,12 @@
             transition: all var(--transition);
             min-height: 28px;
         }
-        .btn-sm.primary {
-            background: rgba(99, 102, 241, 0.08);
-            color: #a5b4fc;
-        }
-        .btn-sm.primary:hover {
-            background: rgba(99, 102, 241, 0.15);
-        }
-        .btn-sm.danger {
-            background: rgba(239, 68, 68, 0.06);
-            color: #f87171;
-        }
-        .btn-sm.danger:hover {
-            background: rgba(239, 68, 68, 0.12);
-        }
-        .btn-sm.success {
-            background: rgba(52, 211, 153, 0.06);
-            color: #34d399;
-        }
-        .btn-sm.success:hover {
-            background: rgba(52, 211, 153, 0.12);
-        }
+        .btn-sm.primary { background: rgba(99, 102, 241, 0.08); color: #a5b4fc; }
+        .btn-sm.primary:hover { background: rgba(99, 102, 241, 0.15); }
+        .btn-sm.danger { background: rgba(239, 68, 68, 0.06); color: #f87171; }
+        .btn-sm.danger:hover { background: rgba(239, 68, 68, 0.12); }
+        .btn-sm.success { background: rgba(52, 211, 153, 0.06); color: #34d399; }
+        .btn-sm.success:hover { background: rgba(52, 211, 153, 0.12); }
 
         /* ===== إعدادات الموقع ===== */
         .settings-grid {
@@ -724,13 +585,8 @@
             flex-wrap: wrap;
             transition: background 0.3s ease, border-color 0.3s ease;
         }
-        .setting-item .label {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.3);
-        }
-        .setting-item input,
-        .setting-item select {
+        .setting-item .label { font-size: 0.8rem; font-weight: 500; color: rgba(255, 255, 255, 0.3); }
+        .setting-item input, .setting-item select {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             border-radius: 6px;
@@ -743,13 +599,7 @@
             min-height: 36px;
             transition: border-color 0.3s ease;
         }
-        .setting-item input[type="color"] {
-            width: 40px;
-            height: 36px;
-            padding: 2px;
-            cursor: pointer;
-            min-width: unset;
-        }
+        .setting-item input[type="color"] { width: 40px; height: 36px; padding: 2px; cursor: pointer; min-width: unset; }
         .setting-item .save-color-btn {
             padding: 4px 12px;
             border: none;
@@ -763,13 +613,8 @@
             font-family: inherit;
             min-height: 28px;
         }
-        .setting-item .save-color-btn:hover {
-            background: rgba(99, 102, 241, 0.15);
-        }
-        .setting-item .save-color-btn.saved {
-            background: rgba(52, 211, 153, 0.08);
-            color: #34d399;
-        }
+        .setting-item .save-color-btn:hover { background: rgba(99, 102, 241, 0.15); }
+        .setting-item .save-color-btn.saved { background: rgba(52, 211, 153, 0.08); color: #34d399; }
         .setting-item .toggle-switch {
             position: relative;
             width: 48px;
@@ -780,9 +625,7 @@
             transition: all 0.3s ease;
             flex-shrink: 0;
         }
-        .setting-item .toggle-switch.active {
-            background: var(--primary);
-        }
+        .setting-item .toggle-switch.active { background: var(--primary); }
         .setting-item .toggle-switch .slider {
             position: absolute;
             top: 3px;
@@ -793,9 +636,7 @@
             border-radius: 50%;
             transition: all 0.3s ease;
         }
-        .setting-item .toggle-switch.active .slider {
-            right: 25px;
-        }
+        .setting-item .toggle-switch.active .slider { right: 25px; }
 
         /* ===== سجلات ===== */
         .log-entry {
@@ -809,14 +650,8 @@
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.2);
         }
-        .log-entry .time {
-            color: rgba(255, 255, 255, 0.05);
-            font-size: 0.7rem;
-        }
-        .log-entry .user {
-            color: #a5b4fc;
-            font-weight: 500;
-        }
+        .log-entry .time { color: rgba(255, 255, 255, 0.05); font-size: 0.7rem; }
+        .log-entry .user { color: #a5b4fc; font-weight: 500; }
 
         /* ===== نافذة منبثقة ===== */
         .modal-overlay {
@@ -833,13 +668,8 @@
             align-items: center;
             animation: fadeIn 0.3s ease;
         }
-        .modal-overlay.active {
-            display: flex;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        .modal-overlay.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .modal-box {
             background: var(--card-bg);
@@ -853,34 +683,16 @@
             backdrop-filter: blur(12px);
             animation: slideUp 0.3s ease;
         }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        .modal-box h3 {
-            text-align: center;
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: var(--text);
-        }
-        .modal-box .modal-icon {
-            text-align: center;
-            font-size: 2.5rem;
-            margin-bottom: 12px;
-        }
+        .modal-box h3 { text-align: center; font-size: 1.4rem; font-weight: 700; margin-bottom: 20px; color: var(--text); }
+        .modal-box .modal-icon { text-align: center; font-size: 2.5rem; margin-bottom: 12px; }
         .modal-box .modal-icon.deposit-icon { color: var(--deposit-color); }
         .modal-box .modal-icon.withdraw-icon { color: var(--withdraw-color); }
 
-        .modal-box .input-group {
-            margin-bottom: 16px;
-        }
-        .modal-box .input-group label {
-            color: rgba(255, 255, 255, 0.4);
-        }
-        .modal-box .input-group input,
-        .modal-box .input-group select {
+        .modal-box .input-group { margin-bottom: 16px; }
+        .modal-box .input-group label { color: rgba(255, 255, 255, 0.4); }
+        .modal-box .input-group input, .modal-box .input-group select {
             width: 100%;
             padding: 12px 16px;
             background: rgba(255, 255, 255, 0.03);
@@ -893,47 +705,19 @@
             transition: all var(--transition);
             min-height: 48px;
         }
-        .modal-box .input-group input:focus,
-        .modal-box .input-group select:focus {
+        .modal-box .input-group input:focus, .modal-box .input-group select:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 4px var(--glow);
         }
-        .modal-box .input-group select option {
-            background: #1a1a2e;
-            color: #fff;
-        }
+        .modal-box .input-group select option { background: #1a1a2e; color: #fff; }
 
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        .modal-actions .btn {
-            flex: 1;
-            justify-content: center;
-            min-height: 44px;
-        }
-        .modal-actions .btn-cancel {
-            background: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.4);
-            border: 1px solid var(--border);
-        }
-        .modal-actions .btn-cancel:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        .modal-actions .btn-confirm-deposit {
-            background: linear-gradient(135deg, var(--deposit-color), #0ea5e9);
-            color: #0a0a1a;
-        }
-        .modal-actions .btn-confirm-withdraw {
-            background: linear-gradient(135deg, var(--withdraw-color), #ec4899);
-            color: #0a0a1a;
-        }
-        .modal-actions .btn-confirm-deposit:disabled,
-        .modal-actions .btn-confirm-withdraw:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-actions .btn { flex: 1; justify-content: center; min-height: 44px; }
+        .modal-actions .btn-cancel { background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.4); border: 1px solid var(--border); }
+        .modal-actions .btn-cancel:hover { background: rgba(255, 255, 255, 0.08); }
+        .modal-actions .btn-confirm-deposit { background: linear-gradient(135deg, var(--deposit-color), #0ea5e9); color: #0a0a1a; }
+        .modal-actions .btn-confirm-withdraw { background: linear-gradient(135deg, var(--withdraw-color), #ec4899); color: #0a0a1a; }
+        .modal-actions .btn-confirm-deposit:disabled, .modal-actions .btn-confirm-withdraw:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .payment-method-item {
             background: var(--card-bg);
@@ -944,30 +728,11 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .payment-method-item:hover {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.05);
-        }
-        .payment-method-item.selected {
-            border-color: var(--primary);
-            background: rgba(99, 102, 241, 0.08);
-        }
-        .payment-method-item .method-name {
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .payment-method-item .method-details {
-            color: rgba(255, 255, 255, 0.2);
-            font-size: 0.8rem;
-            margin-top: 4px;
-        }
-        .payment-method-item .method-badge {
-            background: rgba(99, 102, 241, 0.1);
-            color: #a5b4fc;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-        }
+        .payment-method-item:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); }
+        .payment-method-item.selected { border-color: var(--primary); background: rgba(99, 102, 241, 0.08); }
+        .payment-method-item .method-name { font-weight: 600; font-size: 1rem; }
+        .payment-method-item .method-details { color: rgba(255, 255, 255, 0.2); font-size: 0.8rem; margin-top: 4px; }
+        .payment-method-item .method-badge { background: rgba(99, 102, 241, 0.1); color: #a5b4fc; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; }
 
         /* ===== إعدادات الدفع في لوحة الإدارة ===== */
         .payment-setting-card {
@@ -978,9 +743,7 @@
             margin-bottom: 12px;
             transition: border-color 0.3s ease;
         }
-        .payment-setting-card:hover {
-            border-color: rgba(255, 255, 255, 0.1);
-        }
+        .payment-setting-card:hover { border-color: rgba(255, 255, 255, 0.1); }
         .payment-setting-card .header {
             display: flex;
             justify-content: space-between;
@@ -989,39 +752,18 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-        .payment-setting-card .header .title {
-            font-weight: 700;
-            font-size: 1.1rem;
-        }
-        .payment-setting-card .header .status {
-            font-size: 0.7rem;
-            padding: 2px 10px;
-            border-radius: 20px;
-        }
-        .payment-setting-card .header .status.active {
-            background: rgba(52, 211, 153, 0.1);
-            color: #34d399;
-        }
-        .payment-setting-card .header .status.inactive {
-            background: rgba(239, 68, 68, 0.1);
-            color: #f87171;
-        }
+        .payment-setting-card .header .title { font-weight: 700; font-size: 1.1rem; }
+        .payment-setting-card .header .status { font-size: 0.7rem; padding: 2px 10px; border-radius: 20px; }
+        .payment-setting-card .header .status.active { background: rgba(52, 211, 153, 0.1); color: #34d399; }
+        .payment-setting-card .header .status.inactive { background: rgba(239, 68, 68, 0.1); color: #f87171; }
         .payment-setting-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
             margin-top: 8px;
         }
-        .payment-setting-grid .field {
-            display: flex;
-            flex-direction: column;
-        }
-        .payment-setting-grid .field label {
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.2);
-            display: block;
-            margin-bottom: 2px;
-        }
+        .payment-setting-grid .field { display: flex; flex-direction: column; }
+        .payment-setting-grid .field label { font-size: 0.7rem; color: rgba(255, 255, 255, 0.2); display: block; margin-bottom: 2px; }
         .payment-setting-grid .field input {
             width: 100%;
             padding: 6px 10px;
@@ -1034,15 +776,9 @@
             outline: none;
             transition: border-color 0.3s ease;
         }
-        .payment-setting-grid .field input:focus {
-            border-color: var(--primary);
-        }
-        .payment-setting-grid .field input[type="text"] {
-            direction: ltr;
-        }
-        .payment-setting-grid .full-width {
-            grid-column: 1 / -1;
-        }
+        .payment-setting-grid .field input:focus { border-color: var(--primary); }
+        .payment-setting-grid .field input[type="text"] { direction: ltr; }
+        .payment-setting-grid .full-width { grid-column: 1 / -1; }
 
         /* ===== مؤشر الاتصال ===== */
         .connection-status {
@@ -1059,24 +795,10 @@
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
-        .connection-status.show {
-            display: block;
-        }
-        .connection-status.connecting {
-            background: rgba(99, 102, 241, 0.15);
-            color: #a5b4fc;
-            border: 1px solid rgba(99, 102, 241, 0.1);
-        }
-        .connection-status.error {
-            background: rgba(239, 68, 68, 0.12);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.08);
-        }
-        .connection-status.success {
-            background: rgba(52, 211, 153, 0.12);
-            color: #34d399;
-            border: 1px solid rgba(52, 211, 153, 0.08);
-        }
+        .connection-status.show { display: block; }
+        .connection-status.connecting { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.1); }
+        .connection-status.error { background: rgba(239, 68, 68, 0.12); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.08); }
+        .connection-status.success { background: rgba(52, 211, 153, 0.12); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.08); }
 
         /* ===== استجابة ===== */
         @media (max-width: 768px) {
@@ -1372,7 +1094,7 @@
 
     <script>
         // =============================================
-        // ===== الإعدادات - تم تثبيت الرابط =====
+        // ===== الإعدادات =====
         // =============================================
         const API = 'https://game22-hoas.onrender.com';
         const REQUEST_TIMEOUT = 60000;
@@ -1588,8 +1310,7 @@
             document.getElementById('actionBar').classList.remove('active');
             document.getElementById('app').classList.remove('with-action-bar');
             updateNavbar(null);
-            document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
-                m.textContent = ''; });
+            document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
             hideConnectionStatus();
         }
 
@@ -1906,7 +1627,6 @@
                 resultEl.style.display = 'block';
                 resultEl.innerHTML = '<span style="color:#a5b4fc;">⏳ جاري معالجة طلب السحب...</span>';
 
-                // محاكاة طلب السحب (سيتم ربطها بالـ API لاحقاً)
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
                 const newBalance = currentUser.balance - amount;
@@ -2358,10 +2078,16 @@
                 `;
 
             } catch (e) {
-                console.error('خطأ في تحميل إعدادات الدفع:', e);
+                console.error('❌ خطأ في تحميل إعدادات الدفع:', e);
                 document.getElementById('paymentSettingsContainer').innerHTML = `
-                    <div style="text-align:center;padding:20px;color:rgba(255,255,255,0.04);font-size:0.8rem;">
-                        ❌ فشل تحميل إعدادات الدفع: ${e.message}
+                    <div style="text-align:center;padding:20px;color:#f87171;border:1px solid rgba(239,68,68,0.1);border-radius:8px;">
+                        <i class="fas fa-exclamation-triangle" style="font-size:2rem;display:block;margin-bottom:10px;"></i>
+                        ❌ فشل تحميل إعدادات الدفع<br>
+                        <span style="font-size:0.8rem;color:rgba(255,255,255,0.2);">${e.message}</span>
+                        <br><br>
+                        <button onclick="loadPaymentAdminSettings()" class="btn-sm primary">
+                            <i class="fas fa-sync-alt"></i> إعادة المحاولة
+                        </button>
                     </div>
                 `;
             }
@@ -2491,8 +2217,7 @@
                 const tab = btn.dataset.tab;
                 document.querySelectorAll('.form').forEach(f => f.classList.remove('active'));
                 document.getElementById(tab === 'login' ? 'loginForm' : 'registerForm').classList.add('active');
-                document.querySelectorAll('.msg').forEach(m => { m.className = 'msg';
-                    m.textContent = ''; });
+                document.querySelectorAll('.msg').forEach(m => { m.className = 'msg'; m.textContent = ''; });
             };
         });
 
@@ -2567,8 +2292,7 @@
                         document.getElementById('app').classList.add('with-action-bar');
                         updateNavbar(currentUser);
                         document.getElementById('welcomeText').textContent = `مرحباً ${currentUser.username}`;
-                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' :
-                            'مستخدم';
+                        document.getElementById('userRole').textContent = currentUser.role === 'admin' ? '👑 مدير النظام' : 'مستخدم';
 
                         if (currentUser.role === 'admin') {
                             document.getElementById('adminPanel').classList.add('active');
