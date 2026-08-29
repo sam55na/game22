@@ -20,8 +20,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: isProduction ? { rejectUnauthorized: false } : false,
-    max: 50,
-    min: 5,
+    max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 10000
 });
@@ -187,7 +186,6 @@ async function initDatabase() {
             ['bonus_amount', '100'],
             ['bonus_start_date', ''],
             ['bonus_end_date', ''],
-            // شام كاش دولار
             ['payment_shamcash_usd_enabled', 'false'],
             ['payment_shamcash_usd_min_amount', '10'],
             ['payment_shamcash_usd_max_amount', '10000'],
@@ -196,7 +194,6 @@ async function initDatabase() {
             ['payment_shamcash_usd_bonus_percent', '0'],
             ['payment_shamcash_usd_api_key', ''],
             ['payment_shamcash_usd_account_address', ''],
-            // شام كاش ليرة
             ['payment_shamcash_syp_enabled', 'false'],
             ['payment_shamcash_syp_min_amount', '1000'],
             ['payment_shamcash_syp_max_amount', '1000000'],
@@ -205,7 +202,6 @@ async function initDatabase() {
             ['payment_shamcash_syp_bonus_percent', '0'],
             ['payment_shamcash_syp_api_key', ''],
             ['payment_shamcash_syp_account_address', ''],
-            // سيرياتيل كاش
             ['payment_syriatel_enabled', 'false'],
             ['payment_syriatel_min_amount', '1000'],
             ['payment_syriatel_max_amount', '1000000'],
@@ -421,7 +417,6 @@ const PAYMENT_SETTINGS = {
     }
 };
 
-// ===== تحميل إعدادات الدفع =====
 async function loadPaymentSettings() {
     try {
         const res = await pool.query(
@@ -455,7 +450,6 @@ async function loadPaymentSettings() {
             }
         }
         
-        // تحديث الكائن الأصلي
         for (const [method, data] of Object.entries(result)) {
             PAYMENT_SETTINGS[method] = { ...PAYMENT_SETTINGS[method], ...data };
         }
@@ -467,7 +461,6 @@ async function loadPaymentSettings() {
     }
 }
 
-// ===== حفظ إعدادات الدفع =====
 async function savePaymentSetting(method, key, value) {
     const settingKey = `payment_${method}_${key}`;
     const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
@@ -480,7 +473,7 @@ async function savePaymentSetting(method, key, value) {
 }
 
 // =============================================
-// ===== دوال التحقق من المعاملات (إنتاجية) =====
+// ===== دوال التحقق من المعاملات =====
 // =============================================
 
 async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency = 'SYP') {
@@ -1038,13 +1031,9 @@ app.post('/api/logout', async (req, res) => {
 // ===== API Routes للدفع =====
 // =============================================
 
-// ===== جلب إعدادات الدفع =====
 app.get('/api/payment/settings', async (req, res) => {
     try {
-        console.log('📥 جلب إعدادات الدفع...');
         const settings = await loadPaymentSettings();
-        console.log('✅ تم جلب الإعدادات:', Object.keys(settings));
-        
         const safeSettings = {};
         for (const [key, value] of Object.entries(settings)) {
             safeSettings[key] = {
@@ -1063,14 +1052,10 @@ app.get('/api/payment/settings', async (req, res) => {
         res.json(safeSettings);
     } catch (error) {
         console.error('❌ خطأ في جلب إعدادات الدفع:', error);
-        res.status(500).json({ 
-            error: 'حدث خطأ في جلب الإعدادات',
-            details: error.message 
-        });
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
     }
 });
 
-// ===== تحديث إعدادات الدفع (للمشرفين) =====
 app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
     try {
         const { method, key, value } = req.body;
@@ -1097,7 +1082,6 @@ app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== تقديم طلب إيداع =====
 app.post('/api/payment/deposit', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1130,7 +1114,6 @@ app.post('/api/payment/deposit', async (req, res) => {
     }
 });
 
-// ===== التحقق من حالة معاملة =====
 app.get('/api/payment/status/:txid', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1190,7 +1173,6 @@ const verifyAdmin = async (req, res, next) => {
     }
 };
 
-// ===== الإحصائيات =====
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
         const stats = await db.getStats();
@@ -1212,7 +1194,6 @@ app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== المستخدمين =====
 app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     try {
         const users = await db.getUsers();
@@ -1223,7 +1204,6 @@ app.get('/api/admin/users', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== تحديث الرصيد =====
 app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     try {
         const { username, amount, action } = req.body;
@@ -1270,7 +1250,6 @@ app.post('/api/admin/update-balance', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== تعطيل/تفعيل المستخدم =====
 app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     try {
         const { username, active } = req.body;
@@ -1302,7 +1281,6 @@ app.post('/api/admin/toggle-user', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== حذف مستخدم =====
 app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     try {
         const { username } = req.body;
@@ -1335,7 +1313,6 @@ app.delete('/api/admin/delete-user', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== سجل النشاطات =====
 app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
@@ -1347,7 +1324,6 @@ app.get('/api/admin/logs', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== المعاملات =====
 app.get('/api/admin/transactions', verifyAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
@@ -1362,7 +1338,6 @@ app.get('/api/admin/transactions', verifyAdmin, async (req, res) => {
     }
 });
 
-// ===== إعدادات الموقع =====
 app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
     try {
         const settings = await db.getSettings();
