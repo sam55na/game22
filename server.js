@@ -67,7 +67,6 @@ async function initDatabase() {
     try {
         console.log('🔄 جاري تهيئة قاعدة البيانات...');
 
-        // حذف الجداول القديمة
         await client.query('DROP TABLE IF EXISTS crypto_payments CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_addresses CASCADE;');
         await client.query('DROP TABLE IF EXISTS crypto_currencies CASCADE;');
@@ -81,7 +80,6 @@ async function initDatabase() {
 
         console.log('📦 جاري إنشاء الجداول الجديدة...');
 
-        // جدول المستخدمين
         await client.query(`
             CREATE TABLE users (
                 id BIGSERIAL PRIMARY KEY,
@@ -98,7 +96,6 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_username ON users(username);');
 
-        // جدول النشاطات
         await client.query(`
             CREATE TABLE activity_logs (
                 id BIGSERIAL PRIMARY KEY,
@@ -113,7 +110,6 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_logs_created ON activity_logs(created_at DESC);');
 
-        // جدول الإعدادات
         await client.query(`
             CREATE TABLE site_settings (
                 key VARCHAR(50) PRIMARY KEY,
@@ -122,7 +118,6 @@ async function initDatabase() {
             );
         `);
 
-        // جدول الجلسات
         await client.query(`
             CREATE TABLE sessions (
                 id BIGSERIAL PRIMARY KEY,
@@ -134,7 +129,6 @@ async function initDatabase() {
         `);
         await client.query('CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);');
 
-        // جدول المعاملات
         await client.query(`
             CREATE TABLE transactions (
                 id BIGSERIAL PRIMARY KEY,
@@ -159,7 +153,6 @@ async function initDatabase() {
 
         console.log('✅ تم إنشاء الجداول الجديدة');
 
-        // ===== إنشاء حساب الأدمن =====
         const adminUsername = 'noor2613857noor';
         const adminPassword = 'admin123';
         const hash = await bcrypt.hash(adminPassword, 10);
@@ -169,7 +162,6 @@ async function initDatabase() {
         );
         console.log(`👑 تم إنشاء حساب الأدمن: ${adminUsername} / ${adminPassword}`);
 
-        // ===== الإعدادات الافتراضية =====
         const defaultSettings = [
             ['site_name', 'Game Wars'],
             ['primary_color', '#6366f1'],
@@ -807,15 +799,13 @@ async function processPayment(userId, method, txid, amount) {
 }
 
 // =============================================
-// ===== API ROUTES =====
+// ===== API ROUTES الأساسية =====
 // =============================================
 
-// ===== الصحة =====
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ===== الإعدادات العامة =====
 app.get('/api/settings', async (req, res) => {
     try {
         const settings = await db.getSettings();
@@ -826,7 +816,6 @@ app.get('/api/settings', async (req, res) => {
     }
 });
 
-// ===== التسجيل =====
 app.post('/api/register', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -893,7 +882,6 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// ===== تسجيل الدخول =====
 app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -954,7 +942,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ===== التحقق من التوكن =====
 app.post('/api/verify', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -993,7 +980,6 @@ app.post('/api/verify', async (req, res) => {
     }
 });
 
-// ===== جلب الرصيد =====
 app.get('/api/balance', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1014,7 +1000,6 @@ app.get('/api/balance', async (req, res) => {
     }
 });
 
-// ===== تسجيل الخروج =====
 app.post('/api/logout', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(' ')[1];
@@ -1028,130 +1013,7 @@ app.post('/api/logout', async (req, res) => {
 });
 
 // =============================================
-// ===== API Routes للدفع =====
-// =============================================
-
-app.get('/api/payment/settings', async (req, res) => {
-    try {
-        const settings = await loadPaymentSettings();
-        const safeSettings = {};
-        for (const [key, value] of Object.entries(settings)) {
-            safeSettings[key] = {
-                name: value.name || key,
-                enabled: value.enabled || false,
-                min_amount: value.min_amount || 0,
-                max_amount: value.max_amount || 0,
-                exchange_rate: value.exchange_rate || 1,
-                currency: value.currency || 'SYP',
-                bonus_percent: value.bonus_percent || 0,
-                api_key: value.api_key || '',
-                account_address: value.account_address || '',
-                gsm_numbers: value.gsm_numbers || []
-            };
-        }
-        res.json(safeSettings);
-    } catch (error) {
-        console.error('❌ خطأ في جلب إعدادات الدفع:', error);
-        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
-    }
-});
-
-app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
-    try {
-        const { method, key, value } = req.body;
-        
-        if (!method || !key) {
-            return res.status(400).json({ error: 'بيانات غير مكتملة' });
-        }
-        
-        if (!PAYMENT_SETTINGS[method]) {
-            return res.status(400).json({ error: 'طريقة دفع غير صحيحة' });
-        }
-        
-        await savePaymentSetting(method, key, value);
-        const settings = await loadPaymentSettings();
-        
-        res.json({
-            message: 'تم تحديث الإعداد',
-            settings: settings,
-            updated: { method, key, value }
-        });
-    } catch (error) {
-        console.error('❌ خطأ في تحديث إعدادات الدفع:', error);
-        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
-    }
-});
-
-app.post('/api/payment/deposit', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'غير مصرح' });
-        }
-        
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const { method, txid, amount } = req.body;
-        
-        if (!method || !txid || !amount) {
-            return res.status(400).json({ error: 'بيانات غير مكتملة' });
-        }
-        
-        if (!PAYMENT_SETTINGS[method]) {
-            return res.status(400).json({ error: 'طريقة دفع غير صحيحة' });
-        }
-        
-        const result = await processPayment(decoded.id, method, txid, amount);
-        
-        if (result.success) {
-            res.json(result);
-        } else {
-            res.status(400).json(result);
-        }
-        
-    } catch (error) {
-        console.error('❌ خطأ في معالجة الإيداع:', error);
-        res.status(500).json({ error: 'حدث خطأ في معالجة الإيداع' });
-    }
-});
-
-app.get('/api/payment/status/:txid', async (req, res) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ error: 'غير مصرح' });
-        }
-        
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const { txid } = req.params;
-        
-        const result = await pool.query(
-            `SELECT * FROM transactions WHERE txid = $1 AND user_id = $2`,
-            [txid, decoded.id]
-        );
-        
-        if (result.rows.length === 0) {
-            return res.json({ status: 'pending', message: 'جاري التحقق...' });
-        }
-        
-        const tx = result.rows[0];
-        res.json({
-            status: tx.status,
-            amount: tx.amount,
-            old_balance: tx.old_balance,
-            new_balance: tx.new_balance,
-            bonus_amount: tx.bonus_amount,
-            bonus_percent: tx.bonus_percent,
-            created_at: tx.created_at
-        });
-        
-    } catch (error) {
-        console.error('❌ خطأ في التحقق من حالة المعاملة:', error);
-        res.status(500).json({ error: 'حدث خطأ في التحقق' });
-    }
-});
-
-// =============================================
-// ===== ADMIN API =====
+// ===== ADMIN API (تعريف verifyAdmin هنا) =====
 // =============================================
 
 const verifyAdmin = async (req, res, next) => {
@@ -1172,6 +1034,8 @@ const verifyAdmin = async (req, res, next) => {
         res.status(401).json({ error: 'توكن غير صالح' });
     }
 };
+
+// ===== مسارات ADMIN =====
 
 app.get('/api/admin/stats', verifyAdmin, async (req, res) => {
     try {
@@ -1374,6 +1238,129 @@ app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
     } catch (error) {
         console.error('❌ خطأ في تحديث الإعدادات:', error);
         res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
+    }
+});
+
+// =============================================
+// ===== مسارات الدفع (بعد تعريف verifyAdmin) =====
+// =============================================
+
+app.get('/api/payment/settings', async (req, res) => {
+    try {
+        const settings = await loadPaymentSettings();
+        const safeSettings = {};
+        for (const [key, value] of Object.entries(settings)) {
+            safeSettings[key] = {
+                name: value.name || key,
+                enabled: value.enabled || false,
+                min_amount: value.min_amount || 0,
+                max_amount: value.max_amount || 0,
+                exchange_rate: value.exchange_rate || 1,
+                currency: value.currency || 'SYP',
+                bonus_percent: value.bonus_percent || 0,
+                api_key: value.api_key || '',
+                account_address: value.account_address || '',
+                gsm_numbers: value.gsm_numbers || []
+            };
+        }
+        res.json(safeSettings);
+    } catch (error) {
+        console.error('❌ خطأ في جلب إعدادات الدفع:', error);
+        res.status(500).json({ error: 'حدث خطأ في جلب الإعدادات' });
+    }
+});
+
+app.post('/api/payment/settings', verifyAdmin, async (req, res) => {
+    try {
+        const { method, key, value } = req.body;
+        
+        if (!method || !key) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        if (!PAYMENT_SETTINGS[method]) {
+            return res.status(400).json({ error: 'طريقة دفع غير صحيحة' });
+        }
+        
+        await savePaymentSetting(method, key, value);
+        const settings = await loadPaymentSettings();
+        
+        res.json({
+            message: 'تم تحديث الإعداد',
+            settings: settings,
+            updated: { method, key, value }
+        });
+    } catch (error) {
+        console.error('❌ خطأ في تحديث إعدادات الدفع:', error);
+        res.status(500).json({ error: 'حدث خطأ في تحديث الإعدادات' });
+    }
+});
+
+app.post('/api/payment/deposit', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { method, txid, amount } = req.body;
+        
+        if (!method || !txid || !amount) {
+            return res.status(400).json({ error: 'بيانات غير مكتملة' });
+        }
+        
+        if (!PAYMENT_SETTINGS[method]) {
+            return res.status(400).json({ error: 'طريقة دفع غير صحيحة' });
+        }
+        
+        const result = await processPayment(decoded.id, method, txid, amount);
+        
+        if (result.success) {
+            res.json(result);
+        } else {
+            res.status(400).json(result);
+        }
+        
+    } catch (error) {
+        console.error('❌ خطأ في معالجة الإيداع:', error);
+        res.status(500).json({ error: 'حدث خطأ في معالجة الإيداع' });
+    }
+});
+
+app.get('/api/payment/status/:txid', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ error: 'غير مصرح' });
+        }
+        
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { txid } = req.params;
+        
+        const result = await pool.query(
+            `SELECT * FROM transactions WHERE txid = $1 AND user_id = $2`,
+            [txid, decoded.id]
+        );
+        
+        if (result.rows.length === 0) {
+            return res.json({ status: 'pending', message: 'جاري التحقق...' });
+        }
+        
+        const tx = result.rows[0];
+        res.json({
+            status: tx.status,
+            amount: tx.amount,
+            old_balance: tx.old_balance,
+            new_balance: tx.new_balance,
+            bonus_amount: tx.bonus_amount,
+            bonus_percent: tx.bonus_percent,
+            created_at: tx.created_at
+        });
+        
+    } catch (error) {
+        console.error('❌ خطأ في التحقق من حالة المعاملة:', error);
+        res.status(500).json({ error: 'حدث خطأ في التحقق' });
     }
 });
 
