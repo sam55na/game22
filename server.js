@@ -499,7 +499,7 @@ async function savePaymentSetting(method, key, value) {
 }
 
 // =============================================
-// ===== دوال التحقق من المعاملات =====
+// ===== دوال التحقق من المعاملات (اتصال حقيقي بـ API Syria) =====
 // =============================================
 
 async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency = 'SYP') {
@@ -512,12 +512,18 @@ async function verifyShamCashTransaction(txid, expectedAmount, expectedCurrency 
         return { success: false, message: '❌ شام كاش غير مفعل', code: 'DISABLED' };
     }
     
-    if (!settings.api_key || !settings.account_address) {
-        return { success: false, message: '❌ لم يتم تهيئة شام كاش', code: 'NOT_INITIALIZED' };
+    if (!settings.api_key || settings.api_key.trim() === '') {
+        return { success: false, message: '❌ مفتاح API غير مضبوط', code: 'MISSING_API_KEY' };
+    }
+    
+    if (!settings.account_address || settings.account_address.trim() === '') {
+        return { success: false, message: '❌ عنوان المحفظة غير مضبوط', code: 'MISSING_ADDRESS' };
     }
     
     try {
         const url = `https://apisyria.com/api/v1?resource=shamcash&action=logs&account_address=${settings.account_address}&api_key=${settings.api_key}`;
+        console.log(`📡 [ShamCash] جاري الاتصال بـ: ${url}`);
+        
         const response = await fetch(url, {
             method: 'GET',
             headers: {
@@ -612,13 +618,19 @@ async function verifySyriatelTransaction(txid, expectedAmount) {
         return { success: false, message: '❌ سيرياتيل كاش غير مفعل', code: 'DISABLED' };
     }
     
-    if (!settings.api_key || !settings.gsm_numbers || settings.gsm_numbers.length === 0) {
-        return { success: false, message: '❌ لم يتم تهيئة سيرياتيل كاش', code: 'NOT_INITIALIZED' };
+    if (!settings.api_key || settings.api_key.trim() === '') {
+        return { success: false, message: '❌ مفتاح API غير مضبوط', code: 'MISSING_API_KEY' };
+    }
+    
+    if (!settings.gsm_numbers || settings.gsm_numbers.length === 0) {
+        return { success: false, message: '❌ لم يتم إضافة أرقام GSM', code: 'MISSING_GSM' };
     }
     
     try {
         for (const gsmNumber of settings.gsm_numbers) {
             const url = `https://apisyria.com/api/v1?api_key=${settings.api_key}&resource=syriatel&action=find_tx&tx=${txid}&gsm=${gsmNumber}`;
+            console.log(`📡 [Syriatel] جاري الاتصال بـ: ${url}`);
+            
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
@@ -857,7 +869,7 @@ async function processWithdrawRequest(userId, amount, method, accountNumber) {
         return { success: false, message: 'لديك طلب سحب معلق بالفعل' };
     }
     
-    // إنشاء طلب السحب
+    // إنشاء طلب السحب (لا يتم خصم الرصيد هنا)
     const result = await pool.query(
         `INSERT INTO withdraw_requests (user_id, username, amount, method, account_number, old_balance, status)
          VALUES ($1, $2, $3, $4, $5, $6, 'pending')
@@ -906,7 +918,7 @@ async function approveWithdrawRequest(requestId, adminUsername, notes = '') {
         return { success: false, message: 'الرصيد غير كافٍ للموافقة على الطلب' };
     }
     
-    // خصم المبلغ
+    // خصم المبلغ من رصيد المستخدم
     const newBalance = parseFloat(user.balance) - parseFloat(request.amount);
     await db.updateBalanceById(request.user_id, newBalance);
     
@@ -996,6 +1008,78 @@ async function rejectWithdrawRequest(requestId, adminUsername, notes = '') {
         message: 'تم رفض الطلب بنجاح'
     };
 }
+
+// =============================================
+// ===== اختبار الاتصال بـ API Syria =====
+// =============================================
+
+app.get('/api/payment/test/:method', verifyAdmin, async (req, res) => {
+    try {
+        const { method } = req.params;
+        const settings = PAYMENT_SETTINGS[method];
+        
+        if (!settings) {
+            return res.status(400).json({ error: 'طريقة غير صحيحة' });
+        }
+        
+        // التحقق من الإعدادات
+        const errors = [];
+        if (!settings.enabled) errors.push('الطريقة غير مفعلة');
+        if (!settings.api_key || settings.api_key.trim() === '') errors.push('مفتاح API غير مضبوط');
+        if (method === 'shamcash_usd' || method === 'shamcash_syp') {
+            if (!settings.account_address || settings.account_address.trim() === '') {
+                errors.push('عنوان المحفظة غير مضبوط');
+            }
+        }
+        if (method === 'syriatel') {
+            if (!settings.gsm_numbers || settings.gsm_numbers.length === 0) {
+                errors.push('أرقام GSM غير مضبوطة');
+            }
+        }
+        
+        if (errors.length > 0) {
+            return res.json({
+                success: false,
+                message: '❌ الإعدادات غير مكتملة',
+                errors: errors
+            });
+        }
+        
+        // اختبار الاتصال
+        let testUrl;
+        if (method === 'syriatel') {
+            testUrl = `https://apisyria.com/api/v1?api_key=${settings.api_key}&resource=syriatel&action=find_tx&tx=TEST&gsm=${settings.gsm_numbers[0]}`;
+        } else {
+            testUrl = `https://apisyria.com/api/v1?resource=shamcash&action=logs&account_address=${settings.account_address}&api_key=${settings.api_key}`;
+        }
+        
+        console.log(`📡 [Test] جاري اختبار الاتصال بـ: ${testUrl}`);
+        
+        const response = await fetch(testUrl, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'User-Agent': 'GameWars/1.0'
+            }
+        });
+        
+        const data = await response.json();
+        
+        res.json({
+            success: response.ok,
+            status: response.status,
+            message: response.ok ? '✅ الاتصال ناجح' : '❌ فشل الاتصال',
+            data: data
+        });
+        
+    } catch (error) {
+        console.error('❌ خطأ في اختبار الاتصال:', error);
+        res.json({
+            success: false,
+            message: `❌ خطأ في الاتصال: ${error.message}`
+        });
+    }
+});
 
 // =============================================
 // ===== API ROUTES الأساسية =====
@@ -1728,6 +1812,7 @@ async function startServer() {
             console.log('📋 جميع نقاط النهاية جاهزة للعمل');
             console.log('✅ نظام الدفع متكامل (شام كاش - سيرياتيل كاش)');
             console.log('✅ نظام طلبات السحب جاهز');
+            console.log('✅ الاتصال بـ API Syria جاهز');
         });
     } catch (error) {
         console.error('❌ فشل تشغيل الخادم:', error.message);
